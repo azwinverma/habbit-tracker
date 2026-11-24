@@ -16,7 +16,12 @@ class NotificationService {
   static Future<void> initializeForeground() async {
     if (_fgInited) return;
     const android = AndroidInitializationSettings('@drawable/ic_stat_dailymantra');
-    const ios = DarwinInitializationSettings();
+    const ios = DarwinInitializationSettings(
+      // Never prompt at launch; ReminderService asks after the first reminder.
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
+    );
     const init = InitializationSettings(android: android, iOS: ios);
     await _plugin.initialize(init);
 
@@ -41,7 +46,12 @@ class NotificationService {
   static Future<void> initializeBackground() async {
     if (_bgInited) return;
     const android = AndroidInitializationSettings('@drawable/ic_stat_dailymantra');
-    const ios = DarwinInitializationSettings(); // fine, doesn’t prompt
+    const ios = DarwinInitializationSettings(
+      // Never prompt at launch; ReminderService asks after the first reminder.
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
+    );
     const init = InitializationSettings(android: android, iOS: ios);
     await _plugin.initialize(init);
 

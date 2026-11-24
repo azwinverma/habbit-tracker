@@ -1,6 +1,19 @@
 # Notification & Reminder Architecture
 
-Status: **Phase 0 implementation (Android)**. iOS, actionable notifications, snooze, quiet hours and deep links are Phase 3.
+Status: Android (Phase 0) + medicine actions (Phase 3.1) + **iOS (Phase 3.6)**. Quiet hours and deep links are still to come.
+
+## iOS backend (`lib/services/ios_alarm_backend.dart`)
+iOS has no alarm callback (nothing can re-arm or stop a reminder in the background) and keeps at most **64 pending notifications** per app. `ReminderService` is unchanged; only the backend differs (`defaultAlarmBackend()`):
+
+| Reminder | iOS schedule |
+|---|---|
+| Daily, no end (or end > 7 days away), starts within a day | 1 repeating calendar trigger (hour+minute) |
+| Daily, course ends within 7 days, or starts later | One-shot per day inside a rolling 7-day window (ids derived from the base id, so cancel needs no bookkeeping) |
+| One-time | One-shot |
+
+The window is topped up on every app start (`ReminderService.startup`). If the app is not opened for more than 7 days, bounded/future medicine reminders stop until it is — documented limitation. Notification action buttons (Taken/Snooze) are Android-only for now.
+
+Device checks (iOS): I1 first launch shows no permission prompt; I2 first reminder saved → prompt; I3 daily reminder fires at the set time with the app closed and while open; I4 medicine course ending in 3 days fires only through its end date; I5 deleting a habit removes its pending notifications.
 
 ## 1. Before (v1.0.0)
 

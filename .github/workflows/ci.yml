@@ -51,3 +51,18 @@ jobs:
       # Debug build compiles Kotlin + manifest; release signing secrets are
       # not available in CI.
       - run: flutter build apk --debug
+
+  ios-build:
+    runs-on: macos-latest
+    timeout-minutes: 40
+    needs: analyze-test
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.29.3'
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      # Compiles Swift + CocoaPods for a device; no signing in CI.
+      - run: flutter build ios --debug --no-codesign

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/habit.dart';
+import '../../services/alarm_backends.dart';
 import '../../services/native_alarm.dart';
 import 'alarm_id.dart';
 import 'habit_reminder_planner.dart';
@@ -14,7 +15,7 @@ import 'habit_reminder_planner.dart';
 /// so that editing times, disabling, or deleting a habit cancels exactly the
 /// alarms that belong to it — no orphans, no duplicates.
 class ReminderService {
-  ReminderService({AlarmBackend? backend}) : _backend = backend ?? NativeAlarmBackend();
+  ReminderService({AlarmBackend? backend}) : _backend = backend ?? defaultAlarmBackend();
 
   static ReminderService instance = ReminderService();
 

@@ -1,5 +1,16 @@
 # Changelog
 
+## [Unreleased] — Phase 3 (part 2)
+
+### Added
+- **iOS reminders** (previously none at all, D20). Daily reminders repeat on their own; medicine courses that end soon or start later are scheduled day by day for the next 7 days and topped up whenever the app opens, keeping well under iOS's 64-notification limit.
+
+### Fixed
+- iOS no longer asks for notification permission on first launch (only after the first reminder is set, as on Android).
+- iOS build was broken since Firebase was added: minimum iOS raised to 15.0.
+- iOS step counting: the motion permission text was misplaced in Info.plist, which would make iOS terminate the app when counting steps.
+- CI now also builds the iOS app.
+
 ## [Unreleased] — Phase 3 (part 1)
 
 ### Added

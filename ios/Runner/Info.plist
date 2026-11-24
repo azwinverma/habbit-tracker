@@ -49,9 +49,9 @@
     <string>ca-app-pub-2249746804787716~2324545509</string>
 	<key>UIBackgroundModes</key>
 	<array>
-	<string>audio</string>
+		<string>audio</string>
+	</array>
 	<key>NSMotionUsageDescription</key>
 	<string>This app uses motion data to count your steps.</string>
-	</array>
 </dict>
 </plist>

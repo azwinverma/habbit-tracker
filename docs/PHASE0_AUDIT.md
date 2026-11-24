@@ -41,7 +41,7 @@ Severity: **S1** = loses/duplicates critical reminders or crashes · **S2** = wr
 | D17 | S3 | Rename CLI tools in runtime `dependencies`. | **Fixed** (moved to dev) |
 | D18 | S2 | Office "walk every / stretch every" intervals are saved but **never scheduled** — the feature does nothing. | ✅ Fixed (Phase 3): scheduled as daily reminders in office hours |
 | D19 | S2 | Splash references `assets/branding/*.png` that don't exist; no assets declared. New logo not in repo. | Open → blocked on logo (Phase 2) |
-| D20 | S2 | iOS: no reminder implementation at all (all paths are Android-only). | Open → Phase 3 |
+| D20 | S2 | iOS: no reminder implementation at all (all paths are Android-only). | ✅ Fixed (Phase 3): `IosAlarmBackend` (rolling 7-day window, 64-limit aware) |
 | D21 | S2 | API base URL hard-coded in two screens; no environment config. | Open → Phase 1 |
 | D22 | S3 | Thousands of lines of commented-out code (meditation ~5.6k, reading ~3.4k lines). | Open → Phase 1 (remove during feature extraction) |
 | D23 | S3 | Notification small icon uses the coloured launcher icon (renders as a white square on many devices). | Open → Phase 2 |
