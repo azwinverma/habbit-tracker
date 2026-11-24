@@ -3145,7 +3145,7 @@ class $ContentItemsTable extends ContentItems
 }
 
 class ContentItemRow extends DataClass implements Insertable<ContentItemRow> {
-  /// "<provider>:<externalId>", e.g. "gutenberg:1342".
+  /// `provider:externalId`, e.g. `gutenberg:1342`.
   final String id;
   final String provider;
 
