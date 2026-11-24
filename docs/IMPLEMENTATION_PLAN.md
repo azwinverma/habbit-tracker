@@ -30,18 +30,25 @@ P2 can start in parallel with late P1. P4 can start once P1's repository layer e
 | 37 unit tests (model, ids, planner, service) | ✅ |
 | On-device verification (checklist M1–M15) | ⛔ needs a physical device / emulator |
 
-## Phase 1 — Architecture & database ⬜
-| # | Task | Depends on |
+## Phase 1 — Architecture & database 🔄 (core done)
+| # | Task | Status |
 |---|---|---|
-| 1.1 | `git init`, baseline commit, branch strategy, CI (analyze + test) | owner OK |
-| 1.2 | Add Riverpod, GoRouter; app shell with 5 destinations (Today/Plan/Add/Insights/Profile) wired to existing screens | — |
-| 1.3 | Environment config (`--dart-define` / flavors dev/prod); remove hard-coded API URL (D21) | — |
-| 1.4 | Drift schema v1: habits, per-category settings, habit_logs, reminders, sessions, journal | — |
-| 1.5 | Migration from `habits_v1` (MIGRATION_PLAN M1) + fixture tests | 1.4 |
-| 1.6 | Repositories + typed domain models per category (retire nullable god-object) | 1.4 |
-| 1.7 | Move `ReminderService` to read from repositories; keep planner tests green | 1.6 |
-| 1.8 | Split giant screens into feature folders; delete commented-out dead code (D22, D24) | 1.6 |
-| 1.9 | Completion history + flexible streaks (with recovery days) in DB | 1.6 |
+| 1.1 | `git init`, baseline commit, push to GitHub | ✅ (CI still ⬜) |
+| 1.2 | Riverpod + GoRouter; app shell Today / Plan / Add / Insights / You | ✅ |
+| 1.3 | Remove hard-coded API URL (D21) | ✅ (dead PythonAnywhere API removed). Flavors dev/prod ⬜ |
+| 1.4 | Drift schema v1: habits, per-category settings, habit_logs, content cache, meta | ✅ |
+| 1.5 | Migration from `habits_v1` + fixture tests | ✅ |
+| 1.6 | Repository layer; per-category tables (no god-object in storage) | ✅. Typed domain models for screens ⬜ (Phase 2/3, per screen) |
+| 1.7 | ReminderService reads repository data | ✅ (via StorageService facade) |
+| 1.8 | Delete dead code (D22); extract shared flows | ✅ −11k lines; `HabitFlows`. Splitting big screens into widgets ⬜ |
+| 1.9 | Completion history in DB | ✅ (`habit_logs`). Flexible streaks / recovery days ⬜ |
+| 1.10 | **Dynamic free content engine** (Gutenberg, Wikimedia Commons, wger) refreshed on app open, offline cache, New badges, Discover | ✅ |
+| 1.11 | Firebase project wired (`flutterfire configure`, `Firebase.initializeApp`) | ✅ |
+| 1.12 | Plan: upcoming reminders, reminder health, test reminder | ✅ |
+| 1.13 | Insights (7-day history), You (theme, permissions, sources & licences) | ✅ |
+| 1.14 | Dark mode with brand palette | ✅ (full design system in Phase 2) |
+| 1.15 | Widget smoke tests for new screens (Insights, Discover, Plan) | ✅ (integration tests ⬜) |
+| 1.16 | Bump Kotlin Gradle plugin 2.0 → 2.2 (non-fatal metadata warnings in release build) | ⬜ |
 
 ## Phase 2 — Brand & UI ⬜
 2.1 Design tokens (colour roles from Deep Teal/Mint/Coral/Lavender/Sky, contrast-checked), typography (Plus Jakarta Sans + Noto Sans Devanagari), spacing, radii · 2.2 Light/dark/system theme · 2.3 Component library (cards, progress rings, empty/error/skeleton states, reminder editor, session timer) · 2.4 Onboarding (language, goals, interests, reminder prefs, permission explainers, guest mode) · 2.5 Today dashboard with real data, re-orderable sections · 2.6 Notification monochrome icon (D23) · 2.7 Fix deprecations (D26) · 2.8 Accessibility pass (TalkBack, text scale 200%, 48dp targets)
@@ -66,9 +73,9 @@ Insights, challenges, achievements, home-screen widgets · Ads: remote-configure
 Integration tests for critical journeys, security review of rules/functions, performance (startup, jank), accessibility audit, Play policy (exact alarm declaration, health data, ads), release pipeline.
 
 ## Decisions needed from the owner
-1. **Version control:** OK to `git init` and commit the current state as the baseline? (Strongly recommended before Phase 1.)
-2. **Firebase:** create a project (Blaze plan needed for Functions/Scheduler) and share access, or should Phase 4 target a different backend?
-3. **Logo & blueprint:** the brief references a new logo and a "DailyMantra 2.0 blueprint" — neither is in the repo. Please add them (e.g. `assets/branding/`, `docs/blueprint.*`).
-4. **Existing content licence:** what licence covers the audio/ebooks served by the PythonAnywhere API? Needed before offline caching/redistribution.
+1. ~~Version control~~ — done (GitHub `main`).
+2. ~~Firebase project~~ — `habbittracker-c2daa` wired. **Blaze plan** still needed for Cloud Functions/Scheduler in Phase 4.
+3. **Logo:** still not in the repo (blueprint received). Please add to `assets/branding/`.
+4. ~~Content licence~~ — none exists; switched to free/open providers (see `CONTENT_SOURCES.md`).
 5. **Monorepo move:** recommend keeping the Flutter app at the repo root until Phase 4, then moving to `apps/mobile` in one dedicated change (avoids breaking signing/IDE paths now).
 6. **Priority:** if time is limited, recommended order after P1 is P2 → P3 (medicine/reminders/iOS) → P4, with the admin dashboard after the app is stable.

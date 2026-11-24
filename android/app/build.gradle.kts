@@ -4,6 +4,9 @@ import java.io.FileInputStream
 
 plugins {
     id("com.android.application")
+    // START: FlutterFire Configuration
+    id("com.google.gms.google-services")
+    // END: FlutterFire Configuration
     id("org.jetbrains.kotlin.android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
@@ -25,7 +28,8 @@ android {
 
     defaultConfig {
         applicationId = "com.daily.mantra"
-        minSdk = maxOf(21, flutter.minSdkVersion)
+        // Android 7.0+: required by firebase_core 5 (Firebase BoM 34+).
+        minSdk = maxOf(24, flutter.minSdkVersion)
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

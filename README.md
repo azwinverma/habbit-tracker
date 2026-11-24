@@ -1,10 +1,11 @@
 # DailyMantra – Habit & Wellness Reminder App (Flutter)
 
-DailyMantra is a Flutter mobile app (mainly for Android) that helps users build daily habits. It does this with category-specific trackers and reliable reminders. Users can track medicine, water intake, meditation (with streamed audio), reading (with a built-in ebook reader), exercise, and generic custom habits.
+**Small habits. Better days.** DailyMantra is a Flutter mobile app (mainly for Android) that helps users build daily habits. It does this with category-specific trackers and reliable reminders. Users can track medicine, water intake, meditation (with streamed audio), reading (with a built-in ebook reader), exercise, and generic custom habits.
 
 - **Package / applicationId:** `com.daily.mantra`
 - **Dart package name:** `habit_tracker_nepali`
-- **Version:** 1.0.0+1
+- **Version:** 1.0.0+1 (2.0 work in progress: Phase 0 ✅, Phase 1 core ✅; see [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md))
+- **Min Android:** 7.0 (API 24)
 - **Dart SDK:** ^3.7.2, Material 3, seed color `#2563EB`
 - **Orientation:** portrait only
 - **Platforms:** Android is the main target. iOS folders exist, but alarms and ads are mostly Android-specific.
@@ -38,94 +39,24 @@ DailyMantra is a Flutter mobile app (mainly for Android) that helps users build 
 
 ---
 
-## 2. Tech Stack & Dependencies
+## 2. Tech Stack
 
-| Purpose | Package |
-|---|---|
-| Local persistence | `shared_preferences` |
-| Notifications | `flutter_local_notifications`, `timezone` |
-| Background alarms | `android_alarm_manager_plus` (plus native Kotlin AlarmManager) |
-| Audio | `just_audio`, `audio_session`, `just_audio_background` (installed, but its init is commented out) |
-| Ebooks | `epub_view` |
-| Images | `cached_network_image` |
-| Ads | `google_mobile_ads` |
-| Android intents | `android_intent_plus` |
-| Steps | `pedometer` (**installed but not used yet**; steps are manual) |
-| Tooling (wrongly placed in `dependencies`) | `package_rename`, `change_app_package_name` |
+Flutter 3.29 / Dart 3.7 · **Riverpod 2.6** (state) · **GoRouter 17** (navigation) · **Drift 2.28 / SQLite** (local database) · Firebase Core (project `habbittracker-c2daa`, initialised only) · `flutter_local_notifications` + native Kotlin AlarmManager (reminders) · `just_audio` · `epub_view` · `cached_network_image` · `google_mobile_ads` · `http`.
 
-There is no state management library. Screens use `StatefulWidget` and `setState`.
+## 3. Project Structure & Data
 
----
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). In short:
+- `lib/app/` holds the app shell, router, theme and providers. `lib/features/` holds habits (repository, migration, flows), content, plan, insights and profile. `lib/core/` holds the database schema and the reminder engine. `lib/screens/` holds the legacy category screens.
+- **Storage:** SQLite (`dailymantra.sqlite`) with `habits`, a settings table per category, `habit_logs` (per-day history), `content_items` and `content_sync_states`. v1.0.0 data (`habits_v1`) is migrated automatically on first launch and still mirrored for rollback ([docs/MIGRATION_PLAN.md](docs/MIGRATION_PLAN.md)).
 
-## 3. Project Structure
+## 4. Free Content
 
-```
-lib/
-├── main.dart                      # Init: orientation lock, MobileAds, AdService, notifications, AlarmManager → HabitApp → SplashScreen
-├── models/
-│   └── habit.dart                 # Habit model + HabitCategory enum, JSON (de)serialization
-├── screens/
-│   ├── splash_screen.dart
-│   ├── home_screen.dart           # Quick Add grid + habit list
-│   ├── add_edit_habit_screen.dart # Generic habit form
-│   ├── medicine_screen.dart
-│   ├── water_screen.dart
-│   ├── meditation_screen.dart     # ~5.6k lines (much of it commented-out old code)
-│   ├── reading_screen.dart        # ~3.4k lines (much of it commented-out old code); EPUB + web reader pages
-│   ├── exercise_screen.dart       # ~2.4k lines; schedule editor bottom sheet
-│   └── code1.txt                  # Stray file from an unrelated project – should be deleted
-├── services/
-│   ├── storage_service.dart       # Loads/saves List<Habit> as JSON under key 'habits_v1'
-│   ├── notification_service.dart  # Local notifications, channel 'habit_channel_v2', exact scheduling, multi-time scheduling
-│   ├── native_alarm.dart          # MethodChannel 'habit_alarms' → Kotlin AlarmScheduler
-│   ├── ad_service.dart            # AdService + InterstitialHelper (frequency capping)
-│   ├── quote_service.dart
-│   └── track_library.dart         # Saved meditation tracks (shared_preferences key 'meditation_tracks')
-├── widgets/
-│   ├── habit_tile.dart
-│   ├── grid_tile.dart
-│   ├── ad_banner.dart             # Lifecycle-aware banner
-│   └── extra_time_editior.dart    # Reusable "add multiple times" editor
-└── utils/
-    └── drive_link.dart            # Converts Google Drive share links to direct links
+There is no licensed content of our own. The app pulls **free, reusable** content and refreshes it when the user opens the app:
+- public-domain books from Project Gutenberg (via Gutendex)
+- nature and mindfulness sounds from Wikimedia Commons (PD/CC0/CC BY/CC BY-SA)
+- an exercise library from wger (CC BY-SA)
 
-android/app/src/main/kotlin/com/daily/mantra/
-├── MainActivity.kt                # Handles the 'habit_alarms' MethodChannel
-├── AlarmScheduler.kt              # setExactAndAllowWhileIdle / cancel
-└── AlarmReceiver.kt               # Shows a notification (channel 'habit_channel_native_v1'); re-arms daily alarms for the next day
-```
-
----
-
-## 4. Data Model
-
-There is a single `Habit` class for every category, so category-specific fields are nullable:
-
-```dart
-enum HabitCategory { medicine, generic, water, meditation, reading, exercise }
-
-class Habit {
-  String id, name; bool enabled;
-  int reminderHour, reminderMinute;        // legacy single time
-  List<String> reminderTimes;              // multiple times, "HH:mm"
-  HabitCategory category;
-  int streak; DateTime? lastCompleted;
-
-  // Water
-  int? waterTarget, waterCompleted; String? waterLastDate;
-  // Meditation
-  int? meditationGoalMin, meditationTodayMin; String? meditationLastDate;
-  // Medicine
-  String? medicineName, medicineDose, medicineNotes, medicineStartDate, medicineEndDate;
-  // Exercise
-  int? exerciseGoalMin, exerciseTodayMin; String? exerciseLastDate;
-  int? stepsGoal, stepsToday; String? stepsLastDate;
-  int? officeWalkEveryMin, officeStretchEveryMin;
-  String? exerciseScheduleJson, exerciseMilestonesJson;  // nested data stored as JSON strings
-}
-```
-
-All habits are stored as one JSON list in `shared_preferences` under the key `habits_v1`. There is no database, user account or cloud sync.
+Content is cached offline, new items get a **New** badge, and authors and licences are shown everywhere. Details and obligations are in [docs/CONTENT_SOURCES.md](docs/CONTENT_SOURCES.md).
 
 ---
 
@@ -143,14 +74,11 @@ Android permissions: `INTERNET`, `POST_NOTIFICATIONS`, `RECEIVE_BOOT_COMPLETED`,
 
 ---
 
-## 6. Remote Content API
+## 6. Navigation (Phase 1)
 
-The meditation audio and ebooks come from a small self-hosted backend (Python, on PythonAnywhere):
+**Today** (greeting, progress, quick add, habits) · **Plan** (upcoming reminders, reminder health, test reminder) · **Add** (sheet) · **Insights** (7-day history) · **You** (theme, permissions, content sources and licences, privacy). **Discover** (free books, sounds and exercises) opens from Today and from Add. Tapping a habit opens its own screen.
 
-- `GET {apiBase}/api/list/audio` returns a list of meditation tracks
-- `GET {apiBase}/api/list/ebooks` returns a list of books (`.epub` or other URLs)
-
-`apiBase` is hard-coded separately in `meditation_screen.dart` and `reading_screen.dart`.
+The old PythonAnywhere content API has been removed: it was offline and its content was unlicensed.
 
 ---
 
@@ -161,10 +89,9 @@ Phase 0 fixed the critical reminder bugs (orphaned and duplicate alarms, never-e
 1. Office walk/stretch intervals are saved but never scheduled.
 2. iOS has no reminder implementation.
 3. The splash screen refers to missing logo assets, and the new logo isn't in the repo yet.
-4. The API base URL is hard-coded in two screens.
-5. The large screen files contain thousands of lines of commented-out code and duplicated UI logic.
-6. There is no state management layer, and one `Habit` class holds the fields for every category.
-7. Storage is SharedPreferences JSON only, with no history tables.
+4. The category screens still use the legacy `Habit` view model and are large. They will be split into typed models and widgets in Phase 2/3.
+5. There are no widget or integration tests for the new screens yet, and no CI.
+6. The release build prints non-fatal Kotlin metadata warnings: bump the Kotlin Gradle plugin to 2.2.
 
 ---
 
@@ -189,7 +116,8 @@ Phase 0 fixed the critical reminder bugs (orphaned and duplicate alarms, never-e
 
 ```bash
 flutter pub get
-flutter test           # 37 unit tests (model, alarm ids, planner, reminder service)
+flutter test           # 74 unit + widget tests (+3 live API tests: LIVE=1 flutter test test/content/live_providers_test.dart)
 flutter run            # Android device/emulator recommended
 flutter build apk --release   # needs android/key.properties + keystore
+dart run build_runner build --delete-conflicting-outputs   # after changing lib/core/db/tables.dart
 ```

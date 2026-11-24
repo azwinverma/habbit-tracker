@@ -14,9 +14,9 @@
 | Native `dm_alarm_store` (Kotlin prefs) | New store | Ignored by old build |
 | Legacy alarms retired (see NOTIFICATION_ARCHITECTURE §4) | One-way | Downgrade to v1.0.0 → open each habit screen and press Save to re-create alarms |
 
-**Code rollback:** `.phase0_backup/pre-phase0-2026-11-24.tar.gz` (full source snapshot, excluding build outputs). Strongly recommended: initialise git and commit this baseline (see IMPLEMENTATION_PLAN decisions).
+**Code rollback:** `.phase0_backup/pre-phase0-2026-11-24.tar.gz` (full source snapshot, excluding build outputs). Git history now starts from the Phase 0 commit on GitHub (`main`).
 
-## M1 — Phase 1: SharedPreferences → Drift/SQLite (planned)
+## M1 — Phase 1: SharedPreferences → Drift/SQLite ✅ implemented
 
 1. Ship Drift schema v1 alongside SharedPreferences (read-only from prefs).
 2. On first launch: in one transaction, import every `habits_v1` record into typed tables:
@@ -27,6 +27,14 @@
 3. Verify: row counts and a checksum of ids match; only then write `migration_v1_done`.
 4. Keep `habits_v1` untouched for at least two releases (rollback = ignore DB, read prefs).
 5. Tests: golden JSON fixtures from real v1.0.0 data shapes → expected DB rows; corrupted/partial JSON; re-run idempotency.
+
+**As implemented** (`LegacyHabitMigrator`, `HabitRepository`, tests in `test/db/`):
+- Single transaction, de-duplicates ids, verifies row count, then sets `migrated_habits_v1` in `app_meta`. Corrupt JSON → rollback, no flag, retried next launch.
+- Round-trip of every v1 field is lossless (tested per category).
+- Every save still writes `habits_v1` too (dual-write) → downgrade to v1.0.0 sees current data.
+- If the DB can't open/migrate, `StorageService` falls back to `habits_v1` so the app keeps working.
+- Deleting a habit deletes its settings and history (cascade) — user intent + privacy.
+- Deviation from plan: exercise week plan / milestones are stored as JSON text columns in `exercise_settings` (not yet normalised); table names are `medicine_details`, `water_settings`, `meditation_settings`, `exercise_settings`.
 
 ## M2 — Phase 4: Local → Cloud sync (planned)
 - Local DB stays the source of truth; Firestore is a replica.

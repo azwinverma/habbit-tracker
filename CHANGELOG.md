@@ -1,5 +1,27 @@
 # Changelog
 
+## [Unreleased] — Phase 1 (2026-11-24)
+
+### Added
+- **Free content that refreshes itself.** Public-domain books (Project Gutenberg), freely licensed nature and mindfulness sounds (Wikimedia Commons) and an exercise library (wger). New content is fetched when the app opens or returns to the foreground, cached for offline use, and marked **New** until viewed.
+- **Discover** screen: search, books, sounds, exercises, Read now, Play, credits and licence for every item.
+- New navigation: **Today · Plan · Add · Insights · You**.
+- **Plan:** upcoming reminders by day, reminder health (notifications and on-time delivery), *Send a test reminder*.
+- **Insights:** 7-day history for completions, water, meditation, exercise and steps.
+- **You:** light/dark/system theme, reminder permission, content sources and status, sources and licences, privacy note.
+- Tapping a habit now opens its screen (player, reader, tracker). Before, there was no way back into it after creation.
+- Today shows a greeting and today's progress.
+- Local SQLite database with history; one-time automatic migration of existing data.
+- Firebase project configured (initialised only; no data is sent yet).
+
+### Changed
+- Meditation and reading now use the free catalogue. The previous content server was offline and its content unlicensed.
+- Meditation sounds loop for the whole session.
+- Brand colours (Deep Teal palette) and dark mode.
+- **Minimum Android version is now 7.0 (API 24)**, required by Firebase.
+- Removed ~11,000 lines of commented-out code.
+
+
 ## [Unreleased] — Phase 0 stabilization (2026-11-24)
 
 ### Fixed

@@ -8,12 +8,17 @@ class HabitTile extends StatelessWidget {
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
 
+  /// Opens the habit's own screen (player, reader, tracker). When null,
+  /// tapping the tile toggles completion (previous behaviour).
+  final VoidCallback? onOpen;
+
   const HabitTile({
     super.key,
     required this.habit,
     this.onToggleComplete,
     this.onEdit,
     this.onDelete,
+    this.onOpen,
   });
 
   String _fmt2(int n) => n.toString().padLeft(2, '0');
@@ -45,18 +50,27 @@ class HabitTile extends StatelessWidget {
       elevation: 1,
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        leading: InkResponse(
-          onTap: onToggleComplete,
-          radius: 24,
-          child: CircleAvatar(
-            backgroundColor: isDoneToday
-                ? theme.colorScheme.primary
-                : theme.colorScheme.surfaceVariant,
-            child: Icon(
-              isDoneToday ? Icons.check : Icons.circle_outlined,
-              color: isDoneToday
-                  ? theme.colorScheme.onPrimary
-                  : theme.colorScheme.onSurfaceVariant,
+        leading: Semantics(
+          button: true,
+          label:
+              isDoneToday
+                  ? 'Mark ${habit.name} not done'
+                  : 'Mark ${habit.name} done',
+          child: InkResponse(
+            onTap: onToggleComplete,
+            radius: 24,
+            child: CircleAvatar(
+              backgroundColor:
+                  isDoneToday
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.surfaceContainerHighest,
+              child: Icon(
+                isDoneToday ? Icons.check : Icons.circle_outlined,
+                color:
+                    isDoneToday
+                        ? theme.colorScheme.onPrimary
+                        : theme.colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
         ),
@@ -76,19 +90,23 @@ class HabitTile extends StatelessWidget {
                 child: Text(
                   _reminderSummary(habit),
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.75),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.75),
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: 12),
-              Icon(Icons.local_fire_department, size: 16, color: theme.colorScheme.outline),
+              Icon(
+                Icons.local_fire_department,
+                size: 16,
+                color: theme.colorScheme.outline,
+              ),
               const SizedBox(width: 4),
               Text(
                 '${streak}d',
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.75),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.75),
                 ),
               ),
             ],
@@ -99,12 +117,13 @@ class HabitTile extends StatelessWidget {
             if (v == 'edit') onEdit?.call();
             if (v == 'delete') onDelete?.call();
           },
-          itemBuilder: (context) => const [
-            PopupMenuItem(value: 'edit', child: Text('Edit')),
-            PopupMenuItem(value: 'delete', child: Text('Delete')),
-          ],
+          itemBuilder:
+              (context) => const [
+                PopupMenuItem(value: 'edit', child: Text('Edit')),
+                PopupMenuItem(value: 'delete', child: Text('Delete')),
+              ],
         ),
-        onTap: onToggleComplete,
+        onTap: onOpen ?? onToggleComplete,
       ),
     );
   }
@@ -116,4 +135,3 @@ class HabitTile extends StatelessWidget {
     return d.year == today.year && d.month == today.month && d.day == today.day;
   }
 }
-

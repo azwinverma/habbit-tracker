@@ -1,6 +1,5 @@
 // lib/screens/meditation_screen.dart
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:habit_tracker_nepali/services/ad_service.dart';
 import 'package:habit_tracker_nepali/widgets/ad_banner.dart';
@@ -14,10 +13,13 @@ import 'package:audio_session/audio_session.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 
-// Network
-import 'package:http/http.dart' as http;
+// Free sounds catalogue (Wikimedia Commons), cached offline
+import '../core/db/app_database.dart';
+import '../features/content/data/content_repository.dart';
+import '../features/content/data/content_sync_service.dart';
+import '../features/content/domain/content_item.dart';
 
-// Alarms (use NativeAlarm as requested)
+// Reminders
 import '../core/reminders/reminder_service.dart';
 
 class MeditationScreen extends StatefulWidget {
@@ -29,10 +31,6 @@ class MeditationScreen extends StatefulWidget {
 }
 
 class _MeditationScreenState extends State<MeditationScreen> {
-  // ======== API CONFIG ========
-  static const String _apiBase = 'https://aswiniverma.pythonanywhere.com';
-  static const String _audioListPath = '/api/list/audio';
-
   final _storage = StorageService();
 
   // Habit
@@ -73,7 +71,7 @@ class _MeditationScreenState extends State<MeditationScreen> {
       _dirtyReminders = true;
     }
 
-    _setupAudio().then((_) => _loadTracksFromApi());
+    _setupAudio().then((_) => _loadTracks());
   }
 
   @override
@@ -134,31 +132,34 @@ class _MeditationScreenState extends State<MeditationScreen> {
     await session.configure(const AudioSessionConfiguration.music());
   }
 
-  Future<void> _loadTracksFromApi() async {
+  /// Sounds come from the offline catalogue (freely licensed recordings from
+  /// Wikimedia Commons). It refreshes automatically when the app opens; here
+  /// we only fetch if it is still empty, or when the user taps refresh.
+  Future<void> _loadTracks({bool forceSync = false}) async {
     setState(() => _loadingTracks = true);
+    final repo = ContentRepository(AppDatabase.instance);
     try {
-      final uri = Uri.parse('$_apiBase$_audioListPath');
-      final resp = await http.get(uri);
-      if (resp.statusCode == 200) {
-        final list = (json.decode(resp.body) as List)
-            .map((e) => _MedApiTrack.fromJson(e as Map<String, dynamic>, _apiBase))
-            .toList();
-        setState(() {
-          _tracks = list;
-          _loadingTracks = false;
-          if (_tracks.isNotEmpty && _currentIndex == null) {
-            _currentIndex = 0; // preselect first (no autoplay)
-          }
-        });
-      } else {
-        setState(() => _loadingTracks = false);
-        _snack('Could not load audio (${resp.statusCode}).');
+      var rows = await repo.list(ContentKind.audio);
+      if (rows.isEmpty || forceSync) {
+        await ContentSyncService.instance.syncIfStale(force: true);
+        rows = await repo.list(ContentKind.audio);
       }
+      if (!mounted) return;
+      setState(() {
+        _tracks = rows.where((r) => r.mediaUrl != null).map(_MedApiTrack.fromContent).toList();
+        _loadingTracks = false;
+        if (_tracks.isNotEmpty && (_currentIndex == null || _currentIndex! >= _tracks.length)) {
+          _currentIndex = 0; // preselect first (no autoplay)
+        }
+      });
+      if (_tracks.isEmpty) _snack('Could not load sounds. Check your connection and tap refresh.');
     } catch (e) {
+      if (!mounted) return;
       setState(() => _loadingTracks = false);
-      _snack('Network error: $e');
+      _snack('Could not load sounds: $e');
     }
   }
+
 
   Future<void> _prepareSelectedSource() async {
     if (_currentIndex == null || _currentIndex! >= _tracks.length) return;
@@ -170,6 +171,8 @@ class _MeditationScreenState extends State<MeditationScreen> {
       ),
       preload: true,
     );
+    // Catalogue sounds are short ambient clips: loop them for the session.
+    await _player.setLoopMode(LoopMode.one);
   }
 
   Future<void> _selectTrack(int index) async {
@@ -351,7 +354,7 @@ class _MeditationScreenState extends State<MeditationScreen> {
                   iconSize: 28,
                   onPressed: () async {
                     Navigator.pop(ctx);
-                    await _loadTracksFromApi();
+                    await _loadTracks(forceSync: true);
                   },
                   icon: const Icon(Icons.refresh),
                 ),
@@ -361,7 +364,7 @@ class _MeditationScreenState extends State<MeditationScreen> {
                 child: _tracks.isEmpty
                     ? const Center(
                         child: Text(
-                          'No audio found.\nUpload from backend.',
+                          'No sounds yet.\nConnect to the internet and tap refresh.',
                           textAlign: TextAlign.center,
                           style: TextStyle(fontSize: 16),
                         ),
@@ -393,10 +396,23 @@ class _MeditationScreenState extends State<MeditationScreen> {
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
-                                    child: Text(
-                                      t.name,
-                                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                                      overflow: TextOverflow.ellipsis,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          t.name,
+                                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        if (t.credit.isNotEmpty)
+                                          Text(
+                                            t.credit,
+                                            style: Theme.of(context).textTheme.bodySmall,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                      ],
                                     ),
                                   ),
                                   const SizedBox(width: 4),
@@ -684,45 +700,23 @@ class _BigActionButton extends StatelessWidget {
   }
 }
 
-// ======== API track model ========
+// ======== Track model (from the content catalogue) ========
 class _MedApiTrack {
-  final int id;
-  final String type; // "audio"
+  final String id;
   final String name;
-  final String url; // absolute url
-  final int? sizeBytes;
-  final DateTime? created;
+  final String url; // direct MP3 link
+  final String credit; // collection · author · licence (attribution)
 
-  _MedApiTrack({
-    required this.id,
-    required this.type,
-    required this.name,
-    required this.url,
-    this.sizeBytes,
-    this.created,
-  });
+  _MedApiTrack({required this.id, required this.name, required this.url, this.credit = ''});
 
-  factory _MedApiTrack.fromJson(Map<String, dynamic> j, String base) {
-    String u = (j['url'] ?? '').toString();
-    if (u.startsWith('/')) u = '$base$u'; // prefix host for "/media/..."
-    DateTime? c;
-    try {
-      c = j['created'] != null ? DateTime.parse(j['created']) : null;
-    } catch (_) {}
-    return _MedApiTrack(
-      id: (j['id'] ?? 0) is int ? j['id'] as int : int.tryParse('${j['id']}') ?? 0,
-      type: (j['type'] ?? '').toString(),
-      name: (j['name'] ?? 'Meditation Audio').toString(),
-      url: u,
-      sizeBytes: j['size_bytes'] is int ? j['size_bytes'] as int : int.tryParse('${j['size_bytes']}'),
-      created: c,
-    );
-  }
+  factory _MedApiTrack.fromContent(ContentItemRow r) => _MedApiTrack(
+        id: r.id,
+        name: r.title,
+        url: r.mediaUrl!,
+        credit: [
+          if (r.subtitle != null) r.subtitle!,
+          if (r.attribution != null) r.attribution!,
+          r.license,
+        ].join(' · '),
+      );
 }
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-

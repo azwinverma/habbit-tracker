@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "418059465339",
+    "project_id": "habbittracker-c2daa",
+    "storage_bucket": "habbittracker-c2daa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:418059465339:android:cfe6d9b47657fc427de8de",
+        "android_client_info": {
+          "package_name": "com.daily.mantra"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAMxdatD6YBvlaRnRFg7laycfxBcbFEwT4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

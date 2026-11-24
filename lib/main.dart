@@ -1,49 +1,36 @@
-import 'package:flutter/material.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:habit_tracker_nepali/screens/splash_screen.dart';
+
+import 'app/app.dart';
+import 'firebase_options.dart';
 import 'services/ad_service.dart';
 import 'services/notification_service.dart';
 
-
 Future<void> main() async {
-WidgetsFlutterBinding.ensureInitialized();
-  // Lock the app to portrait mode
+  WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-await MobileAds.instance.initialize();
-await AdService.init();
-await NotificationService.initializeForeground();
-await NotificationService.initializeBackground();
-await AndroidAlarmManager.initialize();
-  // await JustAudioBackground.init(
-  //   androidNotificationChannelId: 'meditation_audio',
-  //   androidNotificationChannelName: 'Meditation Audio',
-  //   androidNotificationOngoing: true,
-  // );
-runApp(const HabitApp());
-}
 
+  // Firebase is optional for core features: the app must keep working
+  // offline / if initialisation fails (no account, no network needed).
+  try {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  } catch (e) {
+    debugPrint('[Firebase] init failed, continuing without it: $e');
+  }
 
-class HabitApp extends StatelessWidget {
-const HabitApp({super.key});
+  await MobileAds.instance.initialize();
+  await AdService.init();
+  await NotificationService.initializeForeground();
+  await NotificationService.initializeBackground();
+  await AndroidAlarmManager.initialize();
 
-
-@override
-Widget build(BuildContext context) {
-return MaterialApp(
-              debugShowCheckedModeBanner: false,
-
-title: 'DailyMantra',
-theme: ThemeData(
-colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2563EB)),
-useMaterial3: true,
-),
-home: const SplashScreen(),
-
-);
-}
+  runApp(const ProviderScope(child: HabitApp()));
 }

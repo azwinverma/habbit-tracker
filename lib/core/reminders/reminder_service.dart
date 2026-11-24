@@ -112,6 +112,19 @@ class ReminderService {
     }
   }
 
+  /// Schedules a one-off test notification through the same native path as
+  /// real reminders (so it also exercises the exact/inexact alarm logic).
+  Future<DateTime> sendTestReminder({Duration delay = const Duration(seconds: 10)}) async {
+    final at = DateTime.now().add(delay);
+    await _backend.scheduleRaw(
+      id: stableAlarmId('test-reminder'),
+      at: at,
+      title: 'Test reminder',
+      body: 'Your reminders are working ✅',
+    );
+    return at;
+  }
+
   // ---- Exact-alarm permission (Android 12+) ----
 
   Future<bool> canScheduleExact() async {

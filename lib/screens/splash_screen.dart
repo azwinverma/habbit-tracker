@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 // Your app screens/services
-import 'home_screen.dart';
+import 'package:go_router/go_router.dart';
 import '../services/notification_service.dart';
 import '../services/storage_service.dart';
 import '../services/ad_service.dart'; // contains InterstitialHelper (used in your HomeScreen)
@@ -87,16 +87,8 @@ await NotificationService.initializeBackground();
   }
 
   void _goHome() {
-    Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 450),
-        pageBuilder: (_, __, ___) => const HomeScreen(),
-        transitionsBuilder: (_, anim, __, child) {
-          final fade = CurvedAnimation(parent: anim, curve: Curves.easeOutCubic);
-          return FadeTransition(opacity: fade, child: child);
-        },
-      ),
-    );
+    // The router owns navigation since Phase 1 (Today | Plan | Add | Insights | You).
+    context.go('/today');
   }
 
   @override

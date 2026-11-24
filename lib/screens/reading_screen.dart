@@ -1,6 +1,5 @@
 // lib/screens/reading_screen.dart
 import 'dart:async';
-import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:habit_tracker_nepali/services/ad_service.dart';
@@ -12,6 +11,12 @@ import '../services/storage_service.dart';
 
 // Notifications
 import '../core/reminders/reminder_service.dart';
+
+// Free content catalogue (Project Gutenberg via Gutendex), cached offline
+import '../core/db/app_database.dart';
+import '../features/content/data/content_repository.dart';
+import '../features/content/data/content_sync_service.dart';
+import '../features/content/domain/content_item.dart';
 
 // Network
 import 'package:http/http.dart' as http;
@@ -31,10 +36,6 @@ class ReadingScreen extends StatefulWidget {
 }
 
 class _ReadingScreenState extends State<ReadingScreen> {
-  // ======== API CONFIG ========
-  static const String _apiBase = 'https://aswiniverma.pythonanywhere.com';
-  static const String _ebooksListPath = '/api/list/ebooks';
-
   final _storage = StorageService();
 
   // Habit
@@ -75,7 +76,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
       _dirtyReminders = true; // user needs to Save to apply
     }
 
-    _loadBooksFromApi();
+    _loadBooks();
   }
 
   @override
@@ -96,32 +97,35 @@ class _ReadingScreenState extends State<ReadingScreen> {
     await _storage.saveHabits(all);
   }
 
-  // ---------- API ----------
-  Future<void> _loadBooksFromApi() async {
+  // ---------- Books (local catalogue, refreshed from free providers) ----------
+  /// Books come from the offline catalogue (public-domain titles from Project
+  /// Gutenberg). The catalogue refreshes automatically when the app opens;
+  /// here we only fetch if it is still empty, or when the user taps refresh.
+  Future<void> _loadBooks({bool forceSync = false}) async {
     setState(() => _loadingBooks = true);
+    final repo = ContentRepository(AppDatabase.instance);
     try {
-      final uri = Uri.parse('$_apiBase$_ebooksListPath');
-      final resp = await http.get(uri);
-      if (resp.statusCode == 200) {
-        final list = (json.decode(resp.body) as List)
-            .map((e) => _BookItem.fromJson(e as Map<String, dynamic>, _apiBase))
-            .toList();
-        setState(() {
-          _books = list;
-          _loadingBooks = false;
-          if (_books.isNotEmpty && _currentIndex == null) {
-            _currentIndex = 0; // preselect first
-          }
-        });
-      } else {
-        setState(() => _loadingBooks = false);
-        _snack('Could not load books (${resp.statusCode}).');
+      var rows = await repo.list(ContentKind.book);
+      if (rows.isEmpty || forceSync) {
+        await ContentSyncService.instance.syncIfStale(force: true);
+        rows = await repo.list(ContentKind.book);
       }
+      if (!mounted) return;
+      setState(() {
+        _books = rows.where((r) => r.mediaUrl != null).map(_BookItem.fromContent).toList();
+        _loadingBooks = false;
+        if (_books.isNotEmpty && (_currentIndex == null || _currentIndex! >= _books.length)) {
+          _currentIndex = 0; // preselect first
+        }
+      });
+      if (_books.isEmpty) _snack('Could not load books. Check your connection and tap refresh.');
     } catch (e) {
+      if (!mounted) return;
       setState(() => _loadingBooks = false);
-      _snack('Network error: $e');
+      _snack('Could not load books: $e');
     }
   }
+
 
   // ---------- Reminder save ----------
   Future<void> _saveReminders() async {
@@ -316,7 +320,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
                   iconSize: 28,
                   onPressed: () async {
                     Navigator.pop(ctx);
-                    await _loadBooksFromApi();
+                    await _loadBooks(forceSync: true);
                   },
                   icon: const Icon(Icons.refresh),
                 ),
@@ -326,7 +330,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
                 child: _books.isEmpty
                     ? const Center(
                         child: Text(
-                          'No books found.\nUpload from backend.',
+                          'No books yet.\nConnect to the internet and tap refresh.',
                           textAlign: TextAlign.center,
                           style: TextStyle(fontSize: 16),
                         ),
@@ -367,12 +371,25 @@ class _ReadingScreenState extends State<ReadingScreen> {
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
-                                    child: Text(
-                                      b.name,
-                                      style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w600),
-                                      overflow: TextOverflow.ellipsis,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          b.name,
+                                          style: const TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w600),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        if (b.credit.isNotEmpty)
+                                          Text(
+                                            b.credit,
+                                            style: Theme.of(context).textTheme.bodySmall,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                      ],
                                     ),
                                   ),
                                   const SizedBox(width: 4),
@@ -646,7 +663,7 @@ class _ReaderHostPage extends StatelessWidget {
     required this.onEndNow,
   });
 
-  bool get _isEpub => book.url.toLowerCase().endsWith('.epub');
+  bool get _isEpub => book.format == 'epub' || book.url.toLowerCase().endsWith('.epub');
 
   @override
   Widget build(BuildContext context) {
@@ -937,43 +954,41 @@ class _BigActionButton extends StatelessWidget {
   }
 }
 
-// ======== API model ========
+// ======== Book model (from the content catalogue) ========
 class _BookItem {
-  final int id;
-  final String type; // "ebook"
+  final String id;
   final String name;
-  final String url; // absolute url (prefix added if necessary)
-  final int? sizeBytes;
-  final DateTime? created;
+  final String url; // direct EPUB/HTML link
+  final String format; // epub | html
+  final String credit; // "Author · Licence" shown to the user
 
   _BookItem({
     required this.id,
-    required this.type,
     required this.name,
     required this.url,
-    this.sizeBytes,
-    this.created,
+    this.format = 'epub',
+    this.credit = '',
   });
 
-  factory _BookItem.fromJson(Map<String, dynamic> j, String base) {
-    String u = (j['url'] ?? '').toString();
-    if (u.startsWith('/')) u = '$base$u';
-    DateTime? c;
-    try {
-      c = j['created'] != null ? DateTime.parse(j['created']) : null;
-    } catch (_) {}
-    return _BookItem(
-      id: (j['id'] ?? 0) is int
-          ? j['id'] as int
-          : int.tryParse('${j['id']}') ?? 0,
-      type: (j['type'] ?? '').toString(),
-      name: (j['name'] ?? 'Book').toString(),
-      url: u,
-      sizeBytes: j['size_bytes'] is int
-          ? j['size_bytes'] as int
-          : int.tryParse('${j['size_bytes']}'),
-      created: c,
-    );
-  }
+  factory _BookItem.fromContent(ContentItemRow r) => _BookItem(
+        id: r.id,
+        name: r.title,
+        url: r.mediaUrl!,
+        format: r.mediaFormat,
+        credit: [if (r.subtitle != null) r.subtitle!, r.license].join(' · '),
+      );
 }
 
+/// Opens a book outside a timed reading session (e.g. from Discover).
+abstract final class BookReader {
+  static Future<void> open(BuildContext context,
+      {required String title, required String url, String format = 'epub'}) {
+    return Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => _ReaderHostPage(
+        book: _BookItem(id: url, name: title, url: url, format: format),
+        remainVN: ValueNotifier<int>(0),
+        onEndNow: () {},
+      ),
+    ));
+  }
+}

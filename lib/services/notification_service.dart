@@ -73,6 +73,15 @@ class NotificationService {
     }
   }
 
+  /// Whether the user allows notifications (Android). Null when unknown.
+  static Future<bool?> areNotificationsEnabled() async {
+    if (!Platform.isAndroid) return null;
+    await initializeBackground();
+    return _plugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        ?.areNotificationsEnabled();
+  }
+
   static Future<void> showNow(int id, String title, String body) async {
     const details = NotificationDetails(
       android: AndroidNotificationDetails(
