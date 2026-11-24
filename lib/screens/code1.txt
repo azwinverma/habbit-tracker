@@ -1,0 +1,65 @@
+[project]
+name = "LMC-ALERT"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Alpas Technology"}
+]
+readme = "README.md"
+requires-python = ">=3.10,<4"
+package_mode = false
+dependencies = [
+    "django (>=5.1.6,<6.0.0)",
+    "django-rest-framework (>=0.1.0,<0.2.0)",
+    "drf-nested-routers (>=0.94.1,<0.95.0)",
+    "django-ckeditor-5 (>=0.2.15,<0.3.0)",
+    "channels (>=4.2.0,<5.0.0)",
+    "drf-yasg (>=1.21.8,<2.0.0)",
+    "shapely (>=2.0.7,<3.0.0)",
+    "asgiref (>=3.8.1,<4.0.0)",
+    "django-jazzmin (>=3.0.1,<4.0.0)",
+    "django-q2 (>=1.7.6,<2.0.0)",
+    "django-cors-headers (>=4.6.0,<5.0.0)",
+    "django-ratelimit (>=4.1.0,<5.0.0)",
+    "firebase-admin (>=6.6.0,<7.0.0)",
+    "djangorestframework-simplejwt (>=5.4.0,<6.0.0)",
+    "django-environ (>=0.12.0,<0.13.0)",
+    "psycopg2 (>=2.9.10,<3.0.0)",
+    "django-redis (>=5.4.0,<6.0.0)",
+    "fcm-django (>=2.2.1,<3.0.0)",
+    "django-extensions (>=3.2.3,<4.0.0)",
+    "drf-spectacular (>=0.28.0,<0.29.0)",
+    "django-filter (>=25.1,<26.0)",
+    "sentry-sdk[django] (>=2.22.0,<3.0.0)",
+    "celery (>=5.4.0,<6.0.0)",
+    "python-dateutil (>=2.8.0)",
+    "django-leaflet (>=0.30)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.4"
+pytest-django = "^4.9.0"
+flake8 = "^7.1.1"
+factory-boy = "^3.3.3"
+django-debug-toolbar = "^5.0.1"
+autopep8 = "^2.3.2"
+
+
+
+
+
+
+#!/usr/bin/env bash
+set -euo pipefail
+
+python manage.py migrate --noinput
+python manage.py collectstatic --noinput
+python manage.py createsu || echo "Superuser already exists"
+
+# Use module form so PATH doesn't matter
+exec python -m daphne -b 0.0.0.0 -p 8005 config.asgi:application
