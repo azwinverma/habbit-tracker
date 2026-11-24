@@ -1,12 +1,12 @@
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import 'app/app.dart';
+import 'core/reminders/reminder_service.dart';
 import 'firebase_options.dart';
 import 'services/ad_service.dart';
 import 'services/notification_service.dart';
@@ -31,6 +31,8 @@ Future<void> main() async {
   await NotificationService.initializeForeground();
   await NotificationService.initializeBackground();
   await AndroidAlarmManager.initialize();
+
+  ReminderService.permissionRequester = NotificationService.requestPermissions;
 
   runApp(const ProviderScope(child: HabitApp()));
 }

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/providers.dart';
 import '../../core/reminders/reminder_service.dart';
 import '../content/data/providers/content_provider.dart';
+import '../../l10n/app_localizations.dart';
 
 /// You: appearance, reminders, content sources & licences, privacy.
 class ProfileScreen extends ConsumerWidget {
@@ -13,7 +14,9 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
     final mode = ref.watch(themeModeProvider);
+    final locale = ref.watch(localeProvider);
     final states = ref.watch(contentSyncStatesProvider).valueOrNull ?? const [];
     final providers = ref.watch(contentSyncServiceProvider).providers;
     final exact = ref.watch(exactAlarmAllowedProvider).valueOrNull;
@@ -24,46 +27,58 @@ class ProfileScreen extends ConsumerWidget {
         );
 
     String when(DateTime? d) {
-      if (d == null) return 'never';
+      if (d == null) return l.never;
       final diff = DateTime.now().difference(d);
-      if (diff.inMinutes < 1) return 'just now';
-      if (diff.inHours < 1) return '${diff.inMinutes} min ago';
-      if (diff.inDays < 1) return '${diff.inHours} h ago';
-      return '${diff.inDays} d ago';
+      if (diff.inMinutes < 1) return l.justNow;
+      if (diff.inHours < 1) return l.minutesAgo(diff.inMinutes);
+      if (diff.inDays < 1) return l.hoursAgo(diff.inHours);
+      return l.daysAgo(diff.inDays);
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('You')),
+      appBar: AppBar(title: Text(l.youTitle)),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(12, 0, 12, 24),
         children: [
-          section('Appearance'),
+          section(l.language),
+          SegmentedButton<String>(
+            segments: [
+              ButtonSegment(value: 'system', label: Text(l.languageSystem)),
+              const ButtonSegment(value: 'en', label: Text('English')),
+              const ButtonSegment(value: 'ne', label: Text('नेपाली')),
+            ],
+            selected: {locale?.languageCode ?? 'system'},
+            onSelectionChanged: (s) => ref
+                .read(localeProvider.notifier)
+                .set(s.first == 'system' ? null : Locale(s.first)),
+          ),
+          section(l.appearance),
           SegmentedButton<ThemeMode>(
-            segments: const [
-              ButtonSegment(value: ThemeMode.system, label: Text('System'), icon: Icon(Icons.brightness_auto)),
-              ButtonSegment(value: ThemeMode.light, label: Text('Light'), icon: Icon(Icons.light_mode)),
-              ButtonSegment(value: ThemeMode.dark, label: Text('Dark'), icon: Icon(Icons.dark_mode)),
+            segments: [
+              ButtonSegment(value: ThemeMode.system, label: Text(l.themeSystem), icon: const Icon(Icons.brightness_auto)),
+              ButtonSegment(value: ThemeMode.light, label: Text(l.themeLight), icon: const Icon(Icons.light_mode)),
+              ButtonSegment(value: ThemeMode.dark, label: Text(l.themeDark), icon: const Icon(Icons.dark_mode)),
             ],
             selected: {mode},
             onSelectionChanged: (s) => ref.read(themeModeProvider.notifier).set(s.first),
           ),
-          section('Reminders'),
+          section(l.remindersSection),
           Card(
             child: ListTile(
               leading: const Icon(Icons.alarm_on_outlined),
-              title: const Text('Alarms & reminders permission'),
-              subtitle: Text(exact == false ? 'Off — reminders may be a few minutes late' : 'On'),
+              title: Text(l.exactPermissionTitle),
+              subtitle: Text(exact == false ? l.exactOff : l.exactOn),
               trailing: exact == false
                   ? TextButton(
                       onPressed: () async {
                         await ReminderService.instance.openExactAlarmSettings();
                         ref.invalidate(exactAlarmAllowedProvider);
                       },
-                      child: const Text('Allow'))
+                      child: Text(l.allow))
                   : null,
             ),
           ),
-          section('Free content'),
+          section(l.freeContent),
           Card(
             child: Column(
               children: [
@@ -71,11 +86,11 @@ class ProfileScreen extends ConsumerWidget {
                   Builder(builder: (_) {
                     final s = states.where((x) => x.provider == p.id).firstOrNull;
                     final status = s == null
-                        ? 'Not loaded yet'
+                        ? l.contentNotLoaded
                         : s.lastError != null && (s.lastSuccessAt == null ||
                                 (s.lastAttemptAt?.isAfter(s.lastSuccessAt!) ?? false))
-                            ? 'Last refresh failed · ${s.itemCount} cached · retrying later'
-                            : '${s.itemCount} items · updated ${when(s.lastSuccessAt)}';
+                            ? l.contentFailed(s.itemCount)
+                            : l.contentStatus(s.itemCount, when(s.lastSuccessAt));
                     return ListTile(
                       leading: Icon(_iconFor(p)),
                       title: Text(p.displayName),
@@ -88,7 +103,7 @@ class ProfileScreen extends ConsumerWidget {
                     alignment: Alignment.centerLeft,
                     child: TextButton.icon(
                       icon: const Icon(Icons.refresh),
-                      label: const Text('Check for new content now'),
+                      label: Text(l.checkNewContent),
                       onPressed: () async {
                         final messenger = ScaffoldMessenger.of(context);
                         final r = await ref.read(contentSyncServiceProvider).syncIfStale(force: true);
@@ -96,10 +111,10 @@ class ProfileScreen extends ConsumerWidget {
                         final failed = r.where((x) => x.error != null).length;
                         messenger.showSnackBar(SnackBar(
                           content: Text(failed == r.length
-                              ? 'Could not reach content sources. You can still use what\'s saved.'
+                              ? l.contentUnreachable
                               : added > 0
-                                  ? '$added new items added'
-                                  : 'You\'re up to date'),
+                                  ? l.newItemsAdded(added)
+                                  : l.upToDate),
                         ));
                       },
                     ),
@@ -108,18 +123,14 @@ class ProfileScreen extends ConsumerWidget {
               ],
             ),
           ),
-          section('Sources & licences'),
+          section(l.sourcesLicences),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'DailyMantra only uses content that is free to reuse, including in an '
-                    'ad-supported app: public domain, CC0, CC BY and CC BY-SA. Each item shows '
-                    'its author and licence.',
-                  ),
+                  Text(l.sourcesIntro),
                   const SizedBox(height: 12),
                   for (final p in providers)
                     Padding(
@@ -146,15 +157,12 @@ class ProfileScreen extends ConsumerWidget {
               ),
             ),
           ),
-          section('Privacy'),
-          const Card(
+          section(l.privacy),
+          Card(
             child: ListTile(
-              leading: Icon(Icons.lock_outline),
-              title: Text('Your data stays on this device'),
-              subtitle: Text(
-                'Habits, medicine schedules and history are stored only on your phone. '
-                'Optional backup and sync will come later and will always be your choice.',
-              ),
+              leading: const Icon(Icons.lock_outline),
+              title: Text(l.privacyTitle),
+              subtitle: Text(l.privacyBody),
             ),
           ),
         ],

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 // Your app screens/services
 import 'package:go_router/go_router.dart';
+import '../features/onboarding/onboarding_logic.dart';
 import '../services/notification_service.dart';
 import '../services/storage_service.dart';
 import '../services/ad_service.dart'; // contains InterstitialHelper (used in your HomeScreen)
@@ -55,14 +56,17 @@ class _SplashScreenState extends State<SplashScreen>
       // 1) Initialize notifications (channels + tz + android 13+ permission).
 await NotificationService.initializeForeground();
 await NotificationService.initializeBackground();
-      await NotificationService.requestPermissions();
+      // Notification permission is requested in context, when the first
+      // reminder is created (ReminderService.permissionRequester).
 
-      // 2) Warm up storage (e.g., load habits once to force disk read & JSON parse).
-      //    We don't need the returned list here; HomeScreen will actually use it.
+      // 2) Load habits (also runs the one-time DB migration) and decide
+      //    whether this is a first run that needs onboarding.
+      var needsOnboarding = false;
       try {
-        await StorageService().loadHabits();
+        final habits = await StorageService().loadHabits();
+        needsOnboarding = await OnboardingLogic.isNeeded(habits);
       } catch (_) {
-        // If first run, it's fine—storage may be empty.
+        // Storage problems must never block app start.
       }
 
       // 3) Preload your interstitial ads helper (optional but matches your app’s pattern).
@@ -78,17 +82,12 @@ await NotificationService.initializeBackground();
       // 5) Navigate to Home (guard from double navigation).
       if (mounted && !_navigated) {
         _navigated = true;
-        _goHome();
+        context.go(needsOnboarding ? '/onboarding' : '/today');
       }
     } catch (e) {
       if (!mounted) return;
       setState(() => _error = e.toString());
     }
-  }
-
-  void _goHome() {
-    // The router owns navigation since Phase 1 (Today | Plan | Add | Insights | You).
-    context.go('/today');
   }
 
   @override
@@ -151,7 +150,7 @@ await NotificationService.initializeBackground();
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(isDark ? 0.35 : 0.12),
+                                  color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.12),
                                   blurRadius: 20,
                                   spreadRadius: 2,
                                   offset: const Offset(0, 10),
@@ -202,7 +201,7 @@ await NotificationService.initializeBackground();
                                       .textTheme
                                       .bodyMedium
                                       ?.color
-                                      ?.withOpacity(0.75),
+                                      ?.withValues(alpha: 0.75),
                                 ),
                           ),
                         ],
@@ -262,7 +261,7 @@ await NotificationService.initializeBackground();
                                   color: Theme.of(context)
                                       .colorScheme
                                       .primary
-                                      .withOpacity(0.8),
+                                      .withValues(alpha: 0.8),
                                 ),
                           ),
                         ]

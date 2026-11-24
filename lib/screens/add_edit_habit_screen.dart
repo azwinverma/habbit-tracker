@@ -37,10 +37,6 @@ class _AddEditHabitScreenState extends State<AddEditHabitScreen> {
     super.dispose();
   }
 
-  Future<void> _pickTime() async {
-    final t = await showTimePicker(context: context, initialTime: _time);
-    if (t != null) setState(() => _time = t);
-  }
 
   @override
   Widget build(BuildContext context) {

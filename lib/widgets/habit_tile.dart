@@ -1,5 +1,6 @@
 // lib/widgets/habit_tile.dart
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../models/habit.dart';
 
 class HabitTile extends StatelessWidget {
@@ -52,10 +53,9 @@ class HabitTile extends StatelessWidget {
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         leading: Semantics(
           button: true,
-          label:
-              isDoneToday
-                  ? 'Mark ${habit.name} not done'
-                  : 'Mark ${habit.name} done',
+          label: isDoneToday
+              ? AppLocalizations.of(context).markNotDone(habit.name)
+              : AppLocalizations.of(context).markDone(habit.name),
           child: InkResponse(
             onTap: onToggleComplete,
             radius: 24,

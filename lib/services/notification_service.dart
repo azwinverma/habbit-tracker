@@ -15,7 +15,7 @@ class NotificationService {
   // Use this in main() / normal app startup
   static Future<void> initializeForeground() async {
     if (_fgInited) return;
-    const android = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const android = AndroidInitializationSettings('@drawable/ic_stat_dailymantra');
     const ios = DarwinInitializationSettings();
     const init = InitializationSettings(android: android, iOS: ios);
     await _plugin.initialize(init);
@@ -32,7 +32,7 @@ class NotificationService {
     tz.initializeTimeZones();
 
     // ✅ Only ask for permission in FOREGROUND (Android 13+/iOS)
-    await requestPermissions();
+    // Permission is requested contextually (first reminder), not at launch.
 
     _fgInited = true;
   }
@@ -40,7 +40,7 @@ class NotificationService {
   // Use this ONLY from AlarmManager callback (no permission prompt!)
   static Future<void> initializeBackground() async {
     if (_bgInited) return;
-    const android = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const android = AndroidInitializationSettings('@drawable/ic_stat_dailymantra');
     const ios = DarwinInitializationSettings(); // fine, doesn’t prompt
     const init = InitializationSettings(android: android, iOS: ios);
     await _plugin.initialize(init);
@@ -180,6 +180,8 @@ Future<void> dailyAlarmCallback(int id, String title, String body) async {
 
   // Re-schedule for tomorrow (simple daily)
   final next = DateTime.now().add(const Duration(days: 1));
+  // Legacy path, intentionally kept until all v1 alarms are retired.
+  // ignore: deprecated_member_use_from_same_package
   await NotificationService.scheduleExactWithAlarmManager(
     alarmId: id,
     when: next,

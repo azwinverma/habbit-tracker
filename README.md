@@ -4,7 +4,7 @@
 
 - **Package / applicationId:** `com.daily.mantra`
 - **Dart package name:** `habit_tracker_nepali`
-- **Version:** 1.0.0+1 (2.0 work in progress: Phase 0 ✅, Phase 1 core ✅; see [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md))
+- **Version:** 1.0.0+1 (2.0 work in progress: Phase 0 ✅, Phase 1 core ✅, Phase 2 🔄; see [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md))
 - **Min Android:** 7.0 (API 24)
 - **Dart SDK:** ^3.7.2, Material 3, seed color `#2563EB`
 - **Orientation:** portrait only
@@ -90,8 +90,8 @@ Phase 0 fixed the critical reminder bugs (orphaned and duplicate alarms, never-e
 2. iOS has no reminder implementation.
 3. The splash screen refers to missing logo assets, and the new logo isn't in the repo yet.
 4. The category screens still use the legacy `Habit` view model and are large. They will be split into typed models and widgets in Phase 2/3.
-5. There are no widget or integration tests for the new screens yet, and no CI.
-6. The release build prints non-fatal Kotlin metadata warnings: bump the Kotlin Gradle plugin to 2.2.
+5. The category screens and Discover are still English-only; the main screens and onboarding are in English and Nepali.
+6. There are no on-device integration tests yet (CI runs unit and widget tests).
 
 ---
 
@@ -116,8 +116,9 @@ Phase 0 fixed the critical reminder bugs (orphaned and duplicate alarms, never-e
 
 ```bash
 flutter pub get
-flutter test           # 74 unit + widget tests (+3 live API tests: LIVE=1 flutter test test/content/live_providers_test.dart)
+flutter test           # 84 unit + widget tests (+3 live API tests: LIVE=1 flutter test test/content/live_providers_test.dart)
 flutter run            # Android device/emulator recommended
 flutter build apk --release   # needs android/key.properties + keystore
 dart run build_runner build --delete-conflicting-outputs   # after changing lib/core/db/tables.dart
+flutter gen-l10n       # after editing lib/l10n/app_en.arb / app_ne.arb
 ```

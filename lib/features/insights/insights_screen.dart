@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/providers.dart';
 import '../../core/db/tables.dart';
 import '../habits/data/habit_repository.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Insights: the last 7 days from the local history. Statements stay modest
 /// and factual ("4 of 7 days") — no health claims (blueprint §3.5).
@@ -16,49 +17,44 @@ class InsightsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final totals = ref.watch(dailyTotalsProvider(days));
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
     final now = DateTime.now();
     final dayKeys = [
       for (var i = days - 1; i >= 0; i--) HabitRepository.ymd(DateTime(now.year, now.month, now.day - i)),
     ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Insights')),
+      appBar: AppBar(title: Text(l.insightsTitle)),
       body: totals.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Could not load insights.\n$e', textAlign: TextAlign.center)),
+        error: (e, _) => Center(child: Text(l.couldNotLoad('$e'), textAlign: TextAlign.center)),
         data: (m) {
           final cards = <Widget>[
-            _MetricCard(title: 'Habits completed', unit: '', icon: Icons.check_circle_outline,
+            _MetricCard(title: l.metricCompleted, unit: '', icon: Icons.check_circle_outline,
                 values: _series(m[HabitMetric.completed], dayKeys), dayKeys: dayKeys),
-            _MetricCard(title: 'Water', unit: 'glasses', icon: Icons.local_drink_outlined,
+            _MetricCard(title: l.metricWater, unit: l.unitGlasses, icon: Icons.local_drink_outlined,
                 values: _series(m[HabitMetric.waterGlasses], dayKeys), dayKeys: dayKeys),
-            _MetricCard(title: 'Meditation', unit: 'min', icon: Icons.self_improvement,
+            _MetricCard(title: l.metricMeditation, unit: l.unitMin, icon: Icons.self_improvement,
                 values: _series(m[HabitMetric.meditationMinutes], dayKeys), dayKeys: dayKeys),
-            _MetricCard(title: 'Exercise', unit: 'min', icon: Icons.fitness_center,
+            _MetricCard(title: l.metricExercise, unit: l.unitMin, icon: Icons.fitness_center,
                 values: _series(m[HabitMetric.exerciseMinutes], dayKeys), dayKeys: dayKeys),
-            _MetricCard(title: 'Steps', unit: 'steps', icon: Icons.directions_walk,
+            _MetricCard(title: l.metricSteps, unit: l.unitSteps, icon: Icons.directions_walk,
                 values: _series(m[HabitMetric.steps], dayKeys), dayKeys: dayKeys),
           ];
           final anyData = m.values.any((byDay) => byDay.values.any((v) => v > 0));
           return ListView(
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 24),
             children: [
-              Text('Last 7 days', style: theme.textTheme.titleMedium),
+              Text(l.last7Days, style: theme.textTheme.titleMedium),
               const SizedBox(height: 4),
               Text(
-                anyData
-                    ? 'Based on what you logged in DailyMantra.'
-                    : 'Nothing logged yet this week. Mark a habit done or log water, '
-                        'meditation or exercise, and your week will appear here.',
+                anyData ? l.basedOnLogged : l.nothingLogged,
                 style: theme.textTheme.bodySmall,
               ),
               const SizedBox(height: 8),
               ...cards,
               const SizedBox(height: 8),
-              Text(
-                'History is kept from this version onwards; earlier days were not stored by the previous app.',
-                style: theme.textTheme.bodySmall,
-              ),
+              Text(l.historyNote, style: theme.textTheme.bodySmall),
             ],
           );
         },
@@ -88,10 +84,10 @@ class _MetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
     final total = values.fold<int>(0, (a, b) => a + b);
     final activeDays = values.where((v) => v > 0).length;
     final maxV = values.fold<int>(0, (a, b) => a > b ? a : b);
-    const wd = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
     return Card(
       child: Padding(
@@ -106,7 +102,7 @@ class _MetricCard extends StatelessWidget {
               Text(unit.isEmpty ? '$total' : '$total $unit', style: theme.textTheme.titleSmall),
             ]),
             const SizedBox(height: 4),
-            Text('Logged on $activeDays of ${values.length} days', style: theme.textTheme.bodySmall),
+            Text(l.loggedOnDays(activeDays, values.length), style: theme.textTheme.bodySmall),
             const SizedBox(height: 12),
             Semantics(
               label: '$title per day: ${values.join(', ')}',
@@ -131,7 +127,7 @@ class _MetricCard extends StatelessWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                wd[DateTime.parse(dayKeys[i]).weekday - 1],
+                                MaterialLocalizations.of(context).narrowWeekdays[DateTime.parse(dayKeys[i]).weekday % 7],
                                 style: theme.textTheme.labelSmall,
                               ),
                             ],

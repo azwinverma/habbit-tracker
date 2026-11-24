@@ -7,6 +7,7 @@ import 'package:habit_tracker_nepali/widgets/ad_banner.dart';
 
 // Models / storage
 import '../models/habit.dart';
+import '../widgets/reminder_schedule_editor.dart';
 import '../services/storage_service.dart';
 
 // Notifications
@@ -68,6 +69,13 @@ class _ReadingScreenState extends State<ReadingScreen> {
   void initState() {
     super.initState();
     _h = widget.habit;
+
+    // Show saved (future) one-time reminders so they can be reviewed/removed.
+    final nowInit = DateTime.now();
+    _oneOffReminders.addAll(_h.oneTimeReminders
+        .map(DateTime.tryParse)
+        .whereType<DateTime>()
+        .where((d) => d.isAfter(nowInit)));
 
     if (_h.reminderTimes.isNotEmpty) {
       _dailyTimes.addAll(_h.reminderTimes.map(Habit.parseHHmm));
@@ -133,13 +141,10 @@ class _ReadingScreenState extends State<ReadingScreen> {
     // Persist one-time reminders on the habit so they can be cancelled and
     // restored (they used to be fire-and-forget).
     final now = DateTime.now();
-    _h.oneTimeReminders = [
-      ..._h.oneTimeReminders.where((iso) => DateTime.tryParse(iso)?.isAfter(now) ?? false),
-      ..._oneOffReminders.where((dt) => dt.isAfter(now)).map((dt) => dt.toIso8601String()),
-    ];
+    _h.oneTimeReminders =
+        _oneOffReminders.where((dt) => dt.isAfter(now)).map((dt) => dt.toIso8601String()).toList();
     await _persistHabitOnly();
     await ReminderService.instance.syncHabit(_h);
-    _oneOffReminders.clear();
 
     if (mounted) {
       setState(() => _dirtyReminders = false);
@@ -244,59 +249,6 @@ class _ReadingScreenState extends State<ReadingScreen> {
   }
 
   // ---------- UI events ----------
-  Future<void> _addDailyTime() async {
-    final t = await showTimePicker(
-      context: context,
-      initialTime: const TimeOfDay(hour: 21, minute: 0),
-    );
-    if (t == null) return;
-    setState(() {
-      _dailyTimes.add(t);
-      _dirtyReminders = true;
-    });
-  }
-
-  Future<void> _editDailyTime(int i) async {
-    final t =
-        await showTimePicker(context: context, initialTime: _dailyTimes[i]);
-    if (t == null) return;
-    setState(() {
-      _dailyTimes[i] = t;
-      _dirtyReminders = true;
-    });
-  }
-
-  Future<void> _removeDailyTime(int i) async {
-    setState(() {
-      _dailyTimes.removeAt(i);
-      _dirtyReminders = true;
-    });
-  }
-
-  Future<void> _addOneOffReminder() async {
-    final now = DateTime.now();
-    final date = await showDatePicker(
-      context: context,
-      initialDate: now.add(const Duration(days: 1)),
-      firstDate: now,
-      lastDate: now.add(const Duration(days: 365)),
-    );
-    if (date == null) return;
-
-    final time = await showTimePicker(
-      context: context,
-      initialTime: const TimeOfDay(hour: 21, minute: 0),
-    );
-    if (time == null) return;
-
-    final dt =
-        DateTime(date.year, date.month, date.day, time.hour, time.minute);
-    setState(() {
-      _oneOffReminders.add(dt);
-      _dirtyReminders = true;
-    });
-  }
-
   Future<void> _openBookPicker() async {
     if (_loadingBooks) return;
     await showModalBottomSheet(
@@ -355,11 +307,11 @@ class _ReadingScreenState extends State<ReadingScreen> {
                                     ? Theme.of(context)
                                         .colorScheme
                                         .primary
-                                        .withOpacity(0.12)
+                                        .withValues(alpha: 0.12)
                                     : Theme.of(context)
                                         .colorScheme
-                                        .surfaceVariant
-                                        .withOpacity(0.4),
+                                        .surfaceContainerHighest
+                                        .withValues(alpha: 0.4),
                               ),
                               child: Row(
                                 children: [
@@ -416,11 +368,6 @@ class _ReadingScreenState extends State<ReadingScreen> {
     return '$m:$s';
   }
 
-  String _prettyDateTime(DateTime dt) {
-    final hh = dt.hour.toString().padLeft(2, '0');
-    final mm = dt.minute.toString().padLeft(2, '0');
-    return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} $hh:$mm';
-  }
 
   void _snack(String msg) {
     if (!mounted) return;
@@ -560,69 +507,22 @@ class _ReadingScreenState extends State<ReadingScreen> {
                     Text('Reminders',
                         style: Theme.of(context).textTheme.titleLarge),
                     const SizedBox(height: 8),
-                    Text('Daily times (repeat every day)',
-                        style: Theme.of(context).textTheme.titleMedium),
-                    const SizedBox(height: 6),
-                    if (_dailyTimes.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 6),
-                        child: Text('No daily times yet.'),
-                      ),
-                    ...List.generate(_dailyTimes.length, (i) {
-                      final t = _dailyTimes[i];
-                      return Card(
-                        child: ListTile(
-                          leading: const Icon(Icons.schedule),
-                          title: Text(Habit.fmt(t)),
-                          trailing: Wrap(
-                            spacing: 8,
-                            children: [
-                              IconButton(
-                                  onPressed: () => _editDailyTime(i),
-                                  icon: const Icon(Icons.edit_outlined)),
-                              IconButton(
-                                  onPressed: () => _removeDailyTime(i),
-                                  icon: const Icon(Icons.delete_outline)),
-                            ],
-                          ),
-                        ),
-                      );
-                    }),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: OutlinedButton.icon(
-                        onPressed: _addDailyTime,
-                        icon: const Icon(Icons.add),
-                        label: const Text('Add daily time'),
-                      ),
-                    ),
-                    const Divider(height: 28),
-
-                    Text('One-time reminders (specific date & time)',
-                        style: Theme.of(context).textTheme.titleMedium),
-                    const SizedBox(height: 6),
-                    if (_oneOffReminders.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 6),
-                        child: Text('No one-time reminders yet.'),
-                      ),
-                    ..._oneOffReminders.map(
-                      (dt) => Card(
-                        child: ListTile(
-                          leading: const Icon(Icons.event_available),
-                          title: Text(_prettyDateTime(dt)),
-                          subtitle:
-                              const Text('This will ring once (on Save).'),
-                        ),
-                      ),
-                    ),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: OutlinedButton.icon(
-                        onPressed: _addOneOffReminder,
-                        icon: const Icon(Icons.event),
-                        label: const Text('Add one-time reminder'),
-                      ),
+                    ReminderScheduleEditor(
+                      dailyTimes: _dailyTimes,
+                      onDailyTimesChanged: (l) => setState(() {
+                        _dailyTimes
+                          ..clear()
+                          ..addAll(l);
+                        _dirtyReminders = true;
+                      }),
+                      oneTimeReminders: _oneOffReminders,
+                      onOneTimeRemindersChanged: (l) => setState(() {
+                        _oneOffReminders
+                          ..clear()
+                          ..addAll(l);
+                        _dirtyReminders = true;
+                      }),
+                      dailyTitle: 'Daily times (repeat every day)',
                     ),
                   ],
                 ),

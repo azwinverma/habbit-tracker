@@ -81,7 +81,8 @@ class AlarmReceiver : BroadcastReceiver() {
         )
 
         val notif = NotificationCompat.Builder(context, channelId)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_stat_dailymantra) // monochrome status-bar icon
+            .setColor(0xFF176B67.toInt()) // brand Deep Teal accent
             .setContentTitle(title)
             .setContentText(body)
             .setAutoCancel(true)

@@ -18,6 +18,23 @@ class ReminderService {
 
   static ReminderService instance = ReminderService();
 
+  /// Asks the OS for notification permission. Wired in main(); called once
+  /// per launch, only after the user actually has a reminder (blueprint:
+  /// ask in context, never on first launch). Null in tests.
+  static Future<void> Function()? permissionRequester;
+  static bool _permissionAsked = false;
+
+  Future<void> _maybeRequestPermission() async {
+    final ask = permissionRequester;
+    if (ask == null || _permissionAsked) return;
+    _permissionAsked = true;
+    try {
+      await ask();
+    } catch (e) {
+      debugPrint('[Reminders] permission request failed: $e');
+    }
+  }
+
   static const registryKey = 'reminder_registry_v1';
   static const migratedKey = 'reminders_migrated_v2';
 
@@ -79,6 +96,7 @@ class ReminderService {
       registry[h.id] = armed;
     }
     await _saveRegistry(registry);
+    if (armed.isNotEmpty) await _maybeRequestPermission();
   }
 
   /// Cancels every reminder belonging to a habit (call on delete).

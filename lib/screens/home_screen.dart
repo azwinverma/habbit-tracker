@@ -14,6 +14,7 @@ import '../services/quote_service.dart';
 import '../services/storage_service.dart';
 import '../widgets/ad_banner.dart';
 import '../widgets/habit_tile.dart';
+import '../l10n/app_localizations.dart';
 
 /// Today tab: greeting + progress, quote, quick add, the user's habits.
 /// Habits come from a live database stream, so changes made anywhere (Add
@@ -101,16 +102,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return d.year == n.year && d.month == n.month && d.day == n.day;
   }
 
-  String _greeting() {
+  String _greeting(AppLocalizations l) {
     final h = DateTime.now().hour;
-    if (h < 12) return 'Good morning';
-    if (h < 17) return 'Good afternoon';
-    return 'Good evening';
+    if (h < 12) return l.greetingMorning;
+    if (h < 17) return l.greetingAfternoon;
+    return l.greetingEvening;
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
     final quote = QuoteService.quoteForDate(DateTime.now());
     final newCount = ref.watch(newContentCountProvider).valueOrNull ?? 0;
     final active = _habits.where((h) => h.enabled).toList();
@@ -118,10 +120,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('DailyMantra'),
+        title: Text(l.appTitle),
         actions: [
           IconButton(
-            tooltip: newCount > 0 ? 'Discover ($newCount new)' : 'Discover',
+            tooltip: newCount > 0 ? l.discoverNew(newCount) : l.discover,
             onPressed: () => context.push('/discover'),
             icon: Badge(
               isLabelVisible: newCount > 0,
@@ -142,17 +144,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(_greeting(), style: theme.textTheme.headlineSmall),
+                    Text(_greeting(l), style: theme.textTheme.headlineSmall),
                     const SizedBox(height: 8),
                     if (active.isNotEmpty) ...[
-                      Text('$done of ${active.length} done today', style: theme.textTheme.bodyMedium),
+                      Text(l.todayProgress(done, active.length), style: theme.textTheme.bodyMedium),
                       const SizedBox(height: 6),
                       ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: LinearProgressIndicator(
                           value: active.isEmpty ? 0 : done / active.length,
                           minHeight: 8,
-                          semanticsLabel: 'Today\'s progress',
+                          semanticsLabel: l.todayProgressLabel,
                           semanticsValue: '$done of ${active.length}',
                         ),
                       ),
@@ -190,7 +192,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
-                child: Text('Quick Add', style: theme.textTheme.titleLarge),
+                child: Text(l.quickAdd, style: theme.textTheme.titleLarge),
               ),
             ),
             SliverPadding(
@@ -200,7 +202,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   (context, index) {
                     final k = QuickAddKind.values[index];
                     return _GridTile(
-                      title: k == QuickAddKind.custom ? 'Others' : k.label,
+                      title: k == QuickAddKind.custom ? l.qaOthers : k.localized(l),
                       icon: k.icon,
                       onTap: () => HabitFlows.startQuickAdd(context, k),
                     );
@@ -216,7 +218,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
-                child: Text('Your Habits', style: theme.textTheme.titleLarge),
+                child: Text(l.yourHabits, style: theme.textTheme.titleLarge),
               ),
             ),
             _habits.isEmpty
@@ -228,12 +230,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Text('Start small: tap a tile above to add your first habit.'),
+                            Text(l.emptyHabits, textAlign: TextAlign.center),
                             const SizedBox(height: 8),
                             FilledButton.icon(
                               onPressed: () => HabitFlows.startQuickAdd(context, QuickAddKind.custom),
                               icon: const Icon(Icons.add),
-                              label: const Text('Add a habit'),
+                              label: Text(l.addAHabit),
                             ),
                           ],
                         ),

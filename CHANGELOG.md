@@ -1,5 +1,20 @@
 # Changelog
 
+## [Unreleased] — Phase 2 (in progress)
+
+### Added
+- **Onboarding** for new users: language, goals, one to three starter habits with times, and a privacy note. Skippable; existing users never see it.
+- **Nepali (नेपाली)** language support for the main screens and onboarding; language picker under You.
+- Shared reminder editor: saved one-time reminders are now listed and can be removed.
+- Monochrome status-bar notification icon with the brand accent colour.
+- GitHub Actions CI (code generation check, analyze, tests, Android debug build).
+
+### Fixed
+- **Exercise "Save reminders" never saved.** The button only showed an ad. It now saves and schedules the reminders.
+- The notification permission is no longer requested on first launch, only once you actually have a reminder.
+- Static analysis is fully clean (deprecated APIs, unsafe context use after async gaps, dead code).
+
+
 ## [Unreleased] — Phase 1 (2026-11-24)
 
 ### Added

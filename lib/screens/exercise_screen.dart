@@ -7,6 +7,7 @@ import 'package:habit_tracker_nepali/widgets/ad_banner.dart';
 
 // Models / storage
 import '../models/habit.dart';
+import '../widgets/reminder_schedule_editor.dart';
 import '../services/storage_service.dart';
 
 // Notifications
@@ -59,6 +60,13 @@ class _ExerciseScreenState extends State<ExerciseScreen>
   void initState() {
     super.initState();
     _h = widget.habit;
+
+    // Show saved (future) one-time reminders so they can be reviewed/removed.
+    final nowInit = DateTime.now();
+    _oneOffReminders.addAll(_h.oneTimeReminders
+        .map(DateTime.tryParse)
+        .whereType<DateTime>()
+        .where((d) => d.isAfter(nowInit)));
     _ensureTodayResets();
 
     // Reminders
@@ -130,13 +138,10 @@ class _ExerciseScreenState extends State<ExerciseScreen>
     // Persist one-time reminders on the habit so they can be cancelled and
     // restored (they used to be fire-and-forget).
     final now = DateTime.now();
-    _h.oneTimeReminders = [
-      ..._h.oneTimeReminders.where((iso) => DateTime.tryParse(iso)?.isAfter(now) ?? false),
-      ..._oneOffReminders.where((dt) => dt.isAfter(now)).map((dt) => dt.toIso8601String()),
-    ];
+    _h.oneTimeReminders =
+        _oneOffReminders.where((dt) => dt.isAfter(now)).map((dt) => dt.toIso8601String()).toList();
     await _persistHabitOnly();
     await ReminderService.instance.syncHabit(_h);
-    _oneOffReminders.clear();
 
     if (mounted) {
       setState(() => _dirtyReminders = false);
@@ -582,115 +587,33 @@ class _ExerciseScreenState extends State<ExerciseScreen>
               children: [
                 Text('Exercise Reminders', style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 8),
-                Text('Daily times', style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 6),
-                if (_dailyTimes.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 6),
-                    child: Text('No daily times yet.'),
-                  ),
-                ...List.generate(_dailyTimes.length, (i) {
-                  final t = _dailyTimes[i];
-                  return Card(
-                    child: ListTile(
-                      leading: const Icon(Icons.schedule),
-                      title: Text(Habit.fmt(t)),
-                      trailing: Wrap(
-                        spacing: 8,
-                        children: [
-                          IconButton(
-                            onPressed: () async {
-                              final nt = await showTimePicker(
-                                  context: context, initialTime: t);
-                              if (nt == null) return;
-                              setState(() {
-                                _dailyTimes[i] = nt;
-                                _dirtyReminders = true;
-                              });
-                            },
-                            icon: const Icon(Icons.edit_outlined),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              setState(() {
-                                _dailyTimes.removeAt(i);
-                                _dirtyReminders = true;
-                              });
-                            },
-                            icon: const Icon(Icons.delete_outline),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: OutlinedButton.icon(
-                    onPressed: () async {
-                      final t = await showTimePicker(
-                          context: context,
-                          initialTime: const TimeOfDay(hour: 7, minute: 0));
-                      if (t == null) return;
-                      setState(() {
-                        _dailyTimes.add(t);
-                        _dirtyReminders = true;
-                      });
-                    },
-                    icon: const Icon(Icons.add),
-                    label: const Text('Add daily time'),
-                  ),
-                ),
-                const Divider(height: 28),
-                Text('One-time reminders', style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 6),
-                if (_oneOffReminders.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 6),
-                    child: Text('No one-time reminders yet.'),
-                  ),
-                ..._oneOffReminders.map((dt) => Card(
-                      child: ListTile(
-                        leading: const Icon(Icons.event_available),
-                        title: Text(_prettyDateTime(dt)),
-                        subtitle: const Text('Will ring once (on Save).'),
-                      ),
-                    )),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: OutlinedButton.icon(
-                    onPressed: () async {
-                      final now = DateTime.now();
-                      final date = await showDatePicker(
-                        context: context,
-                        initialDate: now.add(const Duration(days: 1)),
-                        firstDate: now,
-                        lastDate: now.add(const Duration(days: 365)),
-                      );
-                      if (date == null) return;
-                      final time = await showTimePicker(
-                        context: context,
-                        initialTime: const TimeOfDay(hour: 7, minute: 0),
-                      );
-                      if (time == null) return;
-                      final dt = DateTime(
-                          date.year, date.month, date.day, time.hour, time.minute);
-                      setState(() {
-                        _oneOffReminders.add(dt);
-                        _dirtyReminders = true;
-                      });
-                    },
-                    icon: const Icon(Icons.event),
-                    label: const Text('Add one-time reminder'),
-                  ),
+                ReminderScheduleEditor(
+                  dailyTimes: _dailyTimes,
+                  onDailyTimesChanged: (l) => setState(() {
+                    _dailyTimes
+                      ..clear()
+                      ..addAll(l);
+                    _dirtyReminders = true;
+                  }),
+                  oneTimeReminders: _oneOffReminders,
+                  onOneTimeRemindersChanged: (l) => setState(() {
+                    _oneOffReminders
+                      ..clear()
+                      ..addAll(l);
+                    _dirtyReminders = true;
+                  }),
+                  dailyTitle: 'Daily times',
                 ),
                 const SizedBox(height: 14),
                 FilledButton.icon(
-                  onPressed: () async {
-                    _dirtyReminders ? _saveReminders : null;
-                    await InterstitialHelper().showIfAvailable();
-
-                  },
+                  // Bug fix: this used to evaluate `_saveReminders` without
+                  // calling it, so exercise reminders were never saved.
+                  onPressed: _dirtyReminders
+                      ? () async {
+                          await _saveReminders();
+                          await InterstitialHelper().showIfAvailable();
+                        }
+                      : null,
                   icon: const Icon(Icons.save),
                   label: const Text('Save reminders'),
                 ),
@@ -784,11 +707,6 @@ class _ExerciseScreenState extends State<ExerciseScreen>
     return '$m:$s';
   }
 
-  String _prettyDateTime(DateTime dt) {
-    final hh = dt.hour.toString().padLeft(2, '0');
-    final mm = dt.minute.toString().padLeft(2, '0');
-    return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} $hh:$mm';
-  }
 
   String _ymd(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';

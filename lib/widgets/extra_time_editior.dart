@@ -4,7 +4,7 @@ import 'package:habit_tracker_nepali/models/habit.dart';
 class ExtraTimesEditor extends StatefulWidget {
   final List<String> initial;
   final ValueChanged<List<String>> onChanged;
-  const ExtraTimesEditor({required this.initial, required this.onChanged});
+  const ExtraTimesEditor({super.key, required this.initial, required this.onChanged});
 
   @override
   State<ExtraTimesEditor> createState() => ExtraTimesEditorState();

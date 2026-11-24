@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habit_tracker_nepali/app/providers.dart';
@@ -12,6 +13,7 @@ import 'package:habit_tracker_nepali/features/content/presentation/discover_scre
 import 'package:habit_tracker_nepali/features/habits/data/habit_repository.dart';
 import 'package:habit_tracker_nepali/features/insights/insights_screen.dart';
 import 'package:habit_tracker_nepali/features/plan/plan_screen.dart';
+import 'package:habit_tracker_nepali/l10n/app_localizations.dart';
 import 'package:habit_tracker_nepali/models/habit.dart';
 
 void main() {
@@ -20,14 +22,25 @@ void main() {
 
   setUp(() => db = AppDatabase(NativeDatabase.memory()));
 
-  Future<void> pump(WidgetTester tester, Widget screen, {Brightness b = Brightness.light}) async {
+  Future<void> pump(WidgetTester tester, Widget screen, {Brightness b = Brightness.light, Locale locale = const Locale('en')}) async {
     await tester.pumpWidget(ProviderScope(
       overrides: [
         appDatabaseProvider.overrideWithValue(db),
         exactAlarmAllowedProvider.overrideWith((ref) async => true),
         notificationsEnabledProvider.overrideWith((ref) async => true),
       ],
-      child: MaterialApp(theme: buildTheme(b), home: screen),
+      child: MaterialApp(
+        theme: buildTheme(b),
+        locale: locale,
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        home: screen,
+      ),
     ));
     // Let drift streams emit (real async), then settle frames.
     await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
@@ -100,6 +113,13 @@ void main() {
     expect(find.text('Journal'), findsOneWidget);
     expect(find.text('22:15'), findsOneWidget);
     expect(find.text('Send a test reminder'), findsOneWidget);
+    await tearDownDb(tester);
+  });
+
+  testWidgets('Insights renders in Nepali', (tester) async {
+    await pump(tester, const InsightsScreen(), locale: const Locale('ne'));
+    expect(find.text('पछिल्ला ७ दिन'), findsOneWidget);
+    expect(find.text('पानी'), findsOneWidget);
     await tearDownDb(tester);
   });
 }

@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 
 import '../features/content/presentation/discover_screen.dart';
 import '../features/insights/insights_screen.dart';
+import '../features/onboarding/onboarding_screen.dart';
 import '../features/plan/plan_screen.dart';
 import '../features/profile/profile_screen.dart';
 import '../screens/home_screen.dart';
@@ -12,6 +13,7 @@ GoRouter buildRouter() => GoRouter(
       initialLocation: '/splash',
       routes: [
         GoRoute(path: '/splash', builder: (_, __) => const SplashScreen()),
+        GoRoute(path: '/onboarding', builder: (_, __) => const OnboardingScreen()),
         StatefulShellRoute.indexedStack(
           builder: (context, state, shell) => AppShell(shell: shell),
           branches: [

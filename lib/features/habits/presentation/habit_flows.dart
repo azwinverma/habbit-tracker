@@ -12,6 +12,7 @@ import '../../../screens/reading_screen.dart';
 import '../../../screens/water_screen.dart';
 import '../../../services/ad_service.dart';
 import '../../../services/storage_service.dart';
+import '../../../l10n/app_localizations.dart';
 
 enum QuickAddKind { medicine, water, meditation, reading, exercise, custom }
 
@@ -23,6 +24,15 @@ extension QuickAddKindUi on QuickAddKind {
         QuickAddKind.reading => 'Reading',
         QuickAddKind.exercise => 'Exercise',
         QuickAddKind.custom => 'Custom habit',
+      };
+
+  String localized(AppLocalizations l) => switch (this) {
+        QuickAddKind.medicine => l.qaMedicine,
+        QuickAddKind.water => l.qaWater,
+        QuickAddKind.meditation => l.qaMeditation,
+        QuickAddKind.reading => l.qaReading,
+        QuickAddKind.exercise => l.qaExercise,
+        QuickAddKind.custom => l.qaCustom,
       };
 
   IconData get icon => switch (this) {

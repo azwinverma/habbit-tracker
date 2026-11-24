@@ -7,6 +7,7 @@ import '../../core/reminders/reminder_service.dart';
 import '../../core/reminders/reminder_spec.dart';
 import '../../models/habit.dart';
 import '../habits/presentation/habit_flows.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Plan: what's coming up, and whether reminders can actually be delivered
 /// ("Reminder health", blueprint §7).
@@ -16,11 +17,12 @@ class PlanScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final habits = ref.watch(habitsProvider);
+    final l = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Plan')),
+      appBar: AppBar(title: Text(l.planTitle)),
       body: habits.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Could not load your plan.\n$e', textAlign: TextAlign.center)),
+        error: (e, _) => Center(child: Text(l.couldNotLoad('$e'), textAlign: TextAlign.center)),
         data: (list) => RefreshIndicator(
           onRefresh: () async {
             ref.invalidate(exactAlarmAllowedProvider);
@@ -46,6 +48,7 @@ class _ReminderHealthCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
     final exact = ref.watch(exactAlarmAllowedProvider).valueOrNull;
     final notif = ref.watch(notificationsEnabledProvider).valueOrNull;
 
@@ -60,7 +63,7 @@ class _ReminderHealthCard extends ConsumerWidget {
         leading: Icon(ok == false ? Icons.error_outline : icon, color: color),
         title: Text(title),
         subtitle: Text(subtitle),
-        trailing: (ok == false && fix != null) ? TextButton(onPressed: fix, child: Text(fixLabel ?? 'Fix')) : null,
+        trailing: (ok == false && fix != null) ? TextButton(onPressed: fix, child: Text(fixLabel ?? l.allow)) : null,
       );
     }
 
@@ -70,46 +73,40 @@ class _ReminderHealthCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Reminder health', style: theme.textTheme.titleMedium),
+            Text(l.reminderHealth, style: theme.textTheme.titleMedium),
             row(
               Icons.notifications_active_outlined,
-              'Notifications',
-              notif == false ? 'Turned off — reminders cannot appear' : 'Allowed',
+              l.notifications,
+              notif == false ? l.notificationsOff : l.notificationsAllowed,
               notif,
             ),
             row(
               Icons.alarm_on_outlined,
-              'On-time delivery',
-              exact == false
-                  ? 'Reminders may arrive a few minutes late'
-                  : 'Reminders are scheduled for the exact minute',
+              l.onTimeDelivery,
+              exact == false ? l.onTimeLate : l.onTimeOk,
               exact,
               fix: () async {
                 await ReminderService.instance.openExactAlarmSettings();
                 ref.invalidate(exactAlarmAllowedProvider);
               },
-              fixLabel: 'Allow',
+              fixLabel: l.allow,
             ),
             Align(
               alignment: Alignment.centerLeft,
               child: TextButton.icon(
                 icon: const Icon(Icons.send_outlined),
-                label: const Text('Send a test reminder'),
+                label: Text(l.sendTestReminder),
                 onPressed: () async {
                   await ReminderService.instance.sendTestReminder();
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('A test reminder will arrive in about 10 seconds.')),
+                      SnackBar(content: Text(l.testReminderSent)),
                     );
                   }
                 },
               ),
             ),
-            Text(
-              'DailyMantra is a reminder aid. Phones can delay notifications in '
-              'battery-saving modes, so don\'t rely on it as your only safeguard for medicine.',
-              style: theme.textTheme.bodySmall,
-            ),
+            Text(l.reminderAidDisclaimer, style: theme.textTheme.bodySmall),
           ],
         ),
       ),
@@ -124,6 +121,7 @@ class _Upcoming extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
     final now = DateTime.now();
     final entries = <({DateTime at, Habit habit, ReminderSpec spec})>[];
     for (final h in habits) {
@@ -140,9 +138,9 @@ class _Upcoming extends StatelessWidget {
           children: [
             Icon(Icons.event_available_outlined, size: 48, color: theme.colorScheme.outline),
             const SizedBox(height: 8),
-            const Text('No upcoming reminders.', textAlign: TextAlign.center),
+            Text(l.noUpcoming, textAlign: TextAlign.center),
             const SizedBox(height: 4),
-            Text('Add a habit with a reminder time to see your plan here.',
+            Text(l.noUpcomingHint,
                 textAlign: TextAlign.center, style: theme.textTheme.bodySmall),
           ],
         ),
@@ -153,13 +151,12 @@ class _Upcoming extends StatelessWidget {
       final today = DateTime(now.year, now.month, now.day);
       final day = DateTime(d.year, d.month, d.day);
       final diff = day.difference(today).inDays;
-      if (diff == 0) return 'Today';
-      if (diff == 1) return 'Tomorrow';
-      const wd = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-      return '${wd[d.weekday - 1]} ${d.day}/${d.month}';
+      if (diff == 0) return l.dayToday;
+      if (diff == 1) return l.dayTomorrow;
+      return MaterialLocalizations.of(context).formatMediumDate(d);
     }
 
-    final children = <Widget>[Text('Up next', style: theme.textTheme.titleMedium)];
+    final children = <Widget>[Text(l.upNext, style: theme.textTheme.titleMedium)];
     String? lastLabel;
     for (final e in entries) {
       final label = dayLabel(e.at);
@@ -176,7 +173,7 @@ class _Upcoming extends StatelessWidget {
           leading: Text(hhmm, style: theme.textTheme.titleMedium),
           title: Text(e.habit.name, maxLines: 1, overflow: TextOverflow.ellipsis),
           subtitle: Text(
-            e.spec.kind == ReminderKind.once ? 'One-time · ${e.spec.body}' : 'Daily · ${e.spec.body}',
+            e.spec.kind == ReminderKind.once ? '${l.reminderOnce} · ${e.spec.body}' : '${l.reminderDaily} · ${e.spec.body}',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),

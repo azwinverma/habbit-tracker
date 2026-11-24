@@ -283,7 +283,7 @@ class Habit {
 
   // ---- Schedule JSON helpers ----
   /// Decode exerciseScheduleJson into:
-  /// Map<String, List<Map<String,String>>>
+  /// `Map<String, List<Map<String, String>>>`
   Map<String, List<Map<String, String>>> decodeExerciseScheduleOrEmpty() {
     final raw = exerciseScheduleJson;
     if (raw == null || raw.isEmpty) {

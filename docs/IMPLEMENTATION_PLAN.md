@@ -33,7 +33,7 @@ P2 can start in parallel with late P1. P4 can start once P1's repository layer e
 ## Phase 1 — Architecture & database 🔄 (core done)
 | # | Task | Status |
 |---|---|---|
-| 1.1 | `git init`, baseline commit, push to GitHub | ✅ (CI still ⬜) |
+| 1.1 | `git init`, baseline commit, push to GitHub, CI | ✅ (GitHub Actions: codegen check, analyze, test, debug APK) |
 | 1.2 | Riverpod + GoRouter; app shell Today / Plan / Add / Insights / You | ✅ |
 | 1.3 | Remove hard-coded API URL (D21) | ✅ (dead PythonAnywhere API removed). Flavors dev/prod ⬜ |
 | 1.4 | Drift schema v1: habits, per-category settings, habit_logs, content cache, meta | ✅ |
@@ -48,11 +48,24 @@ P2 can start in parallel with late P1. P4 can start once P1's repository layer e
 | 1.13 | Insights (7-day history), You (theme, permissions, sources & licences) | ✅ |
 | 1.14 | Dark mode with brand palette | ✅ (full design system in Phase 2) |
 | 1.15 | Widget smoke tests for new screens (Insights, Discover, Plan) | ✅ (integration tests ⬜) |
-| 1.16 | Bump Kotlin Gradle plugin 2.0 → 2.2 (non-fatal metadata warnings in release build) | ⬜ |
+| 1.16 | Kotlin metadata warnings in release build | ✅ investigated: project already on Kotlin 2.2; warnings come from a third-party plugin's compile settings, non-fatal |
 
-## Phase 2 — Brand & UI ⬜
-2.1 Design tokens (colour roles from Deep Teal/Mint/Coral/Lavender/Sky, contrast-checked), typography (Plus Jakarta Sans + Noto Sans Devanagari), spacing, radii · 2.2 Light/dark/system theme · 2.3 Component library (cards, progress rings, empty/error/skeleton states, reminder editor, session timer) · 2.4 Onboarding (language, goals, interests, reminder prefs, permission explainers, guest mode) · 2.5 Today dashboard with real data, re-orderable sections · 2.6 Notification monochrome icon (D23) · 2.7 Fix deprecations (D26) · 2.8 Accessibility pass (TalkBack, text scale 200%, 48dp targets)
-⛔ Logo asset not in repo (D19).
+## Phase 2 — Brand & UI 🔄
+| # | Task | Status |
+|---|---|---|
+| 2.1 | Brand colour tokens (blueprint palette), light/dark | ✅ (`lib/app/theme.dart`). Contrast audit per pairing ⬜ |
+| 2.1b | Brand typography (Plus Jakarta Sans + Noto Sans Devanagari) | ⬜ deferred until the brand assets arrive. Android's built-in Noto Sans Devanagari renders Nepali meanwhile |
+| 2.2 | Theme preference (system/light/dark) | ✅ |
+| 2.3 | Shared components: `ReminderScheduleEditor` (replaces 3 copied implementations; shows and removes saved one-time reminders) | ✅. Session timer / action button extraction ⬜ |
+| 2.4 | Onboarding: welcome + language, goals, 1–3 starter habits with times, privacy; skippable; existing users skip; permission asked only after first reminder | ✅ |
+| 2.4b | Localization foundation EN + नेपाली (gen-l10n), language picker | ✅ for shell, Today, Plan, Insights, You, onboarding. Category screens + Discover ⬜ (Phase 3) |
+| 2.5 | Today dashboard with real data | ✅ (greeting, progress, quick add, habits). Re-orderable sections ⬜ |
+| 2.6 | Monochrome notification icon | ✅ placeholder silhouette (`ic_stat_dailymantra`). Swap for the logo silhouette when provided |
+| 2.7 | Analyzer clean (deprecations, async gaps, unused code) | ✅ **0 issues** |
+| 2.8 | Accessibility pass | 🔄 semantics on done-toggle, progress, reminder editor tooltips. TalkBack / 200% text audit on device ⬜ |
+| 2.9 | Splitting the large category screens into widgets | ⬜ (with Phase 3 rebuilds) |
+
+⛔ Logo asset still not in repo (D19).
 
 ## Phase 3 — Core features ⬜
 3.1 Medicine: taken/skipped/snoozed log, notification actions, refill reminder, history export (CSV/PDF) · 3.2 Water: container sizes, quick-log notification action, trends · 3.3 Exercise: Health Connect/pedometer steps, **office walk/stretch reminders actually scheduled** (D18) · 3.4 Custom habits: weekly/flexible frequency, pause/archive/reorder, notes · 3.5 Reminder engine v2: actions, snooze, quiet hours, per-category prefs, deep links, diagnostics screen · 3.6 **iOS reminders** via `flutter_local_notifications` zoned schedules (64-pending limit → rolling window) (D20) · 3.7 Mood, sleep, journal, focus timer, routines, weekly reflection (opt-in modules) · 3.8 Localisation EN + NE (ARB), Bikram Sambat date display
