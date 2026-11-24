@@ -15,6 +15,7 @@ import 'package:habit_tracker_nepali/models/habit.dart';
 import 'package:habit_tracker_nepali/screens/home_screen.dart';
 import 'package:habit_tracker_nepali/services/ad_service.dart';
 import 'package:habit_tracker_nepali/services/storage_service.dart';
+import 'package:habit_tracker_nepali/widgets/habit_tile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../reminders/reminder_service_test.dart' show FakeBackend;
@@ -81,7 +82,12 @@ void main() {
     expect(find.text('1 of 4 done today'), findsOneWidget); // journal done
     expect(find.text('3 of 8 glasses'), findsOneWidget);
     expect(find.text('6-day streak'), findsOneWidget);
-    expect(find.text('Evening journal'), findsOneWidget);
+    // The habit list sits below the fold; "Up next" content depends on the clock.
+    await tester.scrollUntilVisible(find.widgetWithText(HabitTile, 'Evening journal'), 400,
+        scrollable: find.byType(Scrollable).first);
+    expect(find.text('Evening journal'), findsWidgets);
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, 4000));
+    await tester.pump();
 
     await tester.tap(find.byTooltip('Add a glass'));
     for (var i = 0; i < 3; i++) {
