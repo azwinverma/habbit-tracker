@@ -63,6 +63,12 @@
             android:enabled="true"
             android:exported="false" />
 
+        <!-- "Taken" / "Snooze" buttons on medicine notifications. -->
+        <receiver
+            android:name=".DoseActionReceiver"
+            android:enabled="true"
+            android:exported="false" />
+
         <!-- Re-arms reminders after reboot, app update, clock/timezone change. -->
         <receiver
             android:name=".BootReceiver"

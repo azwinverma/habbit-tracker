@@ -40,7 +40,10 @@ class AlarmReceiver : BroadcastReceiver() {
 
         val title = spec.optString("title", "Reminder")
         val body = spec.optString("body", "")
-        showNotification(context, id, title, body)
+        val dose = spec.optStringOrNull("dose")
+        // The day this dose belongs to: a snoozed copy keeps its original day.
+        val doseDay = spec.optStringOrNull("doseDay") ?: DoseActionReceiver.today()
+        showNotification(context, id, title, body, dose, doseDay)
 
         if (spec.optBoolean("daily", false)) {
             val hour = spec.optInt("hour", 8)
@@ -50,14 +53,17 @@ class AlarmReceiver : BroadcastReceiver() {
             if (end != null && next > end) {
                 AlarmScheduler.remove(context, id) // e.g. medicine course finished
             } else {
-                AlarmScheduler.schedule(context, id, next, title, body, true, hour, minute, end)
+                AlarmScheduler.schedule(context, id, next, title, body, true, hour, minute, end, dose)
             }
         } else {
             AlarmScheduler.remove(context, id)
         }
     }
 
-    private fun showNotification(context: Context, id: Int, title: String, body: String) {
+    private fun showNotification(
+        context: Context, id: Int, title: String, body: String,
+        dose: String? = null, doseDay: String? = null
+    ) {
         val channelId = "habit_channel_native_v1"
         val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -80,7 +86,7 @@ class AlarmReceiver : BroadcastReceiver() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val notif = NotificationCompat.Builder(context, channelId)
+        val builder = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.ic_stat_dailymantra) // monochrome status-bar icon
             .setColor(0xFF176B67.toInt()) // brand Deep Teal accent
             .setContentTitle(title)
@@ -89,8 +95,15 @@ class AlarmReceiver : BroadcastReceiver() {
             .setContentIntent(contentPi)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
-            .build()
 
-        nm.notify(id, notif)
+        if (dose != null && doseDay != null) {
+            // Medicine: record the dose without opening the app, or snooze it.
+            builder.addAction(0, "Taken",
+                DoseActionReceiver.pendingIntent(context, id, DoseActionReceiver.ACTION_TAKEN, dose, doseDay, title, body))
+            builder.addAction(0, "Snooze 10 min",
+                DoseActionReceiver.pendingIntent(context, id, DoseActionReceiver.ACTION_SNOOZE, dose, doseDay, title, body))
+        }
+
+        nm.notify(id, builder.build())
     }
 }

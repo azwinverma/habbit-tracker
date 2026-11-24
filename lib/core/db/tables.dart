@@ -126,6 +126,17 @@ abstract final class HabitMetric {
   static const exerciseMinutes = 'exercise_minutes';
   static const steps = 'steps';
   static const completed = 'completed';
+
+  /// Medicine dose outcome for one scheduled time: `dose@HH:mm`, value is a
+  /// [DoseStatus] code. Kept in habit_logs so history cascades with the habit.
+  static const dosePrefix = 'dose@';
+  static String dose(String hhmm) => '$dosePrefix$hhmm';
+}
+
+/// Values stored for [HabitMetric.dose] rows.
+abstract final class DoseStatus {
+  static const taken = 1;
+  static const skipped = 2;
 }
 
 // ---------------------------------------------------------------------------

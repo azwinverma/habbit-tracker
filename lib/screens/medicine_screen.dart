@@ -1,64 +1,68 @@
 // lib/screens/medicine_screen.dart
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:habit_tracker_nepali/widgets/ad_banner.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../models/habit.dart';
-import '../services/storage_service.dart';
+import '../app/providers.dart';
+import '../core/db/app_database.dart' show DoseStatus;
 import '../core/reminders/reminder_service.dart';
+import '../features/habits/data/habit_repository.dart';
+import '../features/medicine/data/dose_log_repository.dart';
+import '../l10n/app_localizations.dart';
+import '../models/habit.dart';
+import '../services/native_alarm.dart';
+import '../services/storage_service.dart';
+import '../widgets/reminder_schedule_editor.dart';
 
-class MedicineScreen extends StatefulWidget {
+/// Medicine: course details, dose times, and today's taken/skipped log.
+///
+/// No ads anywhere on this screen (blueprint: never around medication).
+class MedicineScreen extends ConsumerStatefulWidget {
   final Habit habit; // category == HabitCategory.medicine
   const MedicineScreen({super.key, required this.habit});
 
   @override
-  State<MedicineScreen> createState() => _MedicineScreenState();
+  ConsumerState<MedicineScreen> createState() => _MedicineScreenState();
 }
 
-class _MedicineScreenState extends State<MedicineScreen> {
+class _MedicineScreenState extends ConsumerState<MedicineScreen> {
   final _storage = StorageService();
 
   late Habit _h;
-
-  // Local staged fields (only applied on Save)
   late final TextEditingController _nameCtrl;
   late final TextEditingController _doseCtrl;
   late final TextEditingController _notesCtrl;
 
-  final List<TimeOfDay> _times = [];
+  List<TimeOfDay> _times = [];
   DateTime? _startDate;
   DateTime? _endDate;
   bool _enabled = true;
-
-  bool _dirty = false; // enable Save when user changes anything
-
+  bool _dirty = false;
 
   @override
   void initState() {
     super.initState();
     _h = widget.habit;
-
-    _nameCtrl  = TextEditingController(text: _h.medicineName ?? '');
-    _doseCtrl  = TextEditingController(text: _h.medicineDose ?? '');
+    _nameCtrl = TextEditingController(text: _h.medicineName ?? '');
+    _doseCtrl = TextEditingController(text: _h.medicineDose ?? '');
     _notesCtrl = TextEditingController(text: _h.medicineNotes ?? '');
-
     _enabled = _h.enabled;
 
-    // Times: use existing or sensible defaults (8:00, 14:00, 20:00)
     if (_h.reminderTimes.isNotEmpty) {
-      _times.addAll(_h.reminderTimes.map(Habit.parseHHmm));
+      _times = ReminderScheduleEditor.normalize(_h.reminderTimes.map(Habit.parseHHmm));
     } else {
-      _times.addAll(const [
-        TimeOfDay(hour: 8,  minute: 0),
+      _times = const [
+        TimeOfDay(hour: 8, minute: 0),
         TimeOfDay(hour: 14, minute: 0),
         TimeOfDay(hour: 20, minute: 0),
-      ]);
+      ];
       _dirty = true;
     }
 
-    // Date range
-    _startDate = _h.medicineStartDate != null ? DateTime.tryParse(_h.medicineStartDate!) : DateTime.now();
-    _endDate   = _h.medicineEndDate   != null ? DateTime.tryParse(_h.medicineEndDate!)   : DateTime.now().add(const Duration(days: 14));
+    // Pick up "Taken" taps from notifications made while this app was open.
+    ref.read(doseLogRepositoryProvider).importNativeActions(NativeAlarmBackend());
+
+    _startDate = _parse(_h.medicineStartDate) ?? _today();
+    _endDate = _parse(_h.medicineEndDate) ?? _today().add(const Duration(days: 14));
   }
 
   @override
@@ -69,8 +73,35 @@ class _MedicineScreenState extends State<MedicineScreen> {
     super.dispose();
   }
 
-  // ---------- Persistence ----------
-  Future<void> _persistHabitOnly() async {
+  static DateTime _today() {
+    final n = DateTime.now();
+    return DateTime(n.year, n.month, n.day);
+  }
+
+  static DateTime? _parse(String? ymd) {
+    final d = ymd == null ? null : DateTime.tryParse(ymd);
+    return d == null ? null : DateTime(d.year, d.month, d.day);
+  }
+
+  void _touch(VoidCallback f) => setState(() {
+        f();
+        _dirty = true;
+      });
+
+  // ---------- Save ----------
+  Future<void> _save() async {
+    final l = AppLocalizations.of(context);
+    final name = _nameCtrl.text.trim();
+    _h
+      ..enabled = _enabled
+      ..name = _h.name.isNotEmpty ? _h.name : (name.isEmpty ? l.medDefaultName : name)
+      ..medicineName = name.isEmpty ? (_h.medicineName ?? l.medDefaultName) : name
+      ..medicineDose = _doseCtrl.text.trim()
+      ..medicineNotes = _notesCtrl.text.trim()
+      ..reminderTimes = _times.map(Habit.fmt).toList()
+      ..medicineStartDate = _startDate != null ? HabitRepository.ymd(_startDate!) : null
+      ..medicineEndDate = _endDate != null ? HabitRepository.ymd(_endDate!) : null;
+
     final list = await _storage.loadHabits();
     final i = list.indexWhere((x) => x.id == _h.id);
     if (i >= 0) {
@@ -79,96 +110,35 @@ class _MedicineScreenState extends State<MedicineScreen> {
       list.add(_h);
     }
     await _storage.saveHabits(list);
-  }
 
-  // ---------- Scheduling ----------
-  Future<void> _applyAndSchedule() async {
-    // Write staged → model
-    _h
-      ..enabled = _enabled
-      ..name = _h.name.isNotEmpty ? _h.name : (_nameCtrl.text.trim().isEmpty ? 'Medicine 💊' : _nameCtrl.text.trim())
-      ..medicineName = _nameCtrl.text.trim().isEmpty ? (_h.medicineName ?? 'Medicine') : _nameCtrl.text.trim()
-      ..medicineDose = _doseCtrl.text.trim()
-      ..medicineNotes = _notesCtrl.text.trim()
-      ..reminderTimes = _times.map(Habit.fmt).toList()
-      ..medicineStartDate = _startDate != null ? _yyyyMmDd(_startDate!) : null
-      ..medicineEndDate   = _endDate   != null ? _yyyyMmDd(_endDate!)   : null;
-
-    await _persistHabitOnly();
-
-    // One daily alarm per dose time, bounded by the start/end dates and
-    // re-armed natively each day. Replaces the old approach of one alarm per
-    // dose per day (up to 120 days), whose alarms each re-armed themselves
-    // daily forever — piling up duplicate notifications past the end date.
-    // Disabling cancels all of this medicine's alarms.
+    // One daily alarm per dose time, bounded by the course dates.
     await ReminderService.instance.syncHabit(_h);
 
-    if (mounted) {
-      setState(() => _dirty = false);
-      _snack(_h.enabled ? 'Medicine reminders saved.' : 'Saved (reminders are disabled).');
-    }
-    // No interstitial here: never show ads around recording medication.
+    if (!mounted) return;
+    setState(() => _dirty = false);
+    _snack(_h.enabled ? l.medSaved : l.medSavedDisabled);
   }
 
-  // ---------- UI actions ----------
-  Future<void> _pickStart() async {
-    final initial = _startDate ?? DateTime.now();
+  Future<void> _pickDate({required bool start}) async {
+    final first = start ? _today().subtract(const Duration(days: 30)) : (_startDate ?? _today());
+    final current = start ? _startDate : _endDate;
+    final initial = (current == null || current.isBefore(first)) ? first : current;
     final d = await showDatePicker(
       context: context,
       initialDate: initial,
-      firstDate: DateTime.now().subtract(const Duration(days: 1)),
-      lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
+      firstDate: first,
+      lastDate: _today().add(const Duration(days: 365 * 2)),
     );
     if (d == null) return;
-    setState(() {
-      _startDate = d;
-      _dirty = true;
+    _touch(() {
+      if (start) {
+        _startDate = d;
+        if (_endDate != null && _endDate!.isBefore(d)) _endDate = d;
+      } else {
+        _endDate = d;
+      }
     });
   }
-
-  Future<void> _pickEnd() async {
-    final initial = _endDate ?? (_startDate ?? DateTime.now()).add(const Duration(days: 14));
-    final d = await showDatePicker(
-      context: context,
-      initialDate: initial,
-      firstDate: _startDate ?? DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
-    );
-    if (d == null) return;
-    setState(() {
-      _endDate = d;
-      _dirty = true;
-    });
-    
-  }
-
-  Future<void> _addTime() async {
-    final t = await showTimePicker(context: context, initialTime: const TimeOfDay(hour: 8, minute: 0));
-    if (t == null) return;
-    setState(() {
-      _times.add(t);
-      _dirty = true;
-    });
-  }
-
-  Future<void> _editTime(int i) async {
-    final t = await showTimePicker(context: context, initialTime: _times[i]);
-    if (t == null) return;
-    setState(() {
-      _times[i] = t;
-      _dirty = true;
-    });
-  }
-
-  void _removeTime(int i) {
-    setState(() {
-      _times.removeAt(i);
-      _dirty = true;
-    });
-  }
-
-  String _yyyyMmDd(DateTime d) =>
-      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
   void _snack(String s) {
     if (!mounted) return;
@@ -177,30 +147,33 @@ class _MedicineScreenState extends State<MedicineScreen> {
     );
   }
 
+  String _fmtDate(DateTime? d, AppLocalizations l) {
+    if (d == null) return l.medNotSet;
+    return MaterialLocalizations.of(context).formatMediumDate(d);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final startStr = _startDate != null ? _yyyyMmDd(_startDate!) : 'Not set';
-    final endStr   = _endDate   != null ? _yyyyMmDd(_endDate!)   : 'Not set';
+    final l = AppLocalizations.of(context);
+    // The saved copy drives today's dose list (staged edits apply on Save).
+    final saved = ref.watch(habitsProvider).valueOrNull?.where((x) => x.id == _h.id).firstOrNull;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Medicine (💊)'),
+        title: Text(l.medTitle),
         actions: [
           TextButton.icon(
-            onPressed: _dirty ? _applyAndSchedule : null,
+            onPressed: _dirty ? _save : null,
             icon: const Icon(Icons.save, size: 18),
-            label: const Text('Save'),
+            label: Text(l.medSave),
           ),
         ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Basic info
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12),
-              child: AdBanner(placement: 'home_bottom', padding: EdgeInsets.only(bottom: 8)),
-            ),
+          _TodayDoses(habit: saved),
+          const SizedBox(height: 12),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -208,136 +181,194 @@ class _MedicineScreenState extends State<MedicineScreen> {
                 children: [
                   TextField(
                     controller: _nameCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Medicine name',
-                      border: OutlineInputBorder(),
-                    ),
+                    decoration: InputDecoration(labelText: l.medName, border: const OutlineInputBorder()),
                     onChanged: (_) => setState(() => _dirty = true),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: _doseCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Dose (e.g., 500 mg, 2 tablets)',
-                      border: OutlineInputBorder(),
-                    ),
+                    decoration: InputDecoration(labelText: l.medDose, border: const OutlineInputBorder()),
                     onChanged: (_) => setState(() => _dirty = true),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: _notesCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Notes (before/after meal, etc.)',
-                      border: OutlineInputBorder(),
-                    ),
+                    decoration: InputDecoration(labelText: l.medNotes, border: const OutlineInputBorder()),
                     maxLines: 2,
                     onChanged: (_) => setState(() => _dirty = true),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 4),
                   SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
                     value: _enabled,
-                    onChanged: (v) => setState(() {
-                      _enabled = v;
-                      _dirty = true;
-                    }),
-                    title: const Text('Enable reminders'),
+                    onChanged: (v) => _touch(() => _enabled = v),
+                    title: Text(l.medEnable),
                   ),
                 ],
               ),
             ),
           ),
-
           const SizedBox(height: 12),
-
-          // Date range
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      const Expanded(child: Text('Start date')),
-                      Text(startStr),
-                      const SizedBox(width: 8),
-                      OutlinedButton.icon(
-                        onPressed: _pickStart,
-                        icon: const Icon(Icons.event),
-                        label: const Text('Pick'),
-                      ),
-                    ],
-                  ),
+                  _DateRow(label: l.medStart, value: _fmtDate(_startDate, l), pick: l.medPick,
+                      onPick: () => _pickDate(start: true)),
                   const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Expanded(child: Text('End date')),
-                      Text(endStr),
-                      const SizedBox(width: 8),
-                      OutlinedButton.icon(
-                        onPressed: _pickEnd,
-                        icon: const Icon(Icons.event),
-                        label: const Text('Pick'),
-                      ),
-                    ],
-                  ),
+                  _DateRow(label: l.medEnd, value: _fmtDate(_endDate, l), pick: l.medPick,
+                      onPick: () => _pickDate(start: false)),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Alarms will be scheduled for each day/time between the start and end (max 120 days).',
-                    style: TextStyle(fontSize: 12, color: Colors.black54),
-                  ),
+                  Text(l.medCourseHint, style: Theme.of(context).textTheme.bodySmall),
                 ],
               ),
             ),
           ),
-
           const SizedBox(height: 12),
-
-          // Times
-          Text('Dose times', style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 6),
-          ...List.generate(_times.length, (i) {
-            final t = _times[i];
-            return Card(
-              child: ListTile(
-                leading: const Icon(Icons.schedule),
-                title: Text(Habit.fmt(t)),
-                subtitle: Text(_doseCtrl.text.trim().isEmpty ? 'Dose time' : _doseCtrl.text.trim()),
-                trailing: Wrap(
-                  spacing: 8,
-                  children: [
-                    IconButton(onPressed: () => _editTime(i), icon: const Icon(Icons.edit_outlined)),
-                    IconButton(onPressed: () => _removeTime(i), icon: const Icon(Icons.delete_outline)),
-                  ],
-                ),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: ReminderScheduleEditor(
+                dailyTimes: _times,
+                onDailyTimesChanged: (t) => _touch(() => _times = t),
+                dailyTitle: l.medDoseTimes,
+                addDailyLabel: l.medAddTime,
+                emptyDailyText: l.medNoTimes,
+                defaultTime: const TimeOfDay(hour: 8, minute: 0),
               ),
-            );
-          }),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: OutlinedButton.icon(
-              onPressed: _addTime,
-              icon: const Icon(Icons.add),
-              label: const Text('Add time'),
             ),
           ),
+          const SizedBox(height: 12),
+          Text(l.reminderAidDisclaimer, style: Theme.of(context).textTheme.bodySmall),
           const SizedBox(height: 24),
         ],
       ),
-
-      // bottom Save
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
           child: FilledButton.icon(
-            onPressed: _dirty ? _applyAndSchedule : null,
-            //  () async {
-            //                 _dirty ? _applyAndSchedule : null;
-            //   // await InterstitialHelper().showIfAvailable();
-
-            // },
+            onPressed: _dirty ? _save : null,
             icon: const Icon(Icons.save),
-            label: const Text('Save & schedule'),
+            label: Text(l.medSaveSchedule),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DateRow extends StatelessWidget {
+  const _DateRow({required this.label, required this.value, required this.pick, required this.onPick});
+  final String label, value, pick;
+  final VoidCallback onPick;
+
+  @override
+  Widget build(BuildContext context) => Row(
+        children: [
+          Expanded(child: Text(label)),
+          Text(value),
+          const SizedBox(width: 8),
+          OutlinedButton.icon(onPressed: onPick, icon: const Icon(Icons.event), label: Text(pick)),
+        ],
+      );
+}
+
+/// Today's scheduled doses with Taken / Skip, plus 7-day adherence.
+class _TodayDoses extends ConsumerWidget {
+  const _TodayDoses({required this.habit});
+  final Habit? habit;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final h = habit;
+
+    Widget card(List<Widget> children) => Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(l.medToday, style: theme.textTheme.titleMedium),
+              const SizedBox(height: 8),
+              ...children,
+            ]),
+          ),
+        );
+
+    if (h == null) return card([Text(l.medSaveFirst)]);
+
+    final now = DateTime.now();
+    final today = HabitRepository.ymd(now);
+    final start = DateTime.tryParse(h.medicineStartDate ?? '');
+    final end = DateTime.tryParse(h.medicineEndDate ?? '');
+    final todayDate = DateTime(now.year, now.month, now.day);
+    final inCourse = (start == null || !todayDate.isBefore(start)) && (end == null || !todayDate.isAfter(end));
+    final times = ReminderScheduleEditor.normalize(h.reminderTimes.map(Habit.parseHHmm)).map(Habit.fmt).toList();
+
+    final statuses = ref.watch(doseStatusesProvider(h.id)).valueOrNull ?? const {};
+    final repo = ref.read(doseLogRepositoryProvider);
+
+    if (!inCourse || times.isEmpty) return card([Text(l.medNoDosesToday)]);
+
+    final adherence = Adherence.compute(h, statuses, now: now);
+    return card([
+      for (final t in times)
+        _DoseRow(
+          time: t,
+          status: statuses[today]?[t],
+          onSet: (s) => repo.setStatus(h.id, today, t, s),
+        ),
+      const Divider(height: 20),
+      Text(
+        adherence.due == 0 ? l.medAdherenceNone : l.medAdherence(adherence.taken, adherence.due),
+        style: theme.textTheme.bodyMedium,
+      ),
+      const SizedBox(height: 4),
+      Text(l.medNotificationHint, style: theme.textTheme.bodySmall),
+    ]);
+  }
+}
+
+class _DoseRow extends StatelessWidget {
+  const _DoseRow({required this.time, required this.status, required this.onSet});
+  final String time;
+  final int? status;
+  final ValueChanged<int?> onSet;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final label = switch (status) {
+      DoseStatus.taken => l.medTaken,
+      DoseStatus.skipped => l.medSkipped,
+      _ => l.medPending,
+    };
+    final icon = switch (status) {
+      DoseStatus.taken => Icon(Icons.check_circle, color: scheme.primary),
+      DoseStatus.skipped => Icon(Icons.remove_circle_outline, color: scheme.outline),
+      _ => Icon(Icons.radio_button_unchecked, color: scheme.outline),
+    };
+    return Semantics(
+      label: l.medDoseSemantics(time, label),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          children: [
+            icon,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text('$time · $label', style: Theme.of(context).textTheme.bodyLarge),
+            ),
+            if (status == null) ...[
+              TextButton(onPressed: () => onSet(DoseStatus.skipped), child: Text(l.medSkip)),
+              const SizedBox(width: 4),
+              FilledButton.tonal(onPressed: () => onSet(DoseStatus.taken), child: Text(l.medTaken)),
+            ] else
+              TextButton(onPressed: () => onSet(null), child: Text(l.medUndo)),
+          ],
         ),
       ),
     );

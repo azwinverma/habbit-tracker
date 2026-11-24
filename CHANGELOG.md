@@ -1,5 +1,17 @@
 # Changelog
 
+## [Unreleased] — Phase 3 (part 1)
+
+### Added
+- **Medicine dose log.** The medicine screen shows today's doses with *Taken* / *Skip* (and *Undo*), plus a 7-day adherence line ("5 of 6 doses taken").
+- **Taken / Snooze 10 min buttons on medicine notifications.** *Taken* is recorded even when the app is closed and appears in the app the next time it opens. A snoozed dose keeps its original day.
+- Medicine screen fully translated (English / नेपाली).
+
+### Fixed
+- **Office walk / stretch reminders now actually fire** (they were saved but never scheduled — D18). Each can be switched on/off with its own interval; reminders run every N minutes between 09:00 and 18:00, and a walk and stretch due at the same minute arrive as one notification. If you had set intervals before, they start reminding after this update.
+- Removed the ad banner that was still shown on the medicine screen.
+- Medicine screen no longer claims a 120-day limit (that limit was removed in Phase 0).
+
 ## [Unreleased] — Phase 2 (in progress)
 
 ### Added

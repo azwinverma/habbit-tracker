@@ -83,3 +83,6 @@ Run on at least one Android 14/15 device and one Android 10–12 device. Install
 | M13 | Add a one-time reading reminder for +5 min | Fires once; never again |
 | M14 | Force-stop app (Settings → Force stop) | Android cancels alarms on force-stop by design; reopening the app re-arms them (documented platform limitation) |
 | M15 | Generic habit with single time (no extra times) | Saves without crash; fires |
+| M16 | Medicine reminder fires; tap **Taken** with the app swiped away; open app | Notification dismissed; medicine screen shows that dose as Taken |
+| M17 | Medicine reminder; tap **Snooze 10 min** | Notification dismissed; same reminder (with buttons) returns ~10 min later |
+| M18 | Exercise: walk every 60 min on, stretch every 120 min on | Notifications at 10:00…18:00 hourly; 11/13/15/17 show "walk and stretch" once (not twice); switching off cancels them |

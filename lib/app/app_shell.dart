@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/habits/presentation/habit_flows.dart';
+import '../services/native_alarm.dart';
 import 'providers.dart';
 import '../l10n/app_localizations.dart';
 
@@ -45,6 +46,8 @@ class _AppShellState extends ConsumerState<AppShell> with WidgetsBindingObserver
   void _syncContent() {
     // Fire-and-forget; works offline (keeps cached catalogue).
     ref.read(contentSyncServiceProvider).syncIfStale();
+    // Doses marked "Taken" from a notification while the app was closed.
+    ref.read(doseLogRepositoryProvider).importNativeActions(NativeAlarmBackend());
   }
 
   int get _navIndex {

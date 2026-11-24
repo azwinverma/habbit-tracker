@@ -28,7 +28,7 @@ P2 can start in parallel with late P1. P4 can start once P1's repository layer e
 | Remove ads around medicine / meditation / reading | ✅ |
 | Dependency hygiene, gitignore secrets, receiver not exported | ✅ |
 | 37 unit tests (model, ids, planner, service) | ✅ |
-| On-device verification (checklist M1–M15) | ⛔ needs a physical device / emulator |
+| On-device verification (checklist M1–M18) | ⛔ needs a physical device / emulator |
 
 ## Phase 1 — Architecture & database 🔄 (core done)
 | # | Task | Status |
@@ -67,8 +67,16 @@ P2 can start in parallel with late P1. P4 can start once P1's repository layer e
 
 ⛔ Logo asset still not in repo (D19).
 
-## Phase 3 — Core features ⬜
-3.1 Medicine: taken/skipped/snoozed log, notification actions, refill reminder, history export (CSV/PDF) · 3.2 Water: container sizes, quick-log notification action, trends · 3.3 Exercise: Health Connect/pedometer steps, **office walk/stretch reminders actually scheduled** (D18) · 3.4 Custom habits: weekly/flexible frequency, pause/archive/reorder, notes · 3.5 Reminder engine v2: actions, snooze, quiet hours, per-category prefs, deep links, diagnostics screen · 3.6 **iOS reminders** via `flutter_local_notifications` zoned schedules (64-pending limit → rolling window) (D20) · 3.7 Mood, sleep, journal, focus timer, routines, weekly reflection (opt-in modules) · 3.8 Localisation EN + NE (ARB), Bikram Sambat date display
+## Phase 3 — Core features 🔄
+| # | Task | Status |
+|---|---|---|
+| 3.1a | Medicine taken/skipped log, undo, 7-day adherence (`habit_logs` metric `dose@HH:mm`) | ✅ |
+| 3.1b | Notification actions Taken / Snooze 10 min (native `DoseActionReceiver`, queued → imported on app open/resume) | ✅ (device check M16–M17 ⛔) |
+| 3.1c | Refill reminder, history export (CSV/PDF), Skip action on notification | ⬜ |
+| 3.3a | **Office walk/stretch reminders scheduled** (D18), merged when coinciding | ✅ (fixed office hours 09–18; configurable hours/weekdays ⬜) |
+| 3.8a | Medicine screen localized; office section localized | ✅. Water / meditation / reading / exercise rest / Discover ⬜ |
+
+Remaining scope: 3.1 Medicine: taken/skipped/snoozed log, notification actions, refill reminder, history export (CSV/PDF) · 3.2 Water: container sizes, quick-log notification action, trends · 3.3 Exercise: Health Connect/pedometer steps, **office walk/stretch reminders actually scheduled** (D18) · 3.4 Custom habits: weekly/flexible frequency, pause/archive/reorder, notes · 3.5 Reminder engine v2: actions, snooze, quiet hours, per-category prefs, deep links, diagnostics screen · 3.6 **iOS reminders** via `flutter_local_notifications` zoned schedules (64-pending limit → rolling window) (D20) · 3.7 Mood, sleep, journal, focus timer, routines, weekly reflection (opt-in modules) · 3.8 Localisation EN + NE (ARB), Bikram Sambat date display
 
 ## Phase 4 — Firebase backend ⛔ (needs Firebase project on Blaze plan)
 Auth (guest → linked account), Firestore per-user data with security rules + emulator tests, outbox sync (MIGRATION_PLAN M2), Remote Config, Analytics (no medicine/journal content), Crashlytics, App Check, Cloud Functions for content sync jobs (Gutendex, wger, …) with license metadata, account deletion + data export.

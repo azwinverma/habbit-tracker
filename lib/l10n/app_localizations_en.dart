@@ -388,4 +388,126 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get obMedicineNote => 'Reminders only — DailyMantra never gives dosing advice.';
+
+  @override
+  String get medTitle => 'Medicine';
+
+  @override
+  String get medSave => 'Save';
+
+  @override
+  String get medSaveSchedule => 'Save & schedule';
+
+  @override
+  String get medName => 'Medicine name';
+
+  @override
+  String get medDose => 'Dose (e.g. 500 mg, 2 tablets)';
+
+  @override
+  String get medNotes => 'Notes (before/after meal, etc.)';
+
+  @override
+  String get medEnable => 'Enable reminders';
+
+  @override
+  String get medStart => 'Start date';
+
+  @override
+  String get medEnd => 'End date';
+
+  @override
+  String get medPick => 'Pick';
+
+  @override
+  String get medNotSet => 'Not set';
+
+  @override
+  String get medCourseHint => 'Reminders repeat every day at each dose time, from the start date to the end date.';
+
+  @override
+  String get medDoseTimes => 'Dose times';
+
+  @override
+  String get medAddTime => 'Add dose time';
+
+  @override
+  String get medNoTimes => 'No dose times yet.';
+
+  @override
+  String get medToday => 'Today\'s doses';
+
+  @override
+  String get medTaken => 'Taken';
+
+  @override
+  String get medSkip => 'Skip';
+
+  @override
+  String get medSkipped => 'Skipped';
+
+  @override
+  String get medPending => 'Not yet';
+
+  @override
+  String get medUndo => 'Undo';
+
+  @override
+  String get medNoDosesToday => 'No doses scheduled today.';
+
+  @override
+  String medAdherence(int taken, int due) {
+    return 'Last 7 days: $taken of $due doses taken';
+  }
+
+  @override
+  String get medAdherenceNone => 'No doses were due in the last 7 days.';
+
+  @override
+  String get medSaved => 'Medicine reminders saved.';
+
+  @override
+  String get medSavedDisabled => 'Saved (reminders are off).';
+
+  @override
+  String get medDefaultName => 'Medicine';
+
+  @override
+  String get medSaveFirst => 'Save to start tracking doses.';
+
+  @override
+  String get medNotificationHint => 'Tip: tap “Taken” on the reminder notification. It is recorded even if the app is closed.';
+
+  @override
+  String medDoseSemantics(String time, String status) {
+    return 'Dose at $time: $status';
+  }
+
+  @override
+  String get exOfficeTitle => 'Office move breaks';
+
+  @override
+  String get exWalk => 'Walk reminders';
+
+  @override
+  String get exStretch => 'Stretch reminders';
+
+  @override
+  String exEvery(int minutes) {
+    return 'Every $minutes min';
+  }
+
+  @override
+  String get exOff => 'Off';
+
+  @override
+  String exOfficeHint(String start, String end) {
+    return 'Reminders between $start and $end every day.';
+  }
+
+  @override
+  String get exWalkEvery => 'Walk every (minutes)';
+
+  @override
+  String get exStretchEvery => 'Stretch every (minutes)';
 }

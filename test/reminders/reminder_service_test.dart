@@ -46,6 +46,14 @@ class FakeBackend implements AlarmBackend {
 
   @override
   Future<void> openExactAlarmSettings() async {}
+
+  List<String> pendingDoseActions = [];
+  @override
+  Future<List<String>> drainDoseActions() async {
+    final out = pendingDoseActions;
+    pendingDoseActions = [];
+    return out;
+  }
 }
 
 Habit _h(String id, {List<String> times = const ['08:00'], bool enabled = true, List<String>? once}) => Habit(

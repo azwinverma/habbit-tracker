@@ -27,7 +27,8 @@ class MainActivity : FlutterActivity() {
                         val hour = call.argument<Number>("hour")?.toInt() ?: 8
                         val minute = call.argument<Number>("minute")?.toInt() ?: 0
                         val endMillis = call.argument<Number>("endMillis")?.toLong()
-                        AlarmScheduler.schedule(this, id, epochMillis, title, body, daily, hour, minute, endMillis)
+                        val dose = call.argument<String>("dose")
+                        AlarmScheduler.schedule(this, id, epochMillis, title, body, daily, hour, minute, endMillis, dose)
                         result.success(null)
                     }
                     "cancel" -> {
@@ -39,6 +40,7 @@ class MainActivity : FlutterActivity() {
                         result.success(null)
                     }
                     "legacyPluginAlarmIds" -> result.success(AlarmScheduler.legacyPluginAlarmIds(this))
+                    "drainDoseActions" -> result.success(AlarmScheduler.drainDoseActions(this))
                     "scheduledIds" -> result.success(AlarmScheduler.scheduledIds(this))
                     "canScheduleExact" -> result.success(AlarmScheduler.canScheduleExact(this))
                     "openExactAlarmSettings" -> {

@@ -29,6 +29,10 @@ abstract class AlarmBackend {
 
   Future<bool> canScheduleExact();
   Future<void> openExactAlarmSettings();
+
+  /// Returns and clears dose actions the user took from notifications while
+  /// the app was closed, as `"<habitId>|YYYY-MM-DD|HH:mm|taken"` lines.
+  Future<List<String>> drainDoseActions();
 }
 
 /// Android implementation backed by the Kotlin `habit_alarms` channel
@@ -51,6 +55,7 @@ class NativeAlarmBackend implements AlarmBackend {
       'hour': spec.hour,
       'minute': spec.minute,
       'endMillis': spec.endAt?.millisecondsSinceEpoch,
+      'dose': spec.doseRef,
     });
   }
 
@@ -105,5 +110,11 @@ class NativeAlarmBackend implements AlarmBackend {
   Future<void> openExactAlarmSettings() async {
     if (!_supported) return;
     await _ch.invokeMethod('openExactAlarmSettings');
+  }
+
+  @override
+  Future<List<String>> drainDoseActions() async {
+    if (!_supported) return const [];
+    return (await _ch.invokeListMethod<String>('drainDoseActions')) ?? const [];
   }
 }

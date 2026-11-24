@@ -808,6 +808,234 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reminders only — DailyMantra never gives dosing advice.'**
   String get obMedicineNote;
+
+  /// No description provided for @medTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Medicine'**
+  String get medTitle;
+
+  /// No description provided for @medSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get medSave;
+
+  /// No description provided for @medSaveSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Save & schedule'**
+  String get medSaveSchedule;
+
+  /// No description provided for @medName.
+  ///
+  /// In en, this message translates to:
+  /// **'Medicine name'**
+  String get medName;
+
+  /// No description provided for @medDose.
+  ///
+  /// In en, this message translates to:
+  /// **'Dose (e.g. 500 mg, 2 tablets)'**
+  String get medDose;
+
+  /// No description provided for @medNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes (before/after meal, etc.)'**
+  String get medNotes;
+
+  /// No description provided for @medEnable.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable reminders'**
+  String get medEnable;
+
+  /// No description provided for @medStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start date'**
+  String get medStart;
+
+  /// No description provided for @medEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'End date'**
+  String get medEnd;
+
+  /// No description provided for @medPick.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick'**
+  String get medPick;
+
+  /// No description provided for @medNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set'**
+  String get medNotSet;
+
+  /// No description provided for @medCourseHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders repeat every day at each dose time, from the start date to the end date.'**
+  String get medCourseHint;
+
+  /// No description provided for @medDoseTimes.
+  ///
+  /// In en, this message translates to:
+  /// **'Dose times'**
+  String get medDoseTimes;
+
+  /// No description provided for @medAddTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Add dose time'**
+  String get medAddTime;
+
+  /// No description provided for @medNoTimes.
+  ///
+  /// In en, this message translates to:
+  /// **'No dose times yet.'**
+  String get medNoTimes;
+
+  /// No description provided for @medToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s doses'**
+  String get medToday;
+
+  /// No description provided for @medTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'Taken'**
+  String get medTaken;
+
+  /// No description provided for @medSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get medSkip;
+
+  /// No description provided for @medSkipped.
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped'**
+  String get medSkipped;
+
+  /// No description provided for @medPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Not yet'**
+  String get medPending;
+
+  /// No description provided for @medUndo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get medUndo;
+
+  /// No description provided for @medNoDosesToday.
+  ///
+  /// In en, this message translates to:
+  /// **'No doses scheduled today.'**
+  String get medNoDosesToday;
+
+  /// No description provided for @medAdherence.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 7 days: {taken} of {due} doses taken'**
+  String medAdherence(int taken, int due);
+
+  /// No description provided for @medAdherenceNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No doses were due in the last 7 days.'**
+  String get medAdherenceNone;
+
+  /// No description provided for @medSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Medicine reminders saved.'**
+  String get medSaved;
+
+  /// No description provided for @medSavedDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved (reminders are off).'**
+  String get medSavedDisabled;
+
+  /// No description provided for @medDefaultName.
+  ///
+  /// In en, this message translates to:
+  /// **'Medicine'**
+  String get medDefaultName;
+
+  /// No description provided for @medSaveFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to start tracking doses.'**
+  String get medSaveFirst;
+
+  /// No description provided for @medNotificationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tip: tap “Taken” on the reminder notification. It is recorded even if the app is closed.'**
+  String get medNotificationHint;
+
+  /// No description provided for @medDoseSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Dose at {time}: {status}'**
+  String medDoseSemantics(String time, String status);
+
+  /// No description provided for @exOfficeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Office move breaks'**
+  String get exOfficeTitle;
+
+  /// No description provided for @exWalk.
+  ///
+  /// In en, this message translates to:
+  /// **'Walk reminders'**
+  String get exWalk;
+
+  /// No description provided for @exStretch.
+  ///
+  /// In en, this message translates to:
+  /// **'Stretch reminders'**
+  String get exStretch;
+
+  /// No description provided for @exEvery.
+  ///
+  /// In en, this message translates to:
+  /// **'Every {minutes} min'**
+  String exEvery(int minutes);
+
+  /// No description provided for @exOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get exOff;
+
+  /// No description provided for @exOfficeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders between {start} and {end} every day.'**
+  String exOfficeHint(String start, String end);
+
+  /// No description provided for @exWalkEvery.
+  ///
+  /// In en, this message translates to:
+  /// **'Walk every (minutes)'**
+  String get exWalkEvery;
+
+  /// No description provided for @exStretchEvery.
+  ///
+  /// In en, this message translates to:
+  /// **'Stretch every (minutes)'**
+  String get exStretchEvery;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

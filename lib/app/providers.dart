@@ -8,6 +8,7 @@ import '../features/content/data/content_repository.dart';
 import '../features/content/data/content_sync_service.dart';
 import '../features/content/domain/content_item.dart';
 import '../features/habits/data/habit_repository.dart';
+import '../features/medicine/data/dose_log_repository.dart';
 import '../models/habit.dart';
 import '../services/notification_service.dart';
 
@@ -51,6 +52,27 @@ final dailyTotalsProvider = StreamProvider.family<Map<String, Map<String, int>>,
 
   yield await load();
   await for (final _ in repo.watchLogs()) {
+    yield await load();
+  }
+});
+
+final doseLogRepositoryProvider =
+    Provider<DoseLogRepository>((ref) => DoseLogRepository(ref.watch(appDatabaseProvider)));
+
+/// Dose outcomes (day -> HH:mm -> status) for one medicine over the last
+/// 7 days, live.
+final doseStatusesProvider =
+    StreamProvider.family<Map<String, Map<String, int>>, String>((ref, habitId) async* {
+  final repo = ref.watch(doseLogRepositoryProvider);
+  Future<Map<String, Map<String, int>>> load() {
+    final now = DateTime.now();
+    return repo.statuses(habitId,
+        fromDay: HabitRepository.ymd(DateTime(now.year, now.month, now.day - 6)),
+        toDay: HabitRepository.ymd(now));
+  }
+
+  yield await load();
+  await for (final _ in repo.watch()) {
     yield await load();
   }
 });

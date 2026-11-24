@@ -35,7 +35,9 @@ object AlarmScheduler {
         daily: Boolean,
         hour: Int,
         minute: Int,
-        endMillis: Long?
+        endMillis: Long?,
+        dose: String? = null,
+        doseDay: String? = null
     ) {
         val spec = JSONObject().apply {
             put("id", id)
@@ -46,6 +48,8 @@ object AlarmScheduler {
             put("hour", hour)
             put("minute", minute)
             if (endMillis != null) put("end", endMillis)
+            if (dose != null) put("dose", dose)
+            if (doseDay != null) put("doseDay", doseDay)
         }
         prefs(context).edit().putString(KEY_PREFIX + id, spec.toString()).apply()
         arm(context, id, atMillis, title, body, daily, hour, minute)
@@ -108,10 +112,11 @@ object AlarmScheduler {
                 val next = nextDaily(hour, minute, now, notBefore = maxOf(now, dayStart(at)))
                 val end = if (s.has("end")) s.optLong("end") else null
                 if (end != null && next > end) { remove(context, id); continue }
-                schedule(context, id, next, title, body, true, hour, minute, end)
+                schedule(context, id, next, title, body, true, hour, minute, end, s.optStringOrNull("dose"))
             } else {
                 // One-shot that was missed while the device was off: drop it.
                 if (at <= now) { remove(context, id); continue }
+                // (dose/doseDay stay in the store; the receiver reads them from there.)
                 arm(context, id, at, title, body, false, hour, minute)
             }
         }
@@ -165,6 +170,34 @@ object AlarmScheduler {
         }
     }
 
+    // ---- Medicine dose actions (notification buttons) ----
+
+    private const val DOSE_PREFS = "dm_dose_actions"
+    private const val DOSE_KEY = "pending"
+
+    /** Queues "<habitId>|YYYY-MM-DD|HH:mm|taken" for the app to import on next open. */
+    fun recordDoseAction(context: Context, line: String) {
+        val p = context.getSharedPreferences(DOSE_PREFS, Context.MODE_PRIVATE)
+        synchronized(this) {
+            val arr = try { org.json.JSONArray(p.getString(DOSE_KEY, "[]")) } catch (e: Exception) { org.json.JSONArray() }
+            arr.put(line)
+            p.edit().putString(DOSE_KEY, arr.toString()).commit()
+        }
+    }
+
+    /** Returns and clears the queued dose actions. */
+    fun drainDoseActions(context: Context): List<String> {
+        val p = context.getSharedPreferences(DOSE_PREFS, Context.MODE_PRIVATE)
+        synchronized(this) {
+            val arr = try { org.json.JSONArray(p.getString(DOSE_KEY, "[]")) } catch (e: Exception) { org.json.JSONArray() }
+            p.edit().remove(DOSE_KEY).commit()
+            return (0 until arr.length()).map { arr.getString(it) }
+        }
+    }
+
+    /** Request code for a snoozed copy of alarm [id]; distinct from Dart's ids in practice. */
+    fun snoozeId(id: Int): Int = (id xor 0x5A5A5A5A) and 0x7FFFFFFF
+
     private fun dayStart(millis: Long): Long = Calendar.getInstance().apply {
         timeInMillis = millis
         set(Calendar.HOUR_OF_DAY, 0)
@@ -179,3 +212,6 @@ object AlarmScheduler {
     private fun alarmManager(context: Context) =
         context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 }
+
+internal fun JSONObject.optStringOrNull(key: String): String? =
+    if (has(key) && !isNull(key)) optString(key) else null

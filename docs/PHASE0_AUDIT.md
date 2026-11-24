@@ -39,7 +39,7 @@ Severity: **S1** = loses/duplicates critical reminders or crashes · **S2** = wr
 | D15 | S3 | Broken template widget test. | **Fixed** (replaced by 37 real tests) |
 | D16 | S3 | Root `.gitignore` did not exclude `daily-mantra.jks` / `key.properties`. | **Fixed** |
 | D17 | S3 | Rename CLI tools in runtime `dependencies`. | **Fixed** (moved to dev) |
-| D18 | S2 | Office "walk every / stretch every" intervals are saved but **never scheduled** — the feature does nothing. | Open → Phase 3 |
+| D18 | S2 | Office "walk every / stretch every" intervals are saved but **never scheduled** — the feature does nothing. | ✅ Fixed (Phase 3): scheduled as daily reminders in office hours |
 | D19 | S2 | Splash references `assets/branding/*.png` that don't exist; no assets declared. New logo not in repo. | Open → blocked on logo (Phase 2) |
 | D20 | S2 | iOS: no reminder implementation at all (all paths are Android-only). | Open → Phase 3 |
 | D21 | S2 | API base URL hard-coded in two screens; no environment config. | Open → Phase 1 |

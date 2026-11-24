@@ -12,6 +12,8 @@ import '../services/storage_service.dart';
 
 // Notifications
 import '../core/reminders/reminder_service.dart';
+import '../core/reminders/habit_reminder_planner.dart';
+import '../l10n/app_localizations.dart';
 
 // In-app video (free resources via YouTube)
 import 'package:webview_flutter/webview_flutter.dart';
@@ -235,35 +237,47 @@ class _ExerciseScreenState extends State<ExerciseScreen>
     setState(() => _lastShownSteps = 0);
   }
 
-  // ---------- Office worker cues (stored only; schedule later if you want) ----------
-  Future<void> _setWalkInterval() async {
+  // ---------- Office move breaks (D18: now actually scheduled) ----------
+  Future<void> _setOfficeInterval({required bool walk}) async {
+    final l = AppLocalizations.of(context);
     final v = await _askInt(context,
-        title: 'Walk every (minutes)',
-        initial: _h.officeWalkEveryMin ?? 60,
-        min: 10,
+        title: walk ? l.exWalkEvery : l.exStretchEvery,
+        initial: (walk ? _h.officeWalkEveryMin : _h.officeStretchEveryMin) ?? (walk ? 60 : 120),
+        min: HabitReminderPlanner.minOfficeInterval,
         max: 240,
-        step: 5);
-    if (v != null) {
-      _h.officeWalkEveryMin = v;
-      await _persistHabitOnly();
-      _snack('Saved walk interval ($v min).');
-      setState(() {});
-    }
+        step: 15);
+    if (v == null) return;
+    await _applyOffice(walk: walk, minutes: v);
   }
 
-  Future<void> _setStretchInterval() async {
-    final v = await _askInt(context,
-        title: 'Stretch every (minutes)',
-        initial: _h.officeStretchEveryMin ?? 120,
-        min: 10,
-        max: 240,
-        step: 5);
-    if (v != null) {
-      _h.officeStretchEveryMin = v;
-      await _persistHabitOnly();
-      _snack('Saved stretch interval ($v min).');
-      setState(() {});
-    }
+  Future<void> _applyOffice({required bool walk, required int? minutes}) async {
+    setState(() {
+      if (walk) {
+        _h.officeWalkEveryMin = minutes;
+      } else {
+        _h.officeStretchEveryMin = minutes;
+      }
+    });
+    await _persistHabitOnly();
+    await ReminderService.instance.syncHabit(_h);
+  }
+
+  Widget _officeRow(AppLocalizations l, {required bool walk}) {
+    final every = walk ? _h.officeWalkEveryMin : _h.officeStretchEveryMin;
+    final on = every != null && every > 0;
+    return SwitchListTile(
+      contentPadding: EdgeInsets.zero,
+      secondary: Icon(walk ? Icons.directions_walk : Icons.self_improvement),
+      title: Text(walk ? l.exWalk : l.exStretch),
+      subtitle: InkWell(
+        onTap: on ? () => _setOfficeInterval(walk: walk) : null,
+        child: Text(on ? '${l.exEvery(every)}  ✎' : l.exOff),
+      ),
+      value: on,
+      onChanged: (v) => v
+          ? _setOfficeInterval(walk: walk)
+          : _applyOffice(walk: walk, minutes: null),
+    );
   }
 
   // ---------- Schedule ----------
@@ -479,55 +493,27 @@ class _ExerciseScreenState extends State<ExerciseScreen>
 
         const SizedBox(height: 14),
 
-        // Office worker helpers
+        // Office move breaks
         Card(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Office Worker Helpers', style: Theme.of(context).textTheme.titleLarge),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text('Walk every'),
-                        subtitle: Text('${_h.officeWalkEveryMin ?? 60} min'),
-                      ),
-                    ),
-                    OutlinedButton.icon(
-                      onPressed: _setWalkInterval,
-                      icon: const Icon(Icons.directions_walk),
-                      label: const Text('Set'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text('Stretch every'),
-                        subtitle: Text('${_h.officeStretchEveryMin ?? 120} min'),
-                      ),
-                    ),
-                    OutlinedButton.icon(
-                      onPressed: _setStretchInterval,
-                      icon: const Icon(Icons.self_improvement),
-                      label: const Text('Set'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Tip: these intervals are saved in your habit. You can later map them to actual daily times for notifications.',
-                  style: TextStyle(fontSize: 12),
-                ),
-              ],
-            ),
+            child: Builder(builder: (context) {
+              final l = AppLocalizations.of(context);
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(l.exOfficeTitle, style: Theme.of(context).textTheme.titleLarge),
+                  const SizedBox(height: 6),
+                  _officeRow(l, walk: true),
+                  _officeRow(l, walk: false),
+                  const SizedBox(height: 6),
+                  Text(
+                    l.exOfficeHint(Habit.fmt(HabitReminderPlanner.officeStart), Habit.fmt(HabitReminderPlanner.officeEnd)),
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              );
+            }),
           ),
         ),
 

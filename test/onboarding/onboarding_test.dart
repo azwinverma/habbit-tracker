@@ -33,6 +33,8 @@ class _FakeBackend implements AlarmBackend {
   Future<bool> canScheduleExact() async => true;
   @override
   Future<void> openExactAlarmSettings() async {}
+  @override
+  Future<List<String>> drainDoseActions() async => const [];
 }
 
 void main() {

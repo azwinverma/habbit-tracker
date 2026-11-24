@@ -25,6 +25,10 @@ class ReminderSpec {
   final String title;
   final String body;
 
+  /// For medicine doses: `"<habitId>|HH:mm"`. The notification then offers
+  /// Taken / Snooze actions, recorded natively and imported on next app open.
+  final String? doseRef;
+
   ReminderSpec({
     required this.key,
     required this.kind,
@@ -34,6 +38,7 @@ class ReminderSpec {
     required this.title,
     required this.body,
     this.endAt,
+    this.doseRef,
   });
 
   int get id => stableAlarmId(key);

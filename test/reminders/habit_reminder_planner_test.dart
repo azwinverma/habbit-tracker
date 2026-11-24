@@ -170,4 +170,62 @@ void main() {
       expect(specs.length, 4); // was up to 480 one-shot alarms (Android caps ~500/app)
     });
   });
+
+  group('medicine dose actions', () {
+    test('medicine daily specs carry a dose ref; other categories do not', () {
+      final now = DateTime(2026, 11, 24, 6);
+      final m = Habit(id: 'm', name: 'Med', enabled: true, reminderHour: 8, reminderMinute: 0,
+          reminderTimes: ['8:0', '20:00'], category: HabitCategory.medicine);
+      expect(HabitReminderPlanner.plan(m, now).map((s) => s.doseRef), ['m|08:00', 'm|20:00']);
+      final w = Habit(id: 'w', name: 'Water', enabled: true, reminderHour: 8, reminderMinute: 0,
+          category: HabitCategory.water);
+      expect(HabitReminderPlanner.plan(w, now).single.doseRef, isNull);
+    });
+  });
+
+  group('office move breaks (D18)', () {
+    final now = DateTime(2026, 11, 24, 6);
+    Habit ex({int? walk, int? stretch, bool enabled = true}) => Habit(
+        id: 'e', name: 'Exercise', enabled: enabled, reminderHour: 7, reminderMinute: 0,
+        reminderTimes: ['07:00'], category: HabitCategory.exercise,
+        officeWalkEveryMin: walk, officeStretchEveryMin: stretch);
+    List<ReminderSpec> office(Habit h) =>
+        HabitReminderPlanner.plan(h, now).where((s) => s.key.contains('|office|')).toList();
+
+    test('none when intervals are off', () {
+      expect(office(ex()), isEmpty);
+      expect(HabitReminderPlanner.plan(ex(), now).length, 1); // just the workout time
+    });
+
+    test('hourly walk fires 10:00..18:00 inside office hours', () {
+      final s = office(ex(walk: 60));
+      expect(s.map((x) => '${x.hour}:${x.minute}'),
+          ['10:0', '11:0', '12:0', '13:0', '14:0', '15:0', '16:0', '17:0', '18:0']);
+      expect(s.every((x) => x.kind == ReminderKind.daily && x.body.contains('walk')), isTrue);
+    });
+
+    test('walk and stretch at the same minute merge into one reminder', () {
+      final s = office(ex(walk: 60, stretch: 120));
+      expect(s.length, 9);
+      final merged = s.where((x) => x.key.contains('walk+stretch')).map((x) => x.hour).toList();
+      expect(merged, [11, 13, 15, 17]);
+      expect(s.map((x) => x.id).toSet().length, 9);
+    });
+
+    test('tiny intervals are clamped to the minimum', () {
+      expect(HabitReminderPlanner.officeTimes(1).length,
+          HabitReminderPlanner.officeTimes(HabitReminderPlanner.minOfficeInterval).length);
+      expect(HabitReminderPlanner.officeTimes(15).length, 36);
+    });
+
+    test('disabled habit has no office reminders', () {
+      expect(office(ex(walk: 60, enabled: false)), isEmpty);
+    });
+
+    test('ids are stable across re-plans (no duplicate alarms)', () {
+      final a = office(ex(walk: 45, stretch: 90)).map((x) => x.id).toList();
+      final b = office(ex(walk: 45, stretch: 90)).map((x) => x.id).toList();
+      expect(a, b);
+    });
+  });
 }

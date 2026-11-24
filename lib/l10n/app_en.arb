@@ -2,18 +2,25 @@
   "@@locale": "en",
   "appTitle": "DailyMantra",
   "tagline": "Small habits. Better days.",
-
   "navToday": "Today",
   "navPlan": "Plan",
   "navAdd": "Add",
   "navInsights": "Insights",
   "navYou": "You",
-
   "greetingMorning": "Good morning",
   "greetingAfternoon": "Good afternoon",
   "greetingEvening": "Good evening",
   "todayProgress": "{done} of {total} done today",
-  "@todayProgress": { "placeholders": { "done": { "type": "int" }, "total": { "type": "int" } } },
+  "@todayProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "todayProgressLabel": "Today's progress",
   "quickAdd": "Quick Add",
   "yourHabits": "Your Habits",
@@ -21,12 +28,29 @@
   "addAHabit": "Add a habit",
   "discover": "Discover",
   "discoverNew": "Discover ({count} new)",
-  "@discoverNew": { "placeholders": { "count": { "type": "int" } } },
+  "@discoverNew": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "markDone": "Mark {name} done",
-  "@markDone": { "placeholders": { "name": { "type": "String" } } },
+  "@markDone": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "markNotDone": "Mark {name} not done",
-  "@markNotDone": { "placeholders": { "name": { "type": "String" } } },
-
+  "@markNotDone": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "qaMedicine": "Medicine",
   "qaWater": "Water Intake",
   "qaMeditation": "Meditation",
@@ -36,7 +60,6 @@
   "qaOthers": "Others",
   "addSheetTitle": "Add",
   "addBrowseContent": "Browse free books, sounds & exercises",
-
   "planTitle": "Plan",
   "reminderHealth": "Reminder health",
   "notifications": "Notifications",
@@ -57,8 +80,13 @@
   "reminderDaily": "Daily",
   "reminderOnce": "One-time",
   "couldNotLoad": "Could not load. {error}",
-  "@couldNotLoad": { "placeholders": { "error": { "type": "String" } } },
-
+  "@couldNotLoad": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "insightsTitle": "Insights",
   "last7Days": "Last 7 days",
   "basedOnLogged": "Based on what you logged in DailyMantra.",
@@ -73,8 +101,16 @@
   "unitMin": "min",
   "unitSteps": "steps",
   "loggedOnDays": "Logged on {active} of {total} days",
-  "@loggedOnDays": { "placeholders": { "active": { "type": "int" }, "total": { "type": "int" } } },
-
+  "@loggedOnDays": {
+    "placeholders": {
+      "active": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "youTitle": "You",
   "appearance": "Appearance",
   "themeSystem": "System",
@@ -89,13 +125,34 @@
   "freeContent": "Free content",
   "contentNotLoaded": "Not loaded yet",
   "contentStatus": "{count} items · updated {when}",
-  "@contentStatus": { "placeholders": { "count": { "type": "int" }, "when": { "type": "String" } } },
+  "@contentStatus": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "when": {
+        "type": "String"
+      }
+    }
+  },
   "contentFailed": "Last refresh failed · {count} saved · retrying later",
-  "@contentFailed": { "placeholders": { "count": { "type": "int" } } },
+  "@contentFailed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "checkNewContent": "Check for new content now",
   "contentUnreachable": "Could not reach content sources. You can still use what's saved.",
   "newItemsAdded": "{count} new items added",
-  "@newItemsAdded": { "placeholders": { "count": { "type": "int" } } },
+  "@newItemsAdded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "upToDate": "You're up to date",
   "sourcesLicences": "Sources & licences",
   "sourcesIntro": "DailyMantra only uses content that is free to reuse, including in an ad-supported app: public domain, CC0, CC BY and CC BY-SA. Each item shows its author and licence.",
@@ -104,13 +161,30 @@
   "privacyBody": "Habits, medicine schedules and history are stored only on your phone. Optional backup and sync will come later and will always be your choice.",
   "justNow": "just now",
   "minutesAgo": "{n} min ago",
-  "@minutesAgo": { "placeholders": { "n": { "type": "int" } } },
+  "@minutesAgo": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "hoursAgo": "{n} h ago",
-  "@hoursAgo": { "placeholders": { "n": { "type": "int" } } },
+  "@hoursAgo": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "daysAgo": "{n} d ago",
-  "@daysAgo": { "placeholders": { "n": { "type": "int" } } },
+  "@daysAgo": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "never": "never",
-
   "obWelcomeBody": "Plan your day, keep up with water, medicine, movement, reading and calm — one small step at a time.",
   "obChooseLanguage": "Choose your language",
   "obContinue": "Continue",
@@ -137,5 +211,80 @@
   "obPrivacyBody": "Everything stays on your phone. No account needed.",
   "obRemindersNote": "Next, your phone may ask to allow notifications so DailyMantra can remind you at the times you chose.",
   "obStart": "Start my day",
-  "obMedicineNote": "Reminders only — DailyMantra never gives dosing advice."
+  "obMedicineNote": "Reminders only — DailyMantra never gives dosing advice.",
+  "medTitle": "Medicine",
+  "medSave": "Save",
+  "medSaveSchedule": "Save & schedule",
+  "medName": "Medicine name",
+  "medDose": "Dose (e.g. 500 mg, 2 tablets)",
+  "medNotes": "Notes (before/after meal, etc.)",
+  "medEnable": "Enable reminders",
+  "medStart": "Start date",
+  "medEnd": "End date",
+  "medPick": "Pick",
+  "medNotSet": "Not set",
+  "medCourseHint": "Reminders repeat every day at each dose time, from the start date to the end date.",
+  "medDoseTimes": "Dose times",
+  "medAddTime": "Add dose time",
+  "medNoTimes": "No dose times yet.",
+  "medToday": "Today's doses",
+  "medTaken": "Taken",
+  "medSkip": "Skip",
+  "medSkipped": "Skipped",
+  "medPending": "Not yet",
+  "medUndo": "Undo",
+  "medNoDosesToday": "No doses scheduled today.",
+  "medAdherence": "Last 7 days: {taken} of {due} doses taken",
+  "@medAdherence": {
+    "placeholders": {
+      "taken": {
+        "type": "int"
+      },
+      "due": {
+        "type": "int"
+      }
+    }
+  },
+  "medAdherenceNone": "No doses were due in the last 7 days.",
+  "medSaved": "Medicine reminders saved.",
+  "medSavedDisabled": "Saved (reminders are off).",
+  "medDefaultName": "Medicine",
+  "medSaveFirst": "Save to start tracking doses.",
+  "medNotificationHint": "Tip: tap “Taken” on the reminder notification. It is recorded even if the app is closed.",
+  "medDoseSemantics": "Dose at {time}: {status}",
+  "@medDoseSemantics": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "exOfficeTitle": "Office move breaks",
+  "exWalk": "Walk reminders",
+  "exStretch": "Stretch reminders",
+  "exEvery": "Every {minutes} min",
+  "@exEvery": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "exOff": "Off",
+  "exOfficeHint": "Reminders between {start} and {end} every day.",
+  "@exOfficeHint": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "exWalkEvery": "Walk every (minutes)",
+  "exStretchEvery": "Stretch every (minutes)"
 }

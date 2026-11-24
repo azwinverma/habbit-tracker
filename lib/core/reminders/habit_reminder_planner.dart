@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart' show TimeOfDay;
+
 import '../../models/habit.dart';
 import 'reminder_spec.dart';
 
@@ -47,7 +49,12 @@ class HabitReminderPlanner {
         endAt: endAt,
         title: copy.title,
         body: copy.dailyBody(Habit.fmt(t)),
+        doseRef: h.category == HabitCategory.medicine ? '${h.id}|${Habit.fmt(t)}' : null,
       ));
+    }
+
+    if (h.category == HabitCategory.exercise) {
+      specs.addAll(_officeCues(h, now));
     }
 
     for (final iso in h.oneTimeReminders.toSet()) {
@@ -65,6 +72,63 @@ class HabitReminderPlanner {
     }
 
     return specs;
+  }
+
+  /// Office hours used for walk/stretch cues (D18). Cues fire every N minutes
+  /// strictly after [officeStart] up to and including [officeEnd].
+  static const officeStart = TimeOfDay(hour: 9, minute: 0);
+  static const officeEnd = TimeOfDay(hour: 18, minute: 0);
+  static const minOfficeInterval = 15;
+
+  /// Wall-clock times for an interval cue within office hours.
+  static List<TimeOfDay> officeTimes(int everyMin) {
+    final step = everyMin < minOfficeInterval ? minOfficeInterval : everyMin;
+    final start = officeStart.hour * 60 + officeStart.minute;
+    final end = officeEnd.hour * 60 + officeEnd.minute;
+    return [
+      for (var m = start + step; m <= end; m += step) TimeOfDay(hour: m ~/ 60, minute: m % 60),
+    ];
+  }
+
+  /// Walk / stretch cues as daily reminders. When both fall on the same minute
+  /// they are merged into one notification instead of two.
+  static List<ReminderSpec> _officeCues(Habit h, DateTime now) {
+    final walk = h.officeWalkEveryMin;
+    final stretch = h.officeStretchEveryMin;
+    final byTime = <String, Set<String>>{};
+    if (walk != null && walk > 0) {
+      for (final t in officeTimes(walk)) {
+        byTime.putIfAbsent(Habit.fmt(t), () => {}).add('walk');
+      }
+    }
+    if (stretch != null && stretch > 0) {
+      for (final t in officeTimes(stretch)) {
+        byTime.putIfAbsent(Habit.fmt(t), () => {}).add('stretch');
+      }
+    }
+    final keys = byTime.keys.toList()..sort();
+    return [
+      for (final hhmm in keys)
+        () {
+          final kinds = byTime[hhmm]!;
+          final t = Habit.parseHHmm(hhmm);
+          final both = kinds.length == 2;
+          final kind = both ? 'walk+stretch' : kinds.first;
+          return ReminderSpec(
+            key: '${h.id}|office|$kind|$hhmm',
+            kind: ReminderKind.daily,
+            firstAt: nextOccurrence(t.hour, t.minute, now: now),
+            hour: t.hour,
+            minute: t.minute,
+            title: 'Move break',
+            body: both
+                ? 'Stand up, walk a little and stretch 🚶🙆'
+                : kind == 'walk'
+                    ? 'Time for a short walk 🚶'
+                    : 'Time to stretch 🙆',
+          );
+        }(),
+    ];
   }
 
   /// Next local occurrence of [hour]:[minute] strictly after [now] and on or

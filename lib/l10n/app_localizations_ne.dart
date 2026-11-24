@@ -388,4 +388,126 @@ class AppLocalizationsNe extends AppLocalizations {
 
   @override
   String get obMedicineNote => 'रिमाइन्डर मात्र — DailyMantra ले औषधिको मात्राबारे सल्लाह दिँदैन।';
+
+  @override
+  String get medTitle => 'औषधि';
+
+  @override
+  String get medSave => 'सेभ';
+
+  @override
+  String get medSaveSchedule => 'सेभ र तालिका बनाउनुहोस्';
+
+  @override
+  String get medName => 'औषधिको नाम';
+
+  @override
+  String get medDose => 'मात्रा (जस्तै ५०० मि.ग्रा., २ चक्की)';
+
+  @override
+  String get medNotes => 'टिप्पणी (खाना अघि/पछि, आदि)';
+
+  @override
+  String get medEnable => 'रिमाइन्डर सक्रिय गर्नुहोस्';
+
+  @override
+  String get medStart => 'सुरु मिति';
+
+  @override
+  String get medEnd => 'अन्त्य मिति';
+
+  @override
+  String get medPick => 'छान्नुहोस्';
+
+  @override
+  String get medNotSet => 'सेट गरिएको छैन';
+
+  @override
+  String get medCourseHint => 'सुरु मितिदेखि अन्त्य मितिसम्म हरेक दिन प्रत्येक मात्राको समयमा रिमाइन्डर आउँछ।';
+
+  @override
+  String get medDoseTimes => 'मात्राको समय';
+
+  @override
+  String get medAddTime => 'मात्राको समय थप्नुहोस्';
+
+  @override
+  String get medNoTimes => 'अहिलेसम्म कुनै समय छैन।';
+
+  @override
+  String get medToday => 'आजका मात्राहरू';
+
+  @override
+  String get medTaken => 'खाएँ';
+
+  @override
+  String get medSkip => 'छोड्नुहोस्';
+
+  @override
+  String get medSkipped => 'छोडियो';
+
+  @override
+  String get medPending => 'बाँकी';
+
+  @override
+  String get medUndo => 'पूर्ववत्';
+
+  @override
+  String get medNoDosesToday => 'आज कुनै मात्रा तालिकामा छैन।';
+
+  @override
+  String medAdherence(int taken, int due) {
+    return 'पछिल्लो ७ दिन: $due मध्ये $taken मात्रा खाइयो';
+  }
+
+  @override
+  String get medAdherenceNone => 'पछिल्लो ७ दिनमा कुनै मात्रा बाँकी थिएन।';
+
+  @override
+  String get medSaved => 'औषधि रिमाइन्डर सेभ भयो।';
+
+  @override
+  String get medSavedDisabled => 'सेभ भयो (रिमाइन्डर बन्द छ)।';
+
+  @override
+  String get medDefaultName => 'औषधि';
+
+  @override
+  String get medSaveFirst => 'मात्रा ट्र्याक गर्न पहिले सेभ गर्नुहोस्।';
+
+  @override
+  String get medNotificationHint => 'सुझाव: रिमाइन्डर सूचनामा “Taken” थिच्नुहोस्। एप बन्द भए पनि यो रेकर्ड हुन्छ।';
+
+  @override
+  String medDoseSemantics(String time, String status) {
+    return '$time को मात्रा: $status';
+  }
+
+  @override
+  String get exOfficeTitle => 'अफिसमा हिँड्ने/तन्किने ब्रेक';
+
+  @override
+  String get exWalk => 'हिँड्ने रिमाइन्डर';
+
+  @override
+  String get exStretch => 'तन्किने रिमाइन्डर';
+
+  @override
+  String exEvery(int minutes) {
+    return 'हरेक $minutes मिनेट';
+  }
+
+  @override
+  String get exOff => 'बन्द';
+
+  @override
+  String exOfficeHint(String start, String end) {
+    return 'हरेक दिन $start देखि $end सम्म रिमाइन्डर आउँछ।';
+  }
+
+  @override
+  String get exWalkEvery => 'हरेक कति मिनेटमा हिँड्ने';
+
+  @override
+  String get exStretchEvery => 'हरेक कति मिनेटमा तन्किने';
 }
