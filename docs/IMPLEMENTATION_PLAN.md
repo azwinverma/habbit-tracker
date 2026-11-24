@@ -53,8 +53,8 @@ P2 can start in parallel with late P1. P4 can start once P1's repository layer e
 ## Phase 2 — Brand & UI 🔄
 | # | Task | Status |
 |---|---|---|
-| 2.1 | Brand colour tokens (blueprint palette), light/dark | ✅ (`lib/app/theme.dart`). Contrast audit per pairing ⬜ |
-| 2.1b | Brand typography (Plus Jakarta Sans + Noto Sans Devanagari) | ⬜ deferred until the brand assets arrive. Android's built-in Noto Sans Devanagari renders Nepali meanwhile |
+| 2.1 | Brand colour tokens (blueprint palette), light/dark | ✅ (`lib/app/theme.dart`). Contrast audit ✅ (66 automated checks) |
+| 2.1b | Brand typography (Plus Jakarta Sans + Noto Sans Devanagari) | ✅ bundled (OFL), see `DESIGN_SYSTEM.md` |
 | 2.2 | Theme preference (system/light/dark) | ✅ |
 | 2.3 | Shared components: `ReminderScheduleEditor` (replaces 3 copied implementations; shows and removes saved one-time reminders) | ✅. Session timer / action button extraction ⬜ |
 | 2.4 | Onboarding: welcome + language, goals, 1–3 starter habits with times, privacy; skippable; existing users skip; permission asked only after first reminder | ✅ |
@@ -64,6 +64,7 @@ P2 can start in parallel with late P1. P4 can start once P1's repository layer e
 | 2.7 | Analyzer clean (deprecations, async gaps, unused code) | ✅ **0 issues** |
 | 2.8 | Accessibility pass | 🔄 semantics on done-toggle, progress, reminder editor tooltips. TalkBack / 200% text audit on device ⬜ |
 | 2.9 | Splitting the large category screens into widgets | ⬜ (with Phase 3 rebuilds) |
+| 2.10 | **Redesign:** design tokens + components, Today bento dashboard with one-tap water/medicine, Add sheet, Plan, Insights, You, splash; responsive widths | ✅ |
 
 ⛔ Logo asset still not in repo (D19).
 

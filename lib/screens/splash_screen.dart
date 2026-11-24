@@ -2,6 +2,9 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+import '../app/theme.dart';
+import '../l10n/app_localizations.dart';
 import 'package:flutter/services.dart';
 
 // Your app screens/services
@@ -100,177 +103,100 @@ await NotificationService.initializeBackground();
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    // Prefer dedicated light/dark brand marks; fall back to generic icon.
-    final AssetImage? brandImage = _tryAsset(
-      isDark
-          ? 'assets/branding/daily_mantra_logo_dark.png'
-          : 'assets/branding/daily_mantra_logo_light.png',
-    );
+    final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
+    // Brand splash: solid Deep Teal, white mark (no gradients, per brand).
+    const bg = BrandColors.deepTeal;
+    const fg = Colors.white;
+    final brandImage = _tryAsset('assets/branding/daily_mantra_logo_light.png');
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+      value: SystemUiOverlayStyle.light,
       child: Scaffold(
-        body: Container(
-          width: double.infinity,
-          height: double.infinity,
-          decoration: BoxDecoration(
-            // Soft gradient background
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: isDark
-                  ? [
-                      const Color(0xFF0F1221),
-                      const Color(0xFF1A1F36),
-                    ]
-                  : [
-                      const Color(0xFFF9FAFB),
-                      const Color(0xFFEFF6FF),
-                    ],
-            ),
-          ),
-          child: SafeArea(
-            child: Stack(
-              children: [
-                // Centerpiece: logo + title
-                Center(
-                  child: FadeTransition(
-                    opacity: _fade,
-                    child: ScaleTransition(
-                      scale: _scale,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 120,
-                            height: 120,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.12),
-                                  blurRadius: 20,
-                                  spreadRadius: 2,
-                                  offset: const Offset(0, 10),
-                                ),
-                              ],
-                              color: isDark
-                                  ? const Color(0xFF1E2238)
-                                  : Colors.white,
-                            ),
-                            padding: const EdgeInsets.all(18),
-                            child: ClipOval(
-                              child: brandImage != null
-                                  ? Image(
-                                      image: brandImage,
-                                      fit: BoxFit.contain,
-                                      errorBuilder: (_, __, ___) => Icon(
-                                        Icons.self_improvement,
-                                        size: 60,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .primary,
-                                      ),
-                                    )
-                                  : Icon(
-                                      Icons.self_improvement,
-                                      size: 60,
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
-                                    ),
-                            ),
-                          ),
-                          const SizedBox(height: 18),
-                          Text(
-                            'Daily Mantra',
-                            style: Theme.of(context)
-                                .textTheme
-                                .headlineSmall
-                                ?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 0.2,
-                                ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Habits • Mindfulness • Health',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
-                                      ?.color
-                                      ?.withValues(alpha: 0.75),
-                                ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Bottom progress / error + retry
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 28,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32),
+        backgroundColor: bg,
+        body: SafeArea(
+          child: Stack(
+            children: [
+              Center(
+                child: FadeTransition(
+                  opacity: _fade,
+                  child: ScaleTransition(
+                    scale: _scale,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (_error == null) ...[
-                          LinearProgressIndicator(
-                            minHeight: 4,
-                            borderRadius: BorderRadius.circular(10),
+                        Container(
+                          width: 104,
+                          height: 104,
+                          decoration: BoxDecoration(
+                            color: BrandColors.mint,
+                            borderRadius: BorderRadius.circular(32),
                           ),
-                          const SizedBox(height: 12),
-                          Text(
-                            'Preparing your experience…',
-                            textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ] else ...[
-                          Text(
-                            'Startup error:\n$_error',
-                            textAlign: TextAlign.center,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(color: Colors.redAccent),
-                          ),
-                          const SizedBox(height: 8),
-                          FilledButton.icon(
-                            onPressed: () {
-                              setState(() => _error = null);
-                              _init();
-                            },
-                            icon: const Icon(Icons.refresh),
-                            label: const Text('Retry'),
-                          )
-                        ],
-                        if (kDebugMode) ...[
-                          const SizedBox(height: 6),
-                          Text(
-                            'DEBUG build',
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelSmall
-                                ?.copyWith(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .primary
-                                      .withValues(alpha: 0.8),
-                                ),
-                          ),
-                        ]
+                          padding: const EdgeInsets.all(18),
+                          child: brandImage != null
+                              ? Image(
+                                  image: brandImage,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (_, __, ___) =>
+                                      const Icon(Icons.spa_rounded, size: 56, color: BrandColors.deepTeal),
+                                )
+                              : const Icon(Icons.spa_rounded, size: 56, color: BrandColors.deepTeal),
+                        ),
+                        const SizedBox(height: Space.xl),
+                        Text(l.appTitle,
+                            style: theme.textTheme.headlineLarge?.copyWith(color: fg, fontWeight: FontWeight.w800)),
+                        const SizedBox(height: Space.sm),
+                        Text(l.tagline,
+                            style: theme.textTheme.bodyLarge?.copyWith(color: fg.withValues(alpha: 0.85))),
                       ],
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: Space.xxl,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 48),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (_error == null) ...[
+                        LinearProgressIndicator(
+                          minHeight: 4,
+                          color: BrandColors.mint,
+                          backgroundColor: fg.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(Radii.pill),
+                        ),
+                        const SizedBox(height: Space.md),
+                        Text(l.splashPreparing,
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.bodySmall?.copyWith(color: fg.withValues(alpha: 0.8))),
+                      ] else ...[
+                        Text(l.splashError,
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.bodyMedium?.copyWith(color: fg)),
+                        if (kDebugMode)
+                          Text(_error!,
+                              textAlign: TextAlign.center,
+                              style: theme.textTheme.bodySmall?.copyWith(color: fg.withValues(alpha: 0.7))),
+                        const SizedBox(height: Space.md),
+                        FilledButton.icon(
+                          style: FilledButton.styleFrom(backgroundColor: BrandColors.mint, foregroundColor: BrandColors.ink),
+                          onPressed: () {
+                            setState(() => _error = null);
+                            _init();
+                          },
+                          icon: const Icon(Icons.refresh_rounded),
+                          label: Text(l.retry),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

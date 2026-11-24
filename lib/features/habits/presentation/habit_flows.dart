@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../data/habit_repository.dart';
+
 import '../../../core/reminders/reminder_service.dart';
 import '../../../models/habit.dart';
 import '../../../screens/add_edit_habit_screen.dart';
@@ -145,6 +147,19 @@ abstract final class HabitFlows {
     await storage.saveHabits(all);
     // Without this, a deleted habit's daily alarms kept re-arming forever.
     await ReminderService.instance.cancelHabit(h.id);
+  }
+
+  /// One-tap water logging from Today (same rules as the Water screen:
+  /// the counter resets on a new day, never goes below zero).
+  static Future<void> addWater(Habit h, {int delta = 1}) async {
+    final today = HabitRepository.ymd(DateTime.now());
+    if (h.waterLastDate != today) {
+      h
+        ..waterLastDate = today
+        ..waterCompleted = 0;
+    }
+    h.waterCompleted = ((h.waterCompleted ?? 0) + delta).clamp(0, 99);
+    await upsert(h);
   }
 
   /// One-tap done / undo for today, with streak bookkeeping (v1 rules).

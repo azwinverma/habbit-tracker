@@ -1036,6 +1036,306 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Stretch every (minutes)'**
   String get exStretchEvery;
+
+  /// No description provided for @heroAllDone.
+  ///
+  /// In en, this message translates to:
+  /// **'All done for today. Lovely work.'**
+  String get heroAllDone;
+
+  /// No description provided for @heroStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start small. One habit is enough.'**
+  String get heroStart;
+
+  /// No description provided for @heroKeepGoing.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep going — {left} left today'**
+  String heroKeepGoing(int left);
+
+  /// No description provided for @streakDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{days}-day streak'**
+  String streakDays(int days);
+
+  /// No description provided for @tileWater.
+  ///
+  /// In en, this message translates to:
+  /// **'Water'**
+  String get tileWater;
+
+  /// No description provided for @tileWaterValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {target} glasses'**
+  String tileWaterValue(int done, int target);
+
+  /// No description provided for @tileAddGlass.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a glass'**
+  String get tileAddGlass;
+
+  /// No description provided for @tileMedicine.
+  ///
+  /// In en, this message translates to:
+  /// **'Medicine'**
+  String get tileMedicine;
+
+  /// No description provided for @tileNextDose.
+  ///
+  /// In en, this message translates to:
+  /// **'Next dose {time}'**
+  String tileNextDose(String time);
+
+  /// No description provided for @tileDosesLogged.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s doses logged'**
+  String get tileDosesLogged;
+
+  /// No description provided for @tileNoDoseToday.
+  ///
+  /// In en, this message translates to:
+  /// **'No doses today'**
+  String get tileNoDoseToday;
+
+  /// No description provided for @tileMovement.
+  ///
+  /// In en, this message translates to:
+  /// **'Movement'**
+  String get tileMovement;
+
+  /// No description provided for @tileMinutesValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {goal} min'**
+  String tileMinutesValue(int done, int goal);
+
+  /// No description provided for @tileStepsValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{steps} steps'**
+  String tileStepsValue(int steps);
+
+  /// No description provided for @tileMind.
+  ///
+  /// In en, this message translates to:
+  /// **'Mind'**
+  String get tileMind;
+
+  /// No description provided for @tileMindValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {goal} min calm'**
+  String tileMindValue(int done, int goal);
+
+  /// No description provided for @tileMindStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a calm minute'**
+  String get tileMindStart;
+
+  /// No description provided for @tileReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading'**
+  String get tileReading;
+
+  /// No description provided for @tileReadingContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue reading'**
+  String get tileReadingContinue;
+
+  /// No description provided for @tileFindBook.
+  ///
+  /// In en, this message translates to:
+  /// **'Find a free book'**
+  String get tileFindBook;
+
+  /// No description provided for @upNextToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Up next today'**
+  String get upNextToday;
+
+  /// No description provided for @nothingLeftToday.
+  ///
+  /// In en, this message translates to:
+  /// **'No more reminders today. Enjoy your evening.'**
+  String get nothingLeftToday;
+
+  /// No description provided for @seeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See all'**
+  String get seeAll;
+
+  /// No description provided for @thoughtForToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Thought for today'**
+  String get thoughtForToday;
+
+  /// No description provided for @menuEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get menuEdit;
+
+  /// No description provided for @menuDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get menuDelete;
+
+  /// No description provided for @exactDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'On-time reminders'**
+  String get exactDialogTitle;
+
+  /// No description provided for @exactDialogBody.
+  ///
+  /// In en, this message translates to:
+  /// **'To deliver medicine and habit reminders at the exact minute, DailyMantra needs the \"Alarms & reminders\" permission. Without it, reminders may arrive a few minutes late.'**
+  String get exactDialogBody;
+
+  /// No description provided for @notNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get notNow;
+
+  /// No description provided for @emptyTodayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Small habits. Better days.'**
+  String get emptyTodayTitle;
+
+  /// No description provided for @emptyTodayBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your first habit — a glass of water or a short walk is a great start.'**
+  String get emptyTodayBody;
+
+  /// No description provided for @doneTodayCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{done}/{total}'**
+  String doneTodayCount(int done, int total);
+
+  /// No description provided for @streakShort.
+  ///
+  /// In en, this message translates to:
+  /// **'{days}d'**
+  String streakShort(int days);
+
+  /// No description provided for @addHintMedicine.
+  ///
+  /// In en, this message translates to:
+  /// **'Doses on time, logged'**
+  String get addHintMedicine;
+
+  /// No description provided for @addHintWater.
+  ///
+  /// In en, this message translates to:
+  /// **'Glasses through the day'**
+  String get addHintWater;
+
+  /// No description provided for @addHintMeditation.
+  ///
+  /// In en, this message translates to:
+  /// **'Calm minutes, gentle sounds'**
+  String get addHintMeditation;
+
+  /// No description provided for @addHintReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Free classics, daily pages'**
+  String get addHintReading;
+
+  /// No description provided for @addHintExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'Moves, steps, office breaks'**
+  String get addHintExercise;
+
+  /// No description provided for @addHintCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Anything you want to repeat'**
+  String get addHintCustom;
+
+  /// No description provided for @copyLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy link'**
+  String get copyLink;
+
+  /// No description provided for @linkCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied {url}'**
+  String linkCopied(String url);
+
+  /// No description provided for @licNoteGutenberg.
+  ///
+  /// In en, this message translates to:
+  /// **'public-domain ebooks (US). Copyright may differ in other countries.'**
+  String get licNoteGutenberg;
+
+  /// No description provided for @licNoteCommons.
+  ///
+  /// In en, this message translates to:
+  /// **'freely licensed recordings (PD, CC0, CC BY, CC BY-SA); author credited.'**
+  String get licNoteCommons;
+
+  /// No description provided for @licNoteWger.
+  ///
+  /// In en, this message translates to:
+  /// **'exercise descriptions CC BY-SA; images credited to their authors.'**
+  String get licNoteWger;
+
+  /// No description provided for @openSourceLicences.
+  ///
+  /// In en, this message translates to:
+  /// **'Open-source licences'**
+  String get openSourceLicences;
+
+  /// No description provided for @onThisDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved on this device'**
+  String get onThisDevice;
+
+  /// No description provided for @profileTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'Small habits. Better days.'**
+  String get profileTagline;
+
+  /// No description provided for @splashPreparing.
+  ///
+  /// In en, this message translates to:
+  /// **'Getting your day ready…'**
+  String get splashPreparing;
+
+  /// No description provided for @splashError.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong while starting.'**
+  String get splashError;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get retry;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

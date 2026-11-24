@@ -286,5 +286,137 @@
     }
   },
   "exWalkEvery": "Walk every (minutes)",
-  "exStretchEvery": "Stretch every (minutes)"
+  "exStretchEvery": "Stretch every (minutes)",
+  "heroAllDone": "All done for today. Lovely work.",
+  "heroStart": "Start small. One habit is enough.",
+  "heroKeepGoing": "Keep going — {left} left today",
+  "@heroKeepGoing": {
+    "placeholders": {
+      "left": {
+        "type": "int"
+      }
+    }
+  },
+  "streakDays": "{days}-day streak",
+  "@streakDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "tileWater": "Water",
+  "tileWaterValue": "{done} of {target} glasses",
+  "@tileWaterValue": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "tileAddGlass": "Add a glass",
+  "tileMedicine": "Medicine",
+  "tileNextDose": "Next dose {time}",
+  "@tileNextDose": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "tileDosesLogged": "Today's doses logged",
+  "tileNoDoseToday": "No doses today",
+  "tileMovement": "Movement",
+  "tileMinutesValue": "{done} of {goal} min",
+  "@tileMinutesValue": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "goal": {
+        "type": "int"
+      }
+    }
+  },
+  "tileStepsValue": "{steps} steps",
+  "@tileStepsValue": {
+    "placeholders": {
+      "steps": {
+        "type": "int"
+      }
+    }
+  },
+  "tileMind": "Mind",
+  "tileMindValue": "{done} of {goal} min calm",
+  "@tileMindValue": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "goal": {
+        "type": "int"
+      }
+    }
+  },
+  "tileMindStart": "Take a calm minute",
+  "tileReading": "Reading",
+  "tileReadingContinue": "Continue reading",
+  "tileFindBook": "Find a free book",
+  "upNextToday": "Up next today",
+  "nothingLeftToday": "No more reminders today. Enjoy your evening.",
+  "seeAll": "See all",
+  "thoughtForToday": "Thought for today",
+  "menuEdit": "Edit",
+  "menuDelete": "Delete",
+  "exactDialogTitle": "On-time reminders",
+  "exactDialogBody": "To deliver medicine and habit reminders at the exact minute, DailyMantra needs the \"Alarms & reminders\" permission. Without it, reminders may arrive a few minutes late.",
+  "notNow": "Not now",
+  "emptyTodayTitle": "Small habits. Better days.",
+  "emptyTodayBody": "Add your first habit — a glass of water or a short walk is a great start.",
+  "doneTodayCount": "{done}/{total}",
+  "@doneTodayCount": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "streakShort": "{days}d",
+  "@streakShort": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "addHintMedicine": "Doses on time, logged",
+  "addHintWater": "Glasses through the day",
+  "addHintMeditation": "Calm minutes, gentle sounds",
+  "addHintReading": "Free classics, daily pages",
+  "addHintExercise": "Moves, steps, office breaks",
+  "addHintCustom": "Anything you want to repeat",
+  "copyLink": "Copy link",
+  "linkCopied": "Copied {url}",
+  "licNoteGutenberg": "public-domain ebooks (US). Copyright may differ in other countries.",
+  "licNoteCommons": "freely licensed recordings (PD, CC0, CC BY, CC BY-SA); author credited.",
+  "licNoteWger": "exercise descriptions CC BY-SA; images credited to their authors.",
+  "openSourceLicences": "Open-source licences",
+  "onThisDevice": "Saved on this device",
+  "profileTagline": "Small habits. Better days.",
+  "@linkCopied": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "splashPreparing": "Getting your day ready…",
+  "splashError": "Something went wrong while starting.",
+  "retry": "Try again"
 }

@@ -55,3 +55,6 @@ key.properties
 # Build artifacts (a release .aab was found inside src/)
 *.aab
 *.apk
+
+# Visual review renders (SHOTS=1 flutter test --update-goldens test/design/screenshots_test.dart)
+test/design/screenshots/

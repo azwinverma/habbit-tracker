@@ -510,4 +510,174 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exStretchEvery => 'Stretch every (minutes)';
+
+  @override
+  String get heroAllDone => 'All done for today. Lovely work.';
+
+  @override
+  String get heroStart => 'Start small. One habit is enough.';
+
+  @override
+  String heroKeepGoing(int left) {
+    return 'Keep going — $left left today';
+  }
+
+  @override
+  String streakDays(int days) {
+    return '$days-day streak';
+  }
+
+  @override
+  String get tileWater => 'Water';
+
+  @override
+  String tileWaterValue(int done, int target) {
+    return '$done of $target glasses';
+  }
+
+  @override
+  String get tileAddGlass => 'Add a glass';
+
+  @override
+  String get tileMedicine => 'Medicine';
+
+  @override
+  String tileNextDose(String time) {
+    return 'Next dose $time';
+  }
+
+  @override
+  String get tileDosesLogged => 'Today\'s doses logged';
+
+  @override
+  String get tileNoDoseToday => 'No doses today';
+
+  @override
+  String get tileMovement => 'Movement';
+
+  @override
+  String tileMinutesValue(int done, int goal) {
+    return '$done of $goal min';
+  }
+
+  @override
+  String tileStepsValue(int steps) {
+    return '$steps steps';
+  }
+
+  @override
+  String get tileMind => 'Mind';
+
+  @override
+  String tileMindValue(int done, int goal) {
+    return '$done of $goal min calm';
+  }
+
+  @override
+  String get tileMindStart => 'Take a calm minute';
+
+  @override
+  String get tileReading => 'Reading';
+
+  @override
+  String get tileReadingContinue => 'Continue reading';
+
+  @override
+  String get tileFindBook => 'Find a free book';
+
+  @override
+  String get upNextToday => 'Up next today';
+
+  @override
+  String get nothingLeftToday => 'No more reminders today. Enjoy your evening.';
+
+  @override
+  String get seeAll => 'See all';
+
+  @override
+  String get thoughtForToday => 'Thought for today';
+
+  @override
+  String get menuEdit => 'Edit';
+
+  @override
+  String get menuDelete => 'Delete';
+
+  @override
+  String get exactDialogTitle => 'On-time reminders';
+
+  @override
+  String get exactDialogBody => 'To deliver medicine and habit reminders at the exact minute, DailyMantra needs the \"Alarms & reminders\" permission. Without it, reminders may arrive a few minutes late.';
+
+  @override
+  String get notNow => 'Not now';
+
+  @override
+  String get emptyTodayTitle => 'Small habits. Better days.';
+
+  @override
+  String get emptyTodayBody => 'Add your first habit — a glass of water or a short walk is a great start.';
+
+  @override
+  String doneTodayCount(int done, int total) {
+    return '$done/$total';
+  }
+
+  @override
+  String streakShort(int days) {
+    return '${days}d';
+  }
+
+  @override
+  String get addHintMedicine => 'Doses on time, logged';
+
+  @override
+  String get addHintWater => 'Glasses through the day';
+
+  @override
+  String get addHintMeditation => 'Calm minutes, gentle sounds';
+
+  @override
+  String get addHintReading => 'Free classics, daily pages';
+
+  @override
+  String get addHintExercise => 'Moves, steps, office breaks';
+
+  @override
+  String get addHintCustom => 'Anything you want to repeat';
+
+  @override
+  String get copyLink => 'Copy link';
+
+  @override
+  String linkCopied(String url) {
+    return 'Copied $url';
+  }
+
+  @override
+  String get licNoteGutenberg => 'public-domain ebooks (US). Copyright may differ in other countries.';
+
+  @override
+  String get licNoteCommons => 'freely licensed recordings (PD, CC0, CC BY, CC BY-SA); author credited.';
+
+  @override
+  String get licNoteWger => 'exercise descriptions CC BY-SA; images credited to their authors.';
+
+  @override
+  String get openSourceLicences => 'Open-source licences';
+
+  @override
+  String get onThisDevice => 'Saved on this device';
+
+  @override
+  String get profileTagline => 'Small habits. Better days.';
+
+  @override
+  String get splashPreparing => 'Getting your day ready…';
+
+  @override
+  String get splashError => 'Something went wrong while starting.';
+
+  @override
+  String get retry => 'Try again';
 }

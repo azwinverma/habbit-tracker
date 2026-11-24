@@ -38,9 +38,12 @@ class _AdBannerState extends State<AdBanner> with WidgetsBindingObserver {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (!_started) {
+    if (!_started && AdService.enabled) {
       _started = true;
-      _load();
+      _load().catchError((Object e) {
+        // Ads SDK unavailable (no Play services, blocked): show nothing.
+        debugPrint('[Ads] banner failed: $e');
+      });
     }
   }
 
@@ -50,7 +53,7 @@ class _AdBannerState extends State<AdBanner> with WidgetsBindingObserver {
     if (!mounted) return;
 
     // If we returned to foreground and don't have a loaded banner, try again.
-    if (state == AppLifecycleState.resumed && !_isLoaded && _banner == null) {
+    if (state == AppLifecycleState.resumed && !_isLoaded && _banner == null && AdService.enabled) {
       _retries = 0;
       _load();
     }

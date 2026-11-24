@@ -6,6 +6,10 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 class AdService {
   static bool _inited = false;
 
+  /// Global switch (false in tests / screenshots; later: remote config and
+  /// premium). When false no ad is requested or shown.
+  static bool enabled = true;
+
   static Future<void> init() async {
     if (_inited) return;
     await MobileAds.instance.initialize();
@@ -55,7 +59,7 @@ class InterstitialHelper {
   static const int _maxPerSession = 6;
 
   Future<void> load() async {
-    if (_ad != null) return;
+    if (_ad != null || !AdService.enabled) return;
     await InterstitialAd.load(
       adUnitId: AdService.interstitialUnitId,
       request: AdService.request(),

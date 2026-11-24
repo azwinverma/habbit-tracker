@@ -510,4 +510,174 @@ class AppLocalizationsNe extends AppLocalizations {
 
   @override
   String get exStretchEvery => 'हरेक कति मिनेटमा तन्किने';
+
+  @override
+  String get heroAllDone => 'आजका सबै काम सकियो। राम्रो गर्नुभयो।';
+
+  @override
+  String get heroStart => 'सानोबाट सुरु गर्नुहोस्। एउटा बानी नै पर्याप्त छ।';
+
+  @override
+  String heroKeepGoing(int left) {
+    return 'जारी राख्नुहोस् — आज $left बाँकी';
+  }
+
+  @override
+  String streakDays(int days) {
+    return '$days दिनको निरन्तरता';
+  }
+
+  @override
+  String get tileWater => 'पानी';
+
+  @override
+  String tileWaterValue(int done, int target) {
+    return '$target मध्ये $done गिलास';
+  }
+
+  @override
+  String get tileAddGlass => 'एक गिलास थप्नुहोस्';
+
+  @override
+  String get tileMedicine => 'औषधि';
+
+  @override
+  String tileNextDose(String time) {
+    return 'अर्को मात्रा $time';
+  }
+
+  @override
+  String get tileDosesLogged => 'आजका मात्रा रेकर्ड भए';
+
+  @override
+  String get tileNoDoseToday => 'आज कुनै मात्रा छैन';
+
+  @override
+  String get tileMovement => 'शारीरिक गतिविधि';
+
+  @override
+  String tileMinutesValue(int done, int goal) {
+    return '$goal मध्ये $done मिनेट';
+  }
+
+  @override
+  String tileStepsValue(int steps) {
+    return '$steps पाइला';
+  }
+
+  @override
+  String get tileMind => 'मन';
+
+  @override
+  String tileMindValue(int done, int goal) {
+    return '$goal मध्ये $done मिनेट शान्त';
+  }
+
+  @override
+  String get tileMindStart => 'एक मिनेट शान्त हुनुहोस्';
+
+  @override
+  String get tileReading => 'पढाइ';
+
+  @override
+  String get tileReadingContinue => 'पढ्न जारी राख्नुहोस्';
+
+  @override
+  String get tileFindBook => 'निःशुल्क किताब खोज्नुहोस्';
+
+  @override
+  String get upNextToday => 'आज अब';
+
+  @override
+  String get nothingLeftToday => 'आज अरू रिमाइन्डर छैन। साँझको आनन्द लिनुहोस्।';
+
+  @override
+  String get seeAll => 'सबै हेर्नुहोस्';
+
+  @override
+  String get thoughtForToday => 'आजको विचार';
+
+  @override
+  String get menuEdit => 'सम्पादन';
+
+  @override
+  String get menuDelete => 'मेटाउनुहोस्';
+
+  @override
+  String get exactDialogTitle => 'समयमै रिमाइन्डर';
+
+  @override
+  String get exactDialogBody => 'औषधि र बानीका रिमाइन्डर ठ्याक्कै समयमा पठाउन DailyMantra लाई \"Alarms & reminders\" अनुमति चाहिन्छ। यो नभए रिमाइन्डर केही मिनेट ढिला आउन सक्छ।';
+
+  @override
+  String get notNow => 'अहिले होइन';
+
+  @override
+  String get emptyTodayTitle => 'साना बानी। राम्रा दिन।';
+
+  @override
+  String get emptyTodayBody => 'आफ्नो पहिलो बानी थप्नुहोस् — एक गिलास पानी वा छोटो हिँडाइ राम्रो सुरुवात हो।';
+
+  @override
+  String doneTodayCount(int done, int total) {
+    return '$done/$total';
+  }
+
+  @override
+  String streakShort(int days) {
+    return '$days दिन';
+  }
+
+  @override
+  String get addHintMedicine => 'समयमै मात्रा, रेकर्ड सहित';
+
+  @override
+  String get addHintWater => 'दिनभरि गिलास गन्नुहोस्';
+
+  @override
+  String get addHintMeditation => 'शान्त मिनेट, मधुर आवाज';
+
+  @override
+  String get addHintReading => 'निःशुल्क क्लासिक, दैनिक पाना';
+
+  @override
+  String get addHintExercise => 'व्यायाम, पाइला, अफिस ब्रेक';
+
+  @override
+  String get addHintCustom => 'दोहोर्‍याउन चाहेको जुनसुकै कुरा';
+
+  @override
+  String get copyLink => 'लिंक कपी गर्नुहोस्';
+
+  @override
+  String linkCopied(String url) {
+    return '$url कपी भयो';
+  }
+
+  @override
+  String get licNoteGutenberg => 'सार्वजनिक डोमेनका ई-पुस्तक (अमेरिका)। अन्य देशमा प्रतिलिपि अधिकार फरक हुन सक्छ।';
+
+  @override
+  String get licNoteCommons => 'खुला इजाजतका रेकर्डिङ (PD, CC0, CC BY, CC BY-SA); लेखकलाई श्रेय दिइएको।';
+
+  @override
+  String get licNoteWger => 'व्यायाम विवरण CC BY-SA; तस्बिरहरूको श्रेय लेखकलाई।';
+
+  @override
+  String get openSourceLicences => 'खुला स्रोत इजाजतपत्र';
+
+  @override
+  String get onThisDevice => 'यही फोनमा सुरक्षित';
+
+  @override
+  String get profileTagline => 'साना बानी। राम्रा दिन।';
+
+  @override
+  String get splashPreparing => 'तपाईंको दिन तयार गर्दै…';
+
+  @override
+  String get splashError => 'सुरु गर्दा केही समस्या भयो।';
+
+  @override
+  String get retry => 'फेरि प्रयास गर्नुहोस्';
 }

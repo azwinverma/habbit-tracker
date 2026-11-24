@@ -1,8 +1,13 @@
 // lib/widgets/habit_tile.dart
 import 'package:flutter/material.dart';
+
+import '../app/theme.dart';
+import '../design/components.dart';
 import '../l10n/app_localizations.dart';
 import '../models/habit.dart';
 
+/// One habit row: category badge, name, reminder times, streak, and a round
+/// one-tap completion button. Tapping the row opens the habit's own screen.
 class HabitTile extends StatelessWidget {
   final Habit habit;
   final VoidCallback? onToggleComplete;
@@ -10,8 +15,12 @@ class HabitTile extends StatelessWidget {
   final VoidCallback? onDelete;
 
   /// Opens the habit's own screen (player, reader, tracker). When null,
-  /// tapping the tile toggles completion (previous behaviour).
+  /// tapping the tile toggles completion.
   final VoidCallback? onOpen;
+
+  /// Overrides the "done today" state (e.g. category goal reached). Defaults
+  /// to "marked complete today".
+  final bool? doneToday;
 
   const HabitTile({
     super.key,
@@ -20,110 +29,85 @@ class HabitTile extends StatelessWidget {
     this.onEdit,
     this.onDelete,
     this.onOpen,
+    this.doneToday,
   });
 
-  String _fmt2(int n) => n.toString().padLeft(2, '0');
-
-  /// Build the reminder summary from the *saved* reminderTimes if available,
-  /// otherwise fall back to single hour/minute in the model.
-  String _reminderSummary(Habit h) {
-    if (h.reminderTimes.isNotEmpty) {
-      // reminderTimes are strings "HH:mm" — show up to 3, then "+N more"
-      final times = h.reminderTimes;
-      if (times.length <= 3) return times.join(' • ');
-      final shown = times.take(3).join(' • ');
-      final more = times.length - 3;
-      return '$shown  •  +$more more';
-    }
-    // Fallback: display the single reminder time on the habit
-    final hh = _fmt2(h.reminderHour);
-    final mm = _fmt2(h.reminderMinute);
-    return '$hh:$mm';
+  static String reminderSummary(Habit h) {
+    final times = h.reminderTimes.isNotEmpty
+        ? h.reminderTimes.map((s) => Habit.fmt(Habit.parseHHmm(s))).toList()
+        : [Habit.fmt(TimeOfDay(hour: h.reminderHour, minute: h.reminderMinute))];
+    if (times.length <= 3) return times.join(' · ');
+    return '${times.take(3).join(' · ')} +${times.length - 3}';
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDoneToday = _isDoneToday(habit);
-    final streak = habit.streak;
+    final l = AppLocalizations.of(context);
+    final done = doneToday ?? _isDoneToday(habit);
+    final palette = paletteFor(habit.category, context.dm);
+    final muted = theme.colorScheme.onSurfaceVariant;
 
-    return Card(
-      elevation: 1,
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        leading: Semantics(
-          button: true,
-          label: isDoneToday
-              ? AppLocalizations.of(context).markNotDone(habit.name)
-              : AppLocalizations.of(context).markDone(habit.name),
-          child: InkResponse(
-            onTap: onToggleComplete,
-            radius: 24,
-            child: CircleAvatar(
-              backgroundColor:
-                  isDoneToday
-                      ? theme.colorScheme.primary
-                      : theme.colorScheme.surfaceContainerHighest,
-              child: Icon(
-                isDoneToday ? Icons.check : Icons.circle_outlined,
-                color:
-                    isDoneToday
-                        ? theme.colorScheme.onPrimary
-                        : theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ),
-        ),
-        title: Text(
-          habit.name,
-          style: theme.textTheme.titleMedium,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 4),
-          child: Row(
-            children: [
-              Icon(Icons.schedule, size: 16, color: theme.colorScheme.outline),
-              const SizedBox(width: 6),
-              Flexible(
-                child: Text(
-                  _reminderSummary(habit),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.75),
+    return SurfaceCard(
+      onTap: onOpen ?? onToggleComplete,
+      padding: const EdgeInsets.fromLTRB(Space.md, Space.md, 0, Space.md),
+      child: Row(
+        children: [
+          CategoryBadge(icon: iconFor(habit.category), palette: palette),
+          const SizedBox(width: Space.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  habit.name,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    decoration: done ? TextDecoration.lineThrough : null,
+                    decorationColor: muted,
+                    color: done ? muted : null,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              const SizedBox(width: 12),
-              Icon(
-                Icons.local_fire_department,
-                size: 16,
-                color: theme.colorScheme.outline,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                '${streak}d',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.75),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    Icon(habit.enabled ? Icons.schedule_rounded : Icons.notifications_off_outlined,
+                        size: 14, color: muted),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(reminderSummary(habit),
+                          style: theme.textTheme.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    ),
+                    if (habit.streak > 0) ...[
+                      const SizedBox(width: Space.md),
+                      Icon(Icons.local_fire_department_rounded, size: 14, color: context.dm.celebrate),
+                      const SizedBox(width: 2),
+                      Text(l.streakShort(habit.streak), style: theme.textTheme.bodySmall),
+                    ],
+                  ],
                 ),
-              ),
+              ],
+            ),
+          ),
+          CompleteButton(
+            done: done,
+            color: palette.accent,
+            onTap: onToggleComplete,
+            semanticLabel: done ? l.markNotDone(habit.name) : l.markDone(habit.name),
+          ),
+          PopupMenuButton<String>(
+            icon: Icon(Icons.more_vert_rounded, color: muted),
+            onSelected: (v) {
+              if (v == 'edit') onEdit?.call();
+              if (v == 'delete') onDelete?.call();
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(value: 'edit', child: Text(l.menuEdit)),
+              PopupMenuItem(value: 'delete', child: Text(l.menuDelete)),
             ],
           ),
-        ),
-        trailing: PopupMenuButton<String>(
-          onSelected: (v) {
-            if (v == 'edit') onEdit?.call();
-            if (v == 'delete') onDelete?.call();
-          },
-          itemBuilder:
-              (context) => const [
-                PopupMenuItem(value: 'edit', child: Text('Edit')),
-                PopupMenuItem(value: 'delete', child: Text('Delete')),
-              ],
-        ),
-        onTap: onOpen ?? onToggleComplete,
+        ],
       ),
     );
   }

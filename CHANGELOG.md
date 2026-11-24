@@ -1,5 +1,18 @@
 # Changelog
 
+## [Unreleased] — Redesign (Phase 2 design system)
+
+### Added
+- **New look across the app** following the brand guidelines: Plus Jakarta Sans + Noto Sans Devanagari (bundled, works offline), Deep Teal / Mint palette with per-category accents, soft rounded cards, pill buttons, calmer navigation with a central Add button. Light and dark.
+- **Today dashboard:** progress ring with streak, tiles for water (**+1 glass in one tap**), medicine (**next dose + Taken in one tap**), movement, mind and reading; "Up next today"; habits with one-tap check; thought for the day.
+- Redesigned Add sheet (category cards with a short benefit), Plan, Insights (2 columns on tablets), You (brand header, open-source licences) and splash (matching Android launch colour).
+- Design system doc (`docs/DESIGN_SYSTEM.md`), automated WCAG contrast checks for both themes, screenshot harness for visual review.
+
+### Fixed
+- Today no longer waits for ads to load before showing your habits (if the ads SDK failed, Today could stay blank).
+- Habit counts as done on Today when its daily goal is reached (water, meditation, exercise), not only when ticked.
+- Two category colours adjusted to meet 3:1 contrast.
+
 ## [Unreleased] — Phase 3 (part 2)
 
 ### Added
