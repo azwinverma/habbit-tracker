@@ -29,9 +29,9 @@ android {
 
     defaultConfig {
         applicationId = "com.daily.mantra"
-        // Android 5.0+ (API 21), as in 1.0.0: every plugin supports it. Re-check
-        // before adding Firebase (firebase_core 5 needs API 24).
-        minSdk = maxOf(21, flutter.minSdkVersion)
+        // Android 7.0+ (API 24): required by Google Play "automatic protection"
+        // (App integrity). Also lets Firebase (firebase_core 5) be added later.
+        minSdk = maxOf(24, flutter.minSdkVersion)
         targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
