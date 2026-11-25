@@ -1336,6 +1336,288 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Try again'**
   String get retry;
+
+  /// No description provided for @searchContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Search titles, authors, topics'**
+  String get searchContent;
+
+  /// No description provided for @clear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clear;
+
+  /// No description provided for @savedFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get savedFilter;
+
+  /// No description provided for @tabBooks.
+  ///
+  /// In en, this message translates to:
+  /// **'Books'**
+  String get tabBooks;
+
+  /// No description provided for @tabAudiobooks.
+  ///
+  /// In en, this message translates to:
+  /// **'Audiobooks'**
+  String get tabAudiobooks;
+
+  /// No description provided for @tabSounds.
+  ///
+  /// In en, this message translates to:
+  /// **'Sounds'**
+  String get tabSounds;
+
+  /// No description provided for @tabWorkouts.
+  ///
+  /// In en, this message translates to:
+  /// **'Workouts'**
+  String get tabWorkouts;
+
+  /// No description provided for @tabVideos.
+  ///
+  /// In en, this message translates to:
+  /// **'Videos'**
+  String get tabVideos;
+
+  /// No description provided for @newBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get newBadge;
+
+  /// No description provided for @nothingMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing matches \"{query}\".'**
+  String nothingMatches(String query);
+
+  /// No description provided for @nothingYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing here yet. Connect to the internet and pull down to load free content.'**
+  String get nothingYet;
+
+  /// No description provided for @nothingSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing saved yet. Open an item and tap Download to keep it on your phone.'**
+  String get nothingSaved;
+
+  /// No description provided for @readNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Read now'**
+  String get readNow;
+
+  /// No description provided for @listen.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen'**
+  String get listen;
+
+  /// No description provided for @playLoops.
+  ///
+  /// In en, this message translates to:
+  /// **'Play (loops)'**
+  String get playLoops;
+
+  /// No description provided for @play.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get play;
+
+  /// No description provided for @pause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get pause;
+
+  /// No description provided for @loop.
+  ///
+  /// In en, this message translates to:
+  /// **'Loop'**
+  String get loop;
+
+  /// No description provided for @watchVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch video'**
+  String get watchVideo;
+
+  /// No description provided for @watchVideoSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch video ({size})'**
+  String watchVideoSize(String size);
+
+  /// No description provided for @couldNotPlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not play this. Check your connection and try again.'**
+  String get couldNotPlay;
+
+  /// No description provided for @videoError.
+  ///
+  /// In en, this message translates to:
+  /// **'This video can\'t be played on this device. Try another one, or check your connection.'**
+  String get videoError;
+
+  /// No description provided for @creditsLicence.
+  ///
+  /// In en, this message translates to:
+  /// **'Credits & licence'**
+  String get creditsLicence;
+
+  /// No description provided for @licenceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Licence: {licence}'**
+  String licenceLabel(String licence);
+
+  /// No description provided for @copySourceLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy source link'**
+  String get copySourceLink;
+
+  /// No description provided for @sourceCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Source link copied'**
+  String get sourceCopied;
+
+  /// No description provided for @downloadOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Download for offline'**
+  String get downloadOffline;
+
+  /// No description provided for @downloadOfflineSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Download for offline ({size})'**
+  String downloadOfflineSize(String size);
+
+  /// No description provided for @downloaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved on this phone'**
+  String get downloaded;
+
+  /// No description provided for @removeDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove download'**
+  String get removeDownload;
+
+  /// No description provided for @downloadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Download failed. Check your connection and try again.'**
+  String get downloadFailed;
+
+  /// No description provided for @downloadAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Download all chapters'**
+  String get downloadAll;
+
+  /// No description provided for @chapters.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapters'**
+  String get chapters;
+
+  /// No description provided for @chapterCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} chapters'**
+  String chapterCount(int count);
+
+  /// No description provided for @previousChapter.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous chapter'**
+  String get previousChapter;
+
+  /// No description provided for @nextChapter.
+  ///
+  /// In en, this message translates to:
+  /// **'Next chapter'**
+  String get nextChapter;
+
+  /// No description provided for @back30.
+  ///
+  /// In en, this message translates to:
+  /// **'Back 30 seconds'**
+  String get back30;
+
+  /// No description provided for @forward30.
+  ///
+  /// In en, this message translates to:
+  /// **'Forward 30 seconds'**
+  String get forward30;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @remove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get remove;
+
+  /// No description provided for @storageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved for offline'**
+  String get storageTitle;
+
+  /// No description provided for @storageUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'{size} used on this phone · {count} files'**
+  String storageUsed(String size, int count);
+
+  /// No description provided for @clearDownloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove all downloads'**
+  String get clearDownloads;
+
+  /// No description provided for @clearDownloadsConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove all saved books, audio and videos from this phone? You can download them again later.'**
+  String get clearDownloadsConfirm;
+
+  /// No description provided for @autoUpdateNote.
+  ///
+  /// In en, this message translates to:
+  /// **'New content is checked every time you open the app, and in the background about twice a day on Wi-Fi or mobile data.'**
+  String get autoUpdateNote;
+
+  /// No description provided for @licNoteLibrivox.
+  ///
+  /// In en, this message translates to:
+  /// **'public-domain audiobooks read by volunteers.'**
+  String get licNoteLibrivox;
+
+  /// No description provided for @licNoteCommonsVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'freely licensed exercise, yoga and meditation videos (PD, CC0, CC BY, CC BY-SA); author credited.'**
+  String get licNoteCommonsVideo;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

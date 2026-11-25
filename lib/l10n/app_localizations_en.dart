@@ -680,4 +680,157 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get retry => 'Try again';
+
+  @override
+  String get searchContent => 'Search titles, authors, topics';
+
+  @override
+  String get clear => 'Clear';
+
+  @override
+  String get savedFilter => 'Saved';
+
+  @override
+  String get tabBooks => 'Books';
+
+  @override
+  String get tabAudiobooks => 'Audiobooks';
+
+  @override
+  String get tabSounds => 'Sounds';
+
+  @override
+  String get tabWorkouts => 'Workouts';
+
+  @override
+  String get tabVideos => 'Videos';
+
+  @override
+  String get newBadge => 'New';
+
+  @override
+  String nothingMatches(String query) {
+    return 'Nothing matches \"$query\".';
+  }
+
+  @override
+  String get nothingYet => 'Nothing here yet. Connect to the internet and pull down to load free content.';
+
+  @override
+  String get nothingSaved => 'Nothing saved yet. Open an item and tap Download to keep it on your phone.';
+
+  @override
+  String get readNow => 'Read now';
+
+  @override
+  String get listen => 'Listen';
+
+  @override
+  String get playLoops => 'Play (loops)';
+
+  @override
+  String get play => 'Play';
+
+  @override
+  String get pause => 'Pause';
+
+  @override
+  String get loop => 'Loop';
+
+  @override
+  String get watchVideo => 'Watch video';
+
+  @override
+  String watchVideoSize(String size) {
+    return 'Watch video ($size)';
+  }
+
+  @override
+  String get couldNotPlay => 'Could not play this. Check your connection and try again.';
+
+  @override
+  String get videoError => 'This video can\'t be played on this device. Try another one, or check your connection.';
+
+  @override
+  String get creditsLicence => 'Credits & licence';
+
+  @override
+  String licenceLabel(String licence) {
+    return 'Licence: $licence';
+  }
+
+  @override
+  String get copySourceLink => 'Copy source link';
+
+  @override
+  String get sourceCopied => 'Source link copied';
+
+  @override
+  String get downloadOffline => 'Download for offline';
+
+  @override
+  String downloadOfflineSize(String size) {
+    return 'Download for offline ($size)';
+  }
+
+  @override
+  String get downloaded => 'Saved on this phone';
+
+  @override
+  String get removeDownload => 'Remove download';
+
+  @override
+  String get downloadFailed => 'Download failed. Check your connection and try again.';
+
+  @override
+  String get downloadAll => 'Download all chapters';
+
+  @override
+  String get chapters => 'Chapters';
+
+  @override
+  String chapterCount(int count) {
+    return '$count chapters';
+  }
+
+  @override
+  String get previousChapter => 'Previous chapter';
+
+  @override
+  String get nextChapter => 'Next chapter';
+
+  @override
+  String get back30 => 'Back 30 seconds';
+
+  @override
+  String get forward30 => 'Forward 30 seconds';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get remove => 'Remove';
+
+  @override
+  String get storageTitle => 'Saved for offline';
+
+  @override
+  String storageUsed(String size, int count) {
+    return '$size used on this phone · $count files';
+  }
+
+  @override
+  String get clearDownloads => 'Remove all downloads';
+
+  @override
+  String get clearDownloadsConfirm => 'Remove all saved books, audio and videos from this phone? You can download them again later.';
+
+  @override
+  String get autoUpdateNote => 'New content is checked every time you open the app, and in the background about twice a day on Wi-Fi or mobile data.';
+
+  @override
+  String get licNoteLibrivox => 'public-domain audiobooks read by volunteers.';
+
+  @override
+  String get licNoteCommonsVideo => 'freely licensed exercise, yoga and meditation videos (PD, CC0, CC BY, CC BY-SA); author credited.';
 }

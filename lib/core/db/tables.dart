@@ -149,7 +149,7 @@ class ContentItems extends Table {
   TextColumn get id => text()();
   TextColumn get provider => text()();
 
-  /// book | audio | exercise
+  /// book | audio | exercise | video | audiobook
   TextColumn get kind => text()();
   TextColumn get title => text()();
   TextColumn get subtitle => text().nullable()();
@@ -158,8 +158,15 @@ class ContentItems extends Table {
   /// Direct media link (EPUB, MP3, …) — fetched only when the user opens it.
   TextColumn get mediaUrl => text().nullable()();
 
-  /// epub | html | mp3 | none
+  /// epub | html | mp3 | video | audiobook | none
   TextColumn get mediaFormat => text().withDefault(const Constant('none'))();
+
+  /// Second rendition for platforms that can't play [mediaUrl] (e.g. an
+  /// MPEG-4 copy of a VP9 WebM for iOS). Schema v2.
+  TextColumn get altMediaUrl => text().nullable()();
+
+  /// Approximate media size, shown before streaming/downloading. Schema v2.
+  IntColumn get mediaBytes => integer().nullable()();
   TextColumn get imageUrl => text().nullable()();
   TextColumn get sourceUrl => text().nullable()();
   TextColumn get license => text()();
@@ -179,6 +186,24 @@ class ContentItems extends Table {
 
   @override
   Set<Column> get primaryKey => {id};
+}
+
+/// Media saved on the device for offline use (schema v2). Rows survive
+/// catalogue refreshes; downloaded items are never pruned.
+@DataClassName('ContentDownloadRow')
+class ContentDownloads extends Table {
+  TextColumn get contentId => text()();
+
+  /// Which URL was saved (main or alternate rendition, or a chapter).
+  TextColumn get url => text()();
+
+  /// Absolute path inside the app's private storage.
+  TextColumn get localPath => text()();
+  IntColumn get bytes => integer().withDefault(const Constant(0))();
+  DateTimeColumn get savedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {contentId, url};
 }
 
 @DataClassName('ContentSyncStateRow')

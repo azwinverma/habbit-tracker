@@ -2719,6 +2719,28 @@ class $ContentItemsTable extends ContentItems
     requiredDuringInsert: false,
     defaultValue: const Constant('none'),
   );
+  static const VerificationMeta _altMediaUrlMeta = const VerificationMeta(
+    'altMediaUrl',
+  );
+  @override
+  late final GeneratedColumn<String> altMediaUrl = GeneratedColumn<String>(
+    'alt_media_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _mediaBytesMeta = const VerificationMeta(
+    'mediaBytes',
+  );
+  @override
+  late final GeneratedColumn<int> mediaBytes = GeneratedColumn<int>(
+    'media_bytes',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _imageUrlMeta = const VerificationMeta(
     'imageUrl',
   );
@@ -2863,6 +2885,8 @@ class $ContentItemsTable extends ContentItems
     description,
     mediaUrl,
     mediaFormat,
+    altMediaUrl,
+    mediaBytes,
     imageUrl,
     sourceUrl,
     license,
@@ -2945,6 +2969,21 @@ class $ContentItemsTable extends ContentItems
           data['media_format']!,
           _mediaFormatMeta,
         ),
+      );
+    }
+    if (data.containsKey('alt_media_url')) {
+      context.handle(
+        _altMediaUrlMeta,
+        altMediaUrl.isAcceptableOrUnknown(
+          data['alt_media_url']!,
+          _altMediaUrlMeta,
+        ),
+      );
+    }
+    if (data.containsKey('media_bytes')) {
+      context.handle(
+        _mediaBytesMeta,
+        mediaBytes.isAcceptableOrUnknown(data['media_bytes']!, _mediaBytesMeta),
       );
     }
     if (data.containsKey('image_url')) {
@@ -3077,6 +3116,14 @@ class $ContentItemsTable extends ContentItems
             DriftSqlType.string,
             data['${effectivePrefix}media_format'],
           )!,
+      altMediaUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}alt_media_url'],
+      ),
+      mediaBytes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}media_bytes'],
+      ),
       imageUrl: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}image_url'],
@@ -3149,7 +3196,7 @@ class ContentItemRow extends DataClass implements Insertable<ContentItemRow> {
   final String id;
   final String provider;
 
-  /// book | audio | exercise
+  /// book | audio | exercise | video | audiobook
   final String kind;
   final String title;
   final String? subtitle;
@@ -3158,8 +3205,15 @@ class ContentItemRow extends DataClass implements Insertable<ContentItemRow> {
   /// Direct media link (EPUB, MP3, …) — fetched only when the user opens it.
   final String? mediaUrl;
 
-  /// epub | html | mp3 | none
+  /// epub | html | mp3 | video | audiobook | none
   final String mediaFormat;
+
+  /// Second rendition for platforms that can't play [mediaUrl] (e.g. an
+  /// MPEG-4 copy of a VP9 WebM for iOS). Schema v2.
+  final String? altMediaUrl;
+
+  /// Approximate media size, shown before streaming/downloading. Schema v2.
+  final int? mediaBytes;
   final String? imageUrl;
   final String? sourceUrl;
   final String license;
@@ -3184,6 +3238,8 @@ class ContentItemRow extends DataClass implements Insertable<ContentItemRow> {
     this.description,
     this.mediaUrl,
     required this.mediaFormat,
+    this.altMediaUrl,
+    this.mediaBytes,
     this.imageUrl,
     this.sourceUrl,
     required this.license,
@@ -3214,6 +3270,12 @@ class ContentItemRow extends DataClass implements Insertable<ContentItemRow> {
       map['media_url'] = Variable<String>(mediaUrl);
     }
     map['media_format'] = Variable<String>(mediaFormat);
+    if (!nullToAbsent || altMediaUrl != null) {
+      map['alt_media_url'] = Variable<String>(altMediaUrl);
+    }
+    if (!nullToAbsent || mediaBytes != null) {
+      map['media_bytes'] = Variable<int>(mediaBytes);
+    }
     if (!nullToAbsent || imageUrl != null) {
       map['image_url'] = Variable<String>(imageUrl);
     }
@@ -3264,6 +3326,14 @@ class ContentItemRow extends DataClass implements Insertable<ContentItemRow> {
               ? const Value.absent()
               : Value(mediaUrl),
       mediaFormat: Value(mediaFormat),
+      altMediaUrl:
+          altMediaUrl == null && nullToAbsent
+              ? const Value.absent()
+              : Value(altMediaUrl),
+      mediaBytes:
+          mediaBytes == null && nullToAbsent
+              ? const Value.absent()
+              : Value(mediaBytes),
       imageUrl:
           imageUrl == null && nullToAbsent
               ? const Value.absent()
@@ -3311,6 +3381,8 @@ class ContentItemRow extends DataClass implements Insertable<ContentItemRow> {
       description: serializer.fromJson<String?>(json['description']),
       mediaUrl: serializer.fromJson<String?>(json['mediaUrl']),
       mediaFormat: serializer.fromJson<String>(json['mediaFormat']),
+      altMediaUrl: serializer.fromJson<String?>(json['altMediaUrl']),
+      mediaBytes: serializer.fromJson<int?>(json['mediaBytes']),
       imageUrl: serializer.fromJson<String?>(json['imageUrl']),
       sourceUrl: serializer.fromJson<String?>(json['sourceUrl']),
       license: serializer.fromJson<String>(json['license']),
@@ -3337,6 +3409,8 @@ class ContentItemRow extends DataClass implements Insertable<ContentItemRow> {
       'description': serializer.toJson<String?>(description),
       'mediaUrl': serializer.toJson<String?>(mediaUrl),
       'mediaFormat': serializer.toJson<String>(mediaFormat),
+      'altMediaUrl': serializer.toJson<String?>(altMediaUrl),
+      'mediaBytes': serializer.toJson<int?>(mediaBytes),
       'imageUrl': serializer.toJson<String?>(imageUrl),
       'sourceUrl': serializer.toJson<String?>(sourceUrl),
       'license': serializer.toJson<String>(license),
@@ -3361,6 +3435,8 @@ class ContentItemRow extends DataClass implements Insertable<ContentItemRow> {
     Value<String?> description = const Value.absent(),
     Value<String?> mediaUrl = const Value.absent(),
     String? mediaFormat,
+    Value<String?> altMediaUrl = const Value.absent(),
+    Value<int?> mediaBytes = const Value.absent(),
     Value<String?> imageUrl = const Value.absent(),
     Value<String?> sourceUrl = const Value.absent(),
     String? license,
@@ -3382,6 +3458,8 @@ class ContentItemRow extends DataClass implements Insertable<ContentItemRow> {
     description: description.present ? description.value : this.description,
     mediaUrl: mediaUrl.present ? mediaUrl.value : this.mediaUrl,
     mediaFormat: mediaFormat ?? this.mediaFormat,
+    altMediaUrl: altMediaUrl.present ? altMediaUrl.value : this.altMediaUrl,
+    mediaBytes: mediaBytes.present ? mediaBytes.value : this.mediaBytes,
     imageUrl: imageUrl.present ? imageUrl.value : this.imageUrl,
     sourceUrl: sourceUrl.present ? sourceUrl.value : this.sourceUrl,
     license: license ?? this.license,
@@ -3408,6 +3486,10 @@ class ContentItemRow extends DataClass implements Insertable<ContentItemRow> {
       mediaUrl: data.mediaUrl.present ? data.mediaUrl.value : this.mediaUrl,
       mediaFormat:
           data.mediaFormat.present ? data.mediaFormat.value : this.mediaFormat,
+      altMediaUrl:
+          data.altMediaUrl.present ? data.altMediaUrl.value : this.altMediaUrl,
+      mediaBytes:
+          data.mediaBytes.present ? data.mediaBytes.value : this.mediaBytes,
       imageUrl: data.imageUrl.present ? data.imageUrl.value : this.imageUrl,
       sourceUrl: data.sourceUrl.present ? data.sourceUrl.value : this.sourceUrl,
       license: data.license.present ? data.license.value : this.license,
@@ -3442,6 +3524,8 @@ class ContentItemRow extends DataClass implements Insertable<ContentItemRow> {
           ..write('description: $description, ')
           ..write('mediaUrl: $mediaUrl, ')
           ..write('mediaFormat: $mediaFormat, ')
+          ..write('altMediaUrl: $altMediaUrl, ')
+          ..write('mediaBytes: $mediaBytes, ')
           ..write('imageUrl: $imageUrl, ')
           ..write('sourceUrl: $sourceUrl, ')
           ..write('license: $license, ')
@@ -3459,7 +3543,7 @@ class ContentItemRow extends DataClass implements Insertable<ContentItemRow> {
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     id,
     provider,
     kind,
@@ -3468,6 +3552,8 @@ class ContentItemRow extends DataClass implements Insertable<ContentItemRow> {
     description,
     mediaUrl,
     mediaFormat,
+    altMediaUrl,
+    mediaBytes,
     imageUrl,
     sourceUrl,
     license,
@@ -3480,7 +3566,7 @@ class ContentItemRow extends DataClass implements Insertable<ContentItemRow> {
     firstSeenAt,
     lastSeenAt,
     seen,
-  );
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -3493,6 +3579,8 @@ class ContentItemRow extends DataClass implements Insertable<ContentItemRow> {
           other.description == this.description &&
           other.mediaUrl == this.mediaUrl &&
           other.mediaFormat == this.mediaFormat &&
+          other.altMediaUrl == this.altMediaUrl &&
+          other.mediaBytes == this.mediaBytes &&
           other.imageUrl == this.imageUrl &&
           other.sourceUrl == this.sourceUrl &&
           other.license == this.license &&
@@ -3516,6 +3604,8 @@ class ContentItemsCompanion extends UpdateCompanion<ContentItemRow> {
   final Value<String?> description;
   final Value<String?> mediaUrl;
   final Value<String> mediaFormat;
+  final Value<String?> altMediaUrl;
+  final Value<int?> mediaBytes;
   final Value<String?> imageUrl;
   final Value<String?> sourceUrl;
   final Value<String> license;
@@ -3538,6 +3628,8 @@ class ContentItemsCompanion extends UpdateCompanion<ContentItemRow> {
     this.description = const Value.absent(),
     this.mediaUrl = const Value.absent(),
     this.mediaFormat = const Value.absent(),
+    this.altMediaUrl = const Value.absent(),
+    this.mediaBytes = const Value.absent(),
     this.imageUrl = const Value.absent(),
     this.sourceUrl = const Value.absent(),
     this.license = const Value.absent(),
@@ -3561,6 +3653,8 @@ class ContentItemsCompanion extends UpdateCompanion<ContentItemRow> {
     this.description = const Value.absent(),
     this.mediaUrl = const Value.absent(),
     this.mediaFormat = const Value.absent(),
+    this.altMediaUrl = const Value.absent(),
+    this.mediaBytes = const Value.absent(),
     this.imageUrl = const Value.absent(),
     this.sourceUrl = const Value.absent(),
     required String license,
@@ -3590,6 +3684,8 @@ class ContentItemsCompanion extends UpdateCompanion<ContentItemRow> {
     Expression<String>? description,
     Expression<String>? mediaUrl,
     Expression<String>? mediaFormat,
+    Expression<String>? altMediaUrl,
+    Expression<int>? mediaBytes,
     Expression<String>? imageUrl,
     Expression<String>? sourceUrl,
     Expression<String>? license,
@@ -3613,6 +3709,8 @@ class ContentItemsCompanion extends UpdateCompanion<ContentItemRow> {
       if (description != null) 'description': description,
       if (mediaUrl != null) 'media_url': mediaUrl,
       if (mediaFormat != null) 'media_format': mediaFormat,
+      if (altMediaUrl != null) 'alt_media_url': altMediaUrl,
+      if (mediaBytes != null) 'media_bytes': mediaBytes,
       if (imageUrl != null) 'image_url': imageUrl,
       if (sourceUrl != null) 'source_url': sourceUrl,
       if (license != null) 'license': license,
@@ -3638,6 +3736,8 @@ class ContentItemsCompanion extends UpdateCompanion<ContentItemRow> {
     Value<String?>? description,
     Value<String?>? mediaUrl,
     Value<String>? mediaFormat,
+    Value<String?>? altMediaUrl,
+    Value<int?>? mediaBytes,
     Value<String?>? imageUrl,
     Value<String?>? sourceUrl,
     Value<String>? license,
@@ -3661,6 +3761,8 @@ class ContentItemsCompanion extends UpdateCompanion<ContentItemRow> {
       description: description ?? this.description,
       mediaUrl: mediaUrl ?? this.mediaUrl,
       mediaFormat: mediaFormat ?? this.mediaFormat,
+      altMediaUrl: altMediaUrl ?? this.altMediaUrl,
+      mediaBytes: mediaBytes ?? this.mediaBytes,
       imageUrl: imageUrl ?? this.imageUrl,
       sourceUrl: sourceUrl ?? this.sourceUrl,
       license: license ?? this.license,
@@ -3703,6 +3805,12 @@ class ContentItemsCompanion extends UpdateCompanion<ContentItemRow> {
     }
     if (mediaFormat.present) {
       map['media_format'] = Variable<String>(mediaFormat.value);
+    }
+    if (altMediaUrl.present) {
+      map['alt_media_url'] = Variable<String>(altMediaUrl.value);
+    }
+    if (mediaBytes.present) {
+      map['media_bytes'] = Variable<int>(mediaBytes.value);
     }
     if (imageUrl.present) {
       map['image_url'] = Variable<String>(imageUrl.value);
@@ -3759,6 +3867,8 @@ class ContentItemsCompanion extends UpdateCompanion<ContentItemRow> {
           ..write('description: $description, ')
           ..write('mediaUrl: $mediaUrl, ')
           ..write('mediaFormat: $mediaFormat, ')
+          ..write('altMediaUrl: $altMediaUrl, ')
+          ..write('mediaBytes: $mediaBytes, ')
           ..write('imageUrl: $imageUrl, ')
           ..write('sourceUrl: $sourceUrl, ')
           ..write('license: $license, ')
@@ -4168,6 +4278,377 @@ class ContentSyncStatesCompanion extends UpdateCompanion<ContentSyncStateRow> {
   }
 }
 
+class $ContentDownloadsTable extends ContentDownloads
+    with TableInfo<$ContentDownloadsTable, ContentDownloadRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ContentDownloadsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _contentIdMeta = const VerificationMeta(
+    'contentId',
+  );
+  @override
+  late final GeneratedColumn<String> contentId = GeneratedColumn<String>(
+    'content_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _urlMeta = const VerificationMeta('url');
+  @override
+  late final GeneratedColumn<String> url = GeneratedColumn<String>(
+    'url',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _localPathMeta = const VerificationMeta(
+    'localPath',
+  );
+  @override
+  late final GeneratedColumn<String> localPath = GeneratedColumn<String>(
+    'local_path',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bytesMeta = const VerificationMeta('bytes');
+  @override
+  late final GeneratedColumn<int> bytes = GeneratedColumn<int>(
+    'bytes',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _savedAtMeta = const VerificationMeta(
+    'savedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> savedAt = GeneratedColumn<DateTime>(
+    'saved_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    contentId,
+    url,
+    localPath,
+    bytes,
+    savedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'content_downloads';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ContentDownloadRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('content_id')) {
+      context.handle(
+        _contentIdMeta,
+        contentId.isAcceptableOrUnknown(data['content_id']!, _contentIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_contentIdMeta);
+    }
+    if (data.containsKey('url')) {
+      context.handle(
+        _urlMeta,
+        url.isAcceptableOrUnknown(data['url']!, _urlMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_urlMeta);
+    }
+    if (data.containsKey('local_path')) {
+      context.handle(
+        _localPathMeta,
+        localPath.isAcceptableOrUnknown(data['local_path']!, _localPathMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_localPathMeta);
+    }
+    if (data.containsKey('bytes')) {
+      context.handle(
+        _bytesMeta,
+        bytes.isAcceptableOrUnknown(data['bytes']!, _bytesMeta),
+      );
+    }
+    if (data.containsKey('saved_at')) {
+      context.handle(
+        _savedAtMeta,
+        savedAt.isAcceptableOrUnknown(data['saved_at']!, _savedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_savedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {contentId, url};
+  @override
+  ContentDownloadRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ContentDownloadRow(
+      contentId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}content_id'],
+          )!,
+      url:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}url'],
+          )!,
+      localPath:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}local_path'],
+          )!,
+      bytes:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}bytes'],
+          )!,
+      savedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}saved_at'],
+          )!,
+    );
+  }
+
+  @override
+  $ContentDownloadsTable createAlias(String alias) {
+    return $ContentDownloadsTable(attachedDatabase, alias);
+  }
+}
+
+class ContentDownloadRow extends DataClass
+    implements Insertable<ContentDownloadRow> {
+  final String contentId;
+
+  /// Which URL was saved (main or alternate rendition, or a chapter).
+  final String url;
+
+  /// Absolute path inside the app's private storage.
+  final String localPath;
+  final int bytes;
+  final DateTime savedAt;
+  const ContentDownloadRow({
+    required this.contentId,
+    required this.url,
+    required this.localPath,
+    required this.bytes,
+    required this.savedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['content_id'] = Variable<String>(contentId);
+    map['url'] = Variable<String>(url);
+    map['local_path'] = Variable<String>(localPath);
+    map['bytes'] = Variable<int>(bytes);
+    map['saved_at'] = Variable<DateTime>(savedAt);
+    return map;
+  }
+
+  ContentDownloadsCompanion toCompanion(bool nullToAbsent) {
+    return ContentDownloadsCompanion(
+      contentId: Value(contentId),
+      url: Value(url),
+      localPath: Value(localPath),
+      bytes: Value(bytes),
+      savedAt: Value(savedAt),
+    );
+  }
+
+  factory ContentDownloadRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ContentDownloadRow(
+      contentId: serializer.fromJson<String>(json['contentId']),
+      url: serializer.fromJson<String>(json['url']),
+      localPath: serializer.fromJson<String>(json['localPath']),
+      bytes: serializer.fromJson<int>(json['bytes']),
+      savedAt: serializer.fromJson<DateTime>(json['savedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'contentId': serializer.toJson<String>(contentId),
+      'url': serializer.toJson<String>(url),
+      'localPath': serializer.toJson<String>(localPath),
+      'bytes': serializer.toJson<int>(bytes),
+      'savedAt': serializer.toJson<DateTime>(savedAt),
+    };
+  }
+
+  ContentDownloadRow copyWith({
+    String? contentId,
+    String? url,
+    String? localPath,
+    int? bytes,
+    DateTime? savedAt,
+  }) => ContentDownloadRow(
+    contentId: contentId ?? this.contentId,
+    url: url ?? this.url,
+    localPath: localPath ?? this.localPath,
+    bytes: bytes ?? this.bytes,
+    savedAt: savedAt ?? this.savedAt,
+  );
+  ContentDownloadRow copyWithCompanion(ContentDownloadsCompanion data) {
+    return ContentDownloadRow(
+      contentId: data.contentId.present ? data.contentId.value : this.contentId,
+      url: data.url.present ? data.url.value : this.url,
+      localPath: data.localPath.present ? data.localPath.value : this.localPath,
+      bytes: data.bytes.present ? data.bytes.value : this.bytes,
+      savedAt: data.savedAt.present ? data.savedAt.value : this.savedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ContentDownloadRow(')
+          ..write('contentId: $contentId, ')
+          ..write('url: $url, ')
+          ..write('localPath: $localPath, ')
+          ..write('bytes: $bytes, ')
+          ..write('savedAt: $savedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(contentId, url, localPath, bytes, savedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ContentDownloadRow &&
+          other.contentId == this.contentId &&
+          other.url == this.url &&
+          other.localPath == this.localPath &&
+          other.bytes == this.bytes &&
+          other.savedAt == this.savedAt);
+}
+
+class ContentDownloadsCompanion extends UpdateCompanion<ContentDownloadRow> {
+  final Value<String> contentId;
+  final Value<String> url;
+  final Value<String> localPath;
+  final Value<int> bytes;
+  final Value<DateTime> savedAt;
+  final Value<int> rowid;
+  const ContentDownloadsCompanion({
+    this.contentId = const Value.absent(),
+    this.url = const Value.absent(),
+    this.localPath = const Value.absent(),
+    this.bytes = const Value.absent(),
+    this.savedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ContentDownloadsCompanion.insert({
+    required String contentId,
+    required String url,
+    required String localPath,
+    this.bytes = const Value.absent(),
+    required DateTime savedAt,
+    this.rowid = const Value.absent(),
+  }) : contentId = Value(contentId),
+       url = Value(url),
+       localPath = Value(localPath),
+       savedAt = Value(savedAt);
+  static Insertable<ContentDownloadRow> custom({
+    Expression<String>? contentId,
+    Expression<String>? url,
+    Expression<String>? localPath,
+    Expression<int>? bytes,
+    Expression<DateTime>? savedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (contentId != null) 'content_id': contentId,
+      if (url != null) 'url': url,
+      if (localPath != null) 'local_path': localPath,
+      if (bytes != null) 'bytes': bytes,
+      if (savedAt != null) 'saved_at': savedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ContentDownloadsCompanion copyWith({
+    Value<String>? contentId,
+    Value<String>? url,
+    Value<String>? localPath,
+    Value<int>? bytes,
+    Value<DateTime>? savedAt,
+    Value<int>? rowid,
+  }) {
+    return ContentDownloadsCompanion(
+      contentId: contentId ?? this.contentId,
+      url: url ?? this.url,
+      localPath: localPath ?? this.localPath,
+      bytes: bytes ?? this.bytes,
+      savedAt: savedAt ?? this.savedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (contentId.present) {
+      map['content_id'] = Variable<String>(contentId.value);
+    }
+    if (url.present) {
+      map['url'] = Variable<String>(url.value);
+    }
+    if (localPath.present) {
+      map['local_path'] = Variable<String>(localPath.value);
+    }
+    if (bytes.present) {
+      map['bytes'] = Variable<int>(bytes.value);
+    }
+    if (savedAt.present) {
+      map['saved_at'] = Variable<DateTime>(savedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ContentDownloadsCompanion(')
+          ..write('contentId: $contentId, ')
+          ..write('url: $url, ')
+          ..write('localPath: $localPath, ')
+          ..write('bytes: $bytes, ')
+          ..write('savedAt: $savedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $AppMetaTable extends AppMeta with TableInfo<$AppMetaTable, AppMetaRow> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -4394,6 +4875,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ContentItemsTable contentItems = $ContentItemsTable(this);
   late final $ContentSyncStatesTable contentSyncStates =
       $ContentSyncStatesTable(this);
+  late final $ContentDownloadsTable contentDownloads = $ContentDownloadsTable(
+    this,
+  );
   late final $AppMetaTable appMeta = $AppMetaTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
@@ -4408,6 +4892,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     habitLogs,
     contentItems,
     contentSyncStates,
+    contentDownloads,
     appMeta,
   ];
   @override
@@ -6971,6 +7456,8 @@ typedef $$ContentItemsTableCreateCompanionBuilder =
       Value<String?> description,
       Value<String?> mediaUrl,
       Value<String> mediaFormat,
+      Value<String?> altMediaUrl,
+      Value<int?> mediaBytes,
       Value<String?> imageUrl,
       Value<String?> sourceUrl,
       required String license,
@@ -6995,6 +7482,8 @@ typedef $$ContentItemsTableUpdateCompanionBuilder =
       Value<String?> description,
       Value<String?> mediaUrl,
       Value<String> mediaFormat,
+      Value<String?> altMediaUrl,
+      Value<int?> mediaBytes,
       Value<String?> imageUrl,
       Value<String?> sourceUrl,
       Value<String> license,
@@ -7056,6 +7545,16 @@ class $$ContentItemsTableFilterComposer
 
   ColumnFilters<String> get mediaFormat => $composableBuilder(
     column: $table.mediaFormat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get altMediaUrl => $composableBuilder(
+    column: $table.altMediaUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get mediaBytes => $composableBuilder(
+    column: $table.mediaBytes,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -7170,6 +7669,16 @@ class $$ContentItemsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get altMediaUrl => $composableBuilder(
+    column: $table.altMediaUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get mediaBytes => $composableBuilder(
+    column: $table.mediaBytes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get imageUrl => $composableBuilder(
     column: $table.imageUrl,
     builder: (column) => ColumnOrderings(column),
@@ -7268,6 +7777,16 @@ class $$ContentItemsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get altMediaUrl => $composableBuilder(
+    column: $table.altMediaUrl,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get mediaBytes => $composableBuilder(
+    column: $table.mediaBytes,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get imageUrl =>
       $composableBuilder(column: $table.imageUrl, builder: (column) => column);
 
@@ -7357,6 +7876,8 @@ class $$ContentItemsTableTableManager
                 Value<String?> description = const Value.absent(),
                 Value<String?> mediaUrl = const Value.absent(),
                 Value<String> mediaFormat = const Value.absent(),
+                Value<String?> altMediaUrl = const Value.absent(),
+                Value<int?> mediaBytes = const Value.absent(),
                 Value<String?> imageUrl = const Value.absent(),
                 Value<String?> sourceUrl = const Value.absent(),
                 Value<String> license = const Value.absent(),
@@ -7379,6 +7900,8 @@ class $$ContentItemsTableTableManager
                 description: description,
                 mediaUrl: mediaUrl,
                 mediaFormat: mediaFormat,
+                altMediaUrl: altMediaUrl,
+                mediaBytes: mediaBytes,
                 imageUrl: imageUrl,
                 sourceUrl: sourceUrl,
                 license: license,
@@ -7403,6 +7926,8 @@ class $$ContentItemsTableTableManager
                 Value<String?> description = const Value.absent(),
                 Value<String?> mediaUrl = const Value.absent(),
                 Value<String> mediaFormat = const Value.absent(),
+                Value<String?> altMediaUrl = const Value.absent(),
+                Value<int?> mediaBytes = const Value.absent(),
                 Value<String?> imageUrl = const Value.absent(),
                 Value<String?> sourceUrl = const Value.absent(),
                 required String license,
@@ -7425,6 +7950,8 @@ class $$ContentItemsTableTableManager
                 description: description,
                 mediaUrl: mediaUrl,
                 mediaFormat: mediaFormat,
+                altMediaUrl: altMediaUrl,
+                mediaBytes: mediaBytes,
                 imageUrl: imageUrl,
                 sourceUrl: sourceUrl,
                 license: license,
@@ -7701,6 +8228,230 @@ typedef $$ContentSyncStatesTableProcessedTableManager =
       ContentSyncStateRow,
       PrefetchHooks Function()
     >;
+typedef $$ContentDownloadsTableCreateCompanionBuilder =
+    ContentDownloadsCompanion Function({
+      required String contentId,
+      required String url,
+      required String localPath,
+      Value<int> bytes,
+      required DateTime savedAt,
+      Value<int> rowid,
+    });
+typedef $$ContentDownloadsTableUpdateCompanionBuilder =
+    ContentDownloadsCompanion Function({
+      Value<String> contentId,
+      Value<String> url,
+      Value<String> localPath,
+      Value<int> bytes,
+      Value<DateTime> savedAt,
+      Value<int> rowid,
+    });
+
+class $$ContentDownloadsTableFilterComposer
+    extends Composer<_$AppDatabase, $ContentDownloadsTable> {
+  $$ContentDownloadsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get contentId => $composableBuilder(
+    column: $table.contentId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get url => $composableBuilder(
+    column: $table.url,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get localPath => $composableBuilder(
+    column: $table.localPath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get bytes => $composableBuilder(
+    column: $table.bytes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get savedAt => $composableBuilder(
+    column: $table.savedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ContentDownloadsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ContentDownloadsTable> {
+  $$ContentDownloadsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get contentId => $composableBuilder(
+    column: $table.contentId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get url => $composableBuilder(
+    column: $table.url,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get localPath => $composableBuilder(
+    column: $table.localPath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get bytes => $composableBuilder(
+    column: $table.bytes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get savedAt => $composableBuilder(
+    column: $table.savedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ContentDownloadsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ContentDownloadsTable> {
+  $$ContentDownloadsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get contentId =>
+      $composableBuilder(column: $table.contentId, builder: (column) => column);
+
+  GeneratedColumn<String> get url =>
+      $composableBuilder(column: $table.url, builder: (column) => column);
+
+  GeneratedColumn<String> get localPath =>
+      $composableBuilder(column: $table.localPath, builder: (column) => column);
+
+  GeneratedColumn<int> get bytes =>
+      $composableBuilder(column: $table.bytes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get savedAt =>
+      $composableBuilder(column: $table.savedAt, builder: (column) => column);
+}
+
+class $$ContentDownloadsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ContentDownloadsTable,
+          ContentDownloadRow,
+          $$ContentDownloadsTableFilterComposer,
+          $$ContentDownloadsTableOrderingComposer,
+          $$ContentDownloadsTableAnnotationComposer,
+          $$ContentDownloadsTableCreateCompanionBuilder,
+          $$ContentDownloadsTableUpdateCompanionBuilder,
+          (
+            ContentDownloadRow,
+            BaseReferences<
+              _$AppDatabase,
+              $ContentDownloadsTable,
+              ContentDownloadRow
+            >,
+          ),
+          ContentDownloadRow,
+          PrefetchHooks Function()
+        > {
+  $$ContentDownloadsTableTableManager(
+    _$AppDatabase db,
+    $ContentDownloadsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () =>
+                  $$ContentDownloadsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () => $$ContentDownloadsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer:
+              () => $$ContentDownloadsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> contentId = const Value.absent(),
+                Value<String> url = const Value.absent(),
+                Value<String> localPath = const Value.absent(),
+                Value<int> bytes = const Value.absent(),
+                Value<DateTime> savedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ContentDownloadsCompanion(
+                contentId: contentId,
+                url: url,
+                localPath: localPath,
+                bytes: bytes,
+                savedAt: savedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String contentId,
+                required String url,
+                required String localPath,
+                Value<int> bytes = const Value.absent(),
+                required DateTime savedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ContentDownloadsCompanion.insert(
+                contentId: contentId,
+                url: url,
+                localPath: localPath,
+                bytes: bytes,
+                savedAt: savedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          BaseReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ContentDownloadsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ContentDownloadsTable,
+      ContentDownloadRow,
+      $$ContentDownloadsTableFilterComposer,
+      $$ContentDownloadsTableOrderingComposer,
+      $$ContentDownloadsTableAnnotationComposer,
+      $$ContentDownloadsTableCreateCompanionBuilder,
+      $$ContentDownloadsTableUpdateCompanionBuilder,
+      (
+        ContentDownloadRow,
+        BaseReferences<
+          _$AppDatabase,
+          $ContentDownloadsTable,
+          ContentDownloadRow
+        >,
+      ),
+      ContentDownloadRow,
+      PrefetchHooks Function()
+    >;
 typedef $$AppMetaTableCreateCompanionBuilder =
     AppMetaCompanion Function({
       required String key,
@@ -7861,6 +8612,8 @@ class $AppDatabaseManager {
       $$ContentItemsTableTableManager(_db, _db.contentItems);
   $$ContentSyncStatesTableTableManager get contentSyncStates =>
       $$ContentSyncStatesTableTableManager(_db, _db.contentSyncStates);
+  $$ContentDownloadsTableTableManager get contentDownloads =>
+      $$ContentDownloadsTableTableManager(_db, _db.contentDownloads);
   $$AppMetaTableTableManager get appMeta =>
       $$AppMetaTableTableManager(_db, _db.appMeta);
 }

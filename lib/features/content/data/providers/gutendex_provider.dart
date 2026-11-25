@@ -28,7 +28,7 @@ class GutendexProvider implements ContentProvider {
   @override
   ContentKind get kind => ContentKind.book;
   @override
-  Duration get refreshEvery => const Duration(hours: 6);
+  Duration get refreshEvery => const Duration(hours: 1);
 
   static const rotatingPages = 30;
 

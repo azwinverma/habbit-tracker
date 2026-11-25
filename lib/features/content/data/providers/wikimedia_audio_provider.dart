@@ -25,7 +25,7 @@ class WikimediaAudioProvider implements ContentProvider {
   @override
   ContentKind get kind => ContentKind.audio;
   @override
-  Duration get refreshEvery => const Duration(hours: 24);
+  Duration get refreshEvery => const Duration(hours: 6);
 
   /// Collection label -> Commons search.
   static const collections = <String, String>{

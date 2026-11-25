@@ -6,6 +6,8 @@ import '../../app/providers.dart';
 import '../../core/reminders/reminder_service.dart';
 import '../content/data/providers/content_provider.dart';
 import '../../l10n/app_localizations.dart';
+import '../content/data/download_service.dart';
+import '../content/presentation/discover_screen.dart' show fmtBytes;
 import '../../app/theme.dart';
 import '../../design/components.dart';
 
@@ -149,6 +151,12 @@ class ProfileScreen extends ConsumerWidget {
                   ],
                 ),
               ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(Space.xs, Space.sm, Space.xs, 0),
+                child: Text(l.autoUpdateNote, style: theme.textTheme.bodySmall),
+              ),
+              section(l.storageTitle),
+              const _StorageCard(),
               section(l.sourcesLicences),
               Card(
                 child: Padding(
@@ -214,6 +222,8 @@ class ProfileScreen extends ConsumerWidget {
     'gutenberg' => Icons.menu_book_outlined,
     'commons' => Icons.graphic_eq,
     'wger' => Icons.fitness_center,
+    'librivox' => Icons.headphones_outlined,
+    'commons-video' => Icons.smart_display_outlined,
     _ => Icons.public,
   };
 
@@ -221,6 +231,8 @@ class ProfileScreen extends ConsumerWidget {
     'gutenberg' => l.licNoteGutenberg,
     'commons' => l.licNoteCommons,
     'wger' => l.licNoteWger,
+    'librivox' => l.licNoteLibrivox,
+    'commons-video' => l.licNoteCommonsVideo,
     _ => p.homepage,
   };
 }
@@ -270,3 +282,42 @@ class _BrandHeader extends StatelessWidget {
     );
   }
 }
+
+/// Space used by offline downloads, with "remove all".
+class _StorageCard extends ConsumerWidget {
+  const _StorageCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final rows = ref.watch(_downloadsProvider).valueOrNull ?? const [];
+    final bytes = rows.fold<int>(0, (a, r) => a + r.bytes);
+    return Card(
+      child: ListTile(
+        leading: const Icon(Icons.sd_storage_outlined),
+        title: Text(l.storageUsed(fmtBytes(bytes), rows.length)),
+        trailing: rows.isEmpty
+            ? null
+            : TextButton(
+                onPressed: () async {
+                  final ok = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: Text(l.clearDownloads),
+                      content: Text(l.clearDownloadsConfirm),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l.cancel)),
+                        FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l.remove)),
+                      ],
+                    ),
+                  );
+                  if (ok == true) await DownloadService.instance.clearAll();
+                },
+                child: Text(l.remove),
+              ),
+      ),
+    );
+  }
+}
+
+final _downloadsProvider = StreamProvider((ref) => DownloadService.instance.watchAll());

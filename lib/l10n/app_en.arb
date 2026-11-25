@@ -418,5 +418,97 @@
   },
   "splashPreparing": "Getting your day ready…",
   "splashError": "Something went wrong while starting.",
-  "retry": "Try again"
+  "retry": "Try again",
+  "searchContent": "Search titles, authors, topics",
+  "clear": "Clear",
+  "savedFilter": "Saved",
+  "tabBooks": "Books",
+  "tabAudiobooks": "Audiobooks",
+  "tabSounds": "Sounds",
+  "tabWorkouts": "Workouts",
+  "tabVideos": "Videos",
+  "newBadge": "New",
+  "nothingMatches": "Nothing matches \"{query}\".",
+  "@nothingMatches": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "nothingYet": "Nothing here yet. Connect to the internet and pull down to load free content.",
+  "nothingSaved": "Nothing saved yet. Open an item and tap Download to keep it on your phone.",
+  "readNow": "Read now",
+  "listen": "Listen",
+  "playLoops": "Play (loops)",
+  "play": "Play",
+  "pause": "Pause",
+  "loop": "Loop",
+  "watchVideo": "Watch video",
+  "watchVideoSize": "Watch video ({size})",
+  "@watchVideoSize": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "couldNotPlay": "Could not play this. Check your connection and try again.",
+  "videoError": "This video can't be played on this device. Try another one, or check your connection.",
+  "creditsLicence": "Credits & licence",
+  "licenceLabel": "Licence: {licence}",
+  "@licenceLabel": {
+    "placeholders": {
+      "licence": {
+        "type": "String"
+      }
+    }
+  },
+  "copySourceLink": "Copy source link",
+  "sourceCopied": "Source link copied",
+  "downloadOffline": "Download for offline",
+  "downloadOfflineSize": "Download for offline ({size})",
+  "@downloadOfflineSize": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "downloaded": "Saved on this phone",
+  "removeDownload": "Remove download",
+  "downloadFailed": "Download failed. Check your connection and try again.",
+  "downloadAll": "Download all chapters",
+  "chapters": "Chapters",
+  "chapterCount": "{count} chapters",
+  "@chapterCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "previousChapter": "Previous chapter",
+  "nextChapter": "Next chapter",
+  "back30": "Back 30 seconds",
+  "forward30": "Forward 30 seconds",
+  "cancel": "Cancel",
+  "remove": "Remove",
+  "storageTitle": "Saved for offline",
+  "storageUsed": "{size} used on this phone · {count} files",
+  "@storageUsed": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "clearDownloads": "Remove all downloads",
+  "clearDownloadsConfirm": "Remove all saved books, audio and videos from this phone? You can download them again later.",
+  "autoUpdateNote": "New content is checked every time you open the app, and in the background about twice a day on Wi-Fi or mobile data.",
+  "licNoteLibrivox": "public-domain audiobooks read by volunteers.",
+  "licNoteCommonsVideo": "freely licensed exercise, yoga and meditation videos (PD, CC0, CC BY, CC BY-SA); author credited."
 }

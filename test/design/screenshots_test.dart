@@ -15,6 +15,9 @@ import 'package:habit_tracker_nepali/core/db/app_database.dart';
 import 'package:habit_tracker_nepali/core/reminders/reminder_service.dart';
 import 'package:habit_tracker_nepali/features/habits/data/habit_repository.dart';
 import 'package:habit_tracker_nepali/features/habits/data/legacy_habit_migrator.dart';
+import 'package:habit_tracker_nepali/features/content/data/content_repository.dart';
+import 'package:habit_tracker_nepali/features/content/domain/content_item.dart';
+import 'package:habit_tracker_nepali/features/content/presentation/discover_screen.dart';
 import 'package:habit_tracker_nepali/features/insights/insights_screen.dart';
 import 'package:habit_tracker_nepali/features/plan/plan_screen.dart';
 import 'package:habit_tracker_nepali/features/profile/profile_screen.dart';
@@ -83,6 +86,23 @@ void main() {
           ..exerciseTodayMin = [20, 0, 35, 15, 30, 0, 12][6 - i];
         await storage.saveHabits(habits);
       }
+      final repo = ContentRepository(db);
+      await repo.upsert('demo', const [
+        ContentItem(id: 'd:v1', provider: 'demo', kind: ContentKind.video, title: 'Surya namaskar', subtitle: 'Yoga',
+            license: 'CC BY-SA 3.0', mediaUrl: 'https://x/a.webm', mediaFormat: 'video', durationSeconds: 312),
+        ContentItem(id: 'd:v2', provider: 'demo', kind: ContentKind.video, title: 'Kettlebell swing', subtitle: 'Exercise demo',
+            license: 'CC BY-SA 4', mediaUrl: 'https://x/b.mov', mediaFormat: 'video', durationSeconds: 14),
+        ContentItem(id: 'd:v3', provider: 'demo', kind: ContentKind.video, title: 'Breathing meditation', subtitle: 'Meditation',
+            license: 'CC0', mediaUrl: 'https://x/c.webm', mediaFormat: 'video', durationSeconds: 600),
+        ContentItem(id: 'd:b1', provider: 'demo', kind: ContentKind.book, title: 'Pride and Prejudice', subtitle: 'Jane Austen',
+            license: 'Public domain (US)', mediaUrl: 'https://x/p.epub', mediaFormat: 'epub'),
+        ContentItem(id: 'd:b2', provider: 'demo', kind: ContentKind.book, title: 'Meditations', subtitle: 'Marcus Aurelius',
+            license: 'Public domain (US)', mediaUrl: 'https://x/m.epub', mediaFormat: 'epub'),
+      ], now: now, firstSync: true);
+      await repo.upsert('demo', const [
+        ContentItem(id: 'd:v4', provider: 'demo', kind: ContentKind.video, title: 'Neck stretch for desk workers',
+            subtitle: 'Exercise', license: 'CC BY 4.0', mediaUrl: 'https://x/d.webm', mediaFormat: 'video', durationSeconds: 95),
+      ], now: now, firstSync: false);
     });
     await tester.pumpWidget(wrap(db, screen(db), b: b, locale: locale, overrides: overrides));
     for (var i = 0; i < 4; i++) {
@@ -109,6 +129,14 @@ void main() {
   ];
   testWidgets('plan', (t) => shot(t, 'plan_light', (_) => const PlanScreen(), overrides: pinned), skip: skip);
   testWidgets('you', (t) => shot(t, 'you_light', (_) => const ProfileScreen(), height: 3600), skip: skip);
+  testWidgets('discover videos', (t) => shot(t, 'discover_videos',
+      (_) => const DiscoverScreen(initialKind: ContentKind.video), overrides: [
+            savedContentIdsProvider.overrideWith((ref) => Stream.value({'d:v1'})),
+          ]), skip: skip);
+  testWidgets('discover books', (t) => shot(t, 'discover_books',
+      (_) => const DiscoverScreen(), overrides: [
+            savedContentIdsProvider.overrideWith((ref) => Stream.value({'d:b2'})),
+          ]), skip: skip);
   testWidgets('medicine', (t) => shot(t, 'medicine_light',
       (_) => MedicineScreen(habit: sampleHabits(DateTime.now())[1]), height: 3200), skip: skip);
 }

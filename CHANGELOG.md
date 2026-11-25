@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.0.0] — Content library, offline downloads, background refresh (2026-11-25)
+
+### Added
+- **Audiobooks:** ~300 public-domain LibriVox audiobooks (Internet Archive), with chapters, speed control, ±30 s, remembered listening position and "Download all chapters".
+- **Videos:** exercise, yoga and meditation videos (Wikimedia Commons) plus ~45 wger exercise demo videos. A new **Videos** tab, and a video badge on exercises that have a demo. Plays the right format per platform and falls back to the other if one fails.
+- **Download for offline:** books save automatically on first open; audio and video have a Download button. You → *Saved for offline* shows storage used and can remove everything. Downloaded items are never pruned from the catalogue.
+- **Fresher content:** every app open checks all sources (in parallel). Books refresh after 1 h, audiobooks and sounds after 6 h, videos after 12 h, exercises after 24 h. Android also refreshes in the background about every 12 h (network connected, battery not low).
+- Discover redesigned and fully translated (English / नेपाली): five tabs, a *Saved* filter, video cards, and New and Saved badges.
+- Polite networking: retries with back-off for rate limits (HTTP 429) and server errors.
+- Draft privacy policy and release checklist (`docs/`).
+
+### Changed
+- Database schema v2 (additive migration, tested): alternate media URL, media size, `content_downloads` table. Shared across isolates for the background job.
+- Version 2.0.0 (build 20).
+
+
 ## [Unreleased] — Redesign (Phase 2 design system)
 
 ### Added

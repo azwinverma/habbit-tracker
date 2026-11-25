@@ -5,6 +5,8 @@ import 'package:http/http.dart' as http;
 
 import '../../../core/db/app_database.dart';
 import 'content_repository.dart';
+import 'providers/archive_audiobook_provider.dart';
+import 'providers/commons_video_provider.dart';
 import 'providers/content_provider.dart';
 import 'providers/gutendex_provider.dart';
 import 'providers/wger_provider.dart';
@@ -27,8 +29,11 @@ class ProviderSyncResult {
           : '$provider: $fetched items, $newItems new';
 }
 
-/// Pulls new content from every provider when the app opens (and when it
-/// returns to the foreground), at most once per provider's refresh interval.
+/// Checks every provider each time the app opens or returns to the
+/// foreground (and from the Android background job); a provider is
+/// re-downloaded when its last successful refresh is older than its
+/// interval (books 1 h, audiobooks/sounds 6 h, videos 12 h, exercises 24 h).
+/// "Check now" forces a refresh.
 ///
 /// - Offline or provider down: the cached catalogue keeps working; the error
 ///   is recorded and retried after a short back-off.
@@ -49,8 +54,13 @@ class ContentSyncService {
   static ContentSyncService get instance =>
       _instance ??= ContentSyncService(repository: ContentRepository(AppDatabase.instance));
 
-  static List<ContentProvider> defaultProviders() =>
-      [GutendexProvider(), WikimediaAudioProvider(), WgerProvider()];
+  static List<ContentProvider> defaultProviders() => [
+        GutendexProvider(),
+        ArchiveAudiobookProvider(),
+        WikimediaAudioProvider(),
+        WgerProvider(),
+        CommonsVideoProvider(),
+      ];
 
   static const failureBackoff = Duration(minutes: 15);
 
@@ -67,10 +77,8 @@ class ContentSyncService {
   }
 
   Future<List<ProviderSyncResult>> _syncAll(bool force) async {
-    final results = <ProviderSyncResult>[];
-    for (final p in providers) {
-      results.add(await _syncOne(p, force));
-    }
+    // Providers run in parallel and are isolated from each other.
+    final results = await Future.wait(providers.map((p) => _syncOne(p, force)));
     try {
       await _repo.prune(now: _clock());
     } catch (_) {}

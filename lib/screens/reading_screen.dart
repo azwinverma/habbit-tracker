@@ -2,6 +2,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import '../features/content/data/download_service.dart';
 import 'package:habit_tracker_nepali/services/ad_service.dart';
 import 'package:habit_tracker_nepali/widgets/ad_banner.dart';
 
@@ -20,7 +21,6 @@ import '../features/content/data/content_sync_service.dart';
 import '../features/content/domain/content_item.dart';
 
 // Network
-import 'package:http/http.dart' as http;
 
 // EPUB reader
 import 'package:epub_view/epub_view.dart';
@@ -570,6 +570,7 @@ class _ReaderHostPage extends StatelessWidget {
     return _isEpub
         ? _EpubReaderPage(
             url: book.url,
+            contentId: book.id,
             title: book.name,
             remainVN: remainVN,
             onEndNow: onEndNow,
@@ -586,11 +587,13 @@ class _ReaderHostPage extends StatelessWidget {
 // ======== EPUB Reader (epub_view ^3.2.0) ========
 class _EpubReaderPage extends StatefulWidget {
   final String url;
+  final String? contentId;
   final String title;
   final ValueNotifier<int> remainVN;
   final VoidCallback onEndNow;
   const _EpubReaderPage({
     required this.url,
+    this.contentId,
     required this.title,
     required this.remainVN,
     required this.onEndNow,
@@ -613,18 +616,13 @@ class _EpubReaderPageState extends State<_EpubReaderPage> {
 
   Future<void> _loadEpub() async {
     try {
-      final resp = await http.get(Uri.parse(widget.url));
-      if (resp.statusCode != 200) {
-        setState(() {
-          _error = 'Failed to load EPUB (${resp.statusCode})';
-          _loading = false;
-        });
-        return;
-      }
-      await _openFromBytes(resp.bodyBytes);
+      // Saved on first open, so the book opens offline afterwards.
+      final bytes = await DownloadService.instance.bytesFor(widget.contentId ?? widget.url, widget.url);
+      await _openFromBytes(bytes);
     } catch (e) {
+      if (!mounted) return;
       setState(() {
-        _error = 'Network error: $e';
+        _error = 'Could not open this book. Check your connection and try again.';
         _loading = false;
       });
     }
@@ -882,10 +880,10 @@ class _BookItem {
 /// Opens a book outside a timed reading session (e.g. from Discover).
 abstract final class BookReader {
   static Future<void> open(BuildContext context,
-      {required String title, required String url, String format = 'epub'}) {
+      {required String title, required String url, String format = 'epub', String? contentId}) {
     return Navigator.of(context).push(MaterialPageRoute(
       builder: (_) => _ReaderHostPage(
-        book: _BookItem(id: url, name: title, url: url, format: format),
+        book: _BookItem(id: contentId ?? url, name: title, url: url, format: format),
         remainVN: ValueNotifier<int>(0),
         onEndNow: () {},
       ),

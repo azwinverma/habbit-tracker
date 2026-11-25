@@ -680,4 +680,157 @@ class AppLocalizationsNe extends AppLocalizations {
 
   @override
   String get retry => 'फेरि प्रयास गर्नुहोस्';
+
+  @override
+  String get searchContent => 'शीर्षक, लेखक, विषय खोज्नुहोस्';
+
+  @override
+  String get clear => 'हटाउनुहोस्';
+
+  @override
+  String get savedFilter => 'सुरक्षित';
+
+  @override
+  String get tabBooks => 'किताब';
+
+  @override
+  String get tabAudiobooks => 'अडियो किताब';
+
+  @override
+  String get tabSounds => 'आवाज';
+
+  @override
+  String get tabWorkouts => 'व्यायाम';
+
+  @override
+  String get tabVideos => 'भिडियो';
+
+  @override
+  String get newBadge => 'नयाँ';
+
+  @override
+  String nothingMatches(String query) {
+    return '\"$query\" सँग मिल्ने केही भेटिएन।';
+  }
+
+  @override
+  String get nothingYet => 'अहिले केही छैन। इन्टरनेट जोडेर तल तान्नुहोस्, निःशुल्क सामग्री आउँछ।';
+
+  @override
+  String get nothingSaved => 'अहिलेसम्म केही सुरक्षित छैन। कुनै सामग्री खोलेर डाउनलोड थिच्नुहोस्।';
+
+  @override
+  String get readNow => 'अहिले पढ्नुहोस्';
+
+  @override
+  String get listen => 'सुन्नुहोस्';
+
+  @override
+  String get playLoops => 'बजाउनुहोस् (दोहोरिने)';
+
+  @override
+  String get play => 'बजाउनुहोस्';
+
+  @override
+  String get pause => 'रोक्नुहोस्';
+
+  @override
+  String get loop => 'दोहोर्‍याउनुहोस्';
+
+  @override
+  String get watchVideo => 'भिडियो हेर्नुहोस्';
+
+  @override
+  String watchVideoSize(String size) {
+    return 'भिडियो हेर्नुहोस् ($size)';
+  }
+
+  @override
+  String get couldNotPlay => 'बजाउन सकिएन। इन्टरनेट जाँचेर फेरि प्रयास गर्नुहोस्।';
+
+  @override
+  String get videoError => 'यो भिडियो यो फोनमा चल्न सकेन। अर्को प्रयास गर्नुहोस् वा इन्टरनेट जाँच्नुहोस्।';
+
+  @override
+  String get creditsLicence => 'श्रेय र इजाजत';
+
+  @override
+  String licenceLabel(String licence) {
+    return 'इजाजत: $licence';
+  }
+
+  @override
+  String get copySourceLink => 'स्रोत लिंक कपी गर्नुहोस्';
+
+  @override
+  String get sourceCopied => 'स्रोत लिंक कपी भयो';
+
+  @override
+  String get downloadOffline => 'अफलाइनका लागि डाउनलोड';
+
+  @override
+  String downloadOfflineSize(String size) {
+    return 'अफलाइनका लागि डाउनलोड ($size)';
+  }
+
+  @override
+  String get downloaded => 'यो फोनमा सुरक्षित';
+
+  @override
+  String get removeDownload => 'डाउनलोड हटाउनुहोस्';
+
+  @override
+  String get downloadFailed => 'डाउनलोड असफल भयो। इन्टरनेट जाँचेर फेरि प्रयास गर्नुहोस्।';
+
+  @override
+  String get downloadAll => 'सबै अध्याय डाउनलोड गर्नुहोस्';
+
+  @override
+  String get chapters => 'अध्यायहरू';
+
+  @override
+  String chapterCount(int count) {
+    return '$count अध्याय';
+  }
+
+  @override
+  String get previousChapter => 'अघिल्लो अध्याय';
+
+  @override
+  String get nextChapter => 'अर्को अध्याय';
+
+  @override
+  String get back30 => '३० सेकेन्ड पछाडि';
+
+  @override
+  String get forward30 => '३० सेकेन्ड अगाडि';
+
+  @override
+  String get cancel => 'रद्द गर्नुहोस्';
+
+  @override
+  String get remove => 'हटाउनुहोस्';
+
+  @override
+  String get storageTitle => 'अफलाइनका लागि सुरक्षित';
+
+  @override
+  String storageUsed(String size, int count) {
+    return 'यो फोनमा $size प्रयोग · $count फाइल';
+  }
+
+  @override
+  String get clearDownloads => 'सबै डाउनलोड हटाउनुहोस्';
+
+  @override
+  String get clearDownloadsConfirm => 'यो फोनबाट सबै सुरक्षित किताब, अडियो र भिडियो हटाउने? पछि फेरि डाउनलोड गर्न सकिन्छ।';
+
+  @override
+  String get autoUpdateNote => 'हरेक पटक एप खोल्दा नयाँ सामग्री जाँचिन्छ, र दिनमा करिब दुई पटक पृष्ठभूमिमा पनि।';
+
+  @override
+  String get licNoteLibrivox => 'स्वयंसेवकले पढेका सार्वजनिक डोमेनका अडियो किताब।';
+
+  @override
+  String get licNoteCommonsVideo => 'खुला इजाजतका व्यायाम, योग र ध्यान भिडियो (PD, CC0, CC BY, CC BY-SA); लेखकलाई श्रेय।';
 }

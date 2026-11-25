@@ -77,6 +77,8 @@ class ContentRepository {
               description: Value(i.description),
               mediaUrl: Value(i.mediaUrl),
               mediaFormat: Value(i.mediaFormat),
+              altMediaUrl: Value(i.altMediaUrl),
+              mediaBytes: Value(i.mediaBytes),
               imageUrl: Value(i.imageUrl),
               sourceUrl: Value(i.sourceUrl),
               license: i.license,
@@ -97,8 +99,13 @@ class ContentRepository {
 
   /// Drops items a provider has not returned for [maxAge] (withdrawn or
   /// rotated out), keeping the cache bounded.
-  Future<int> prune({required DateTime now, Duration maxAge = const Duration(days: 90)}) =>
-      (_db.delete(_db.contentItems)..where((t) => t.lastSeenAt.isSmallerThanValue(now.subtract(maxAge)))).go();
+  /// Items the user downloaded are kept regardless.
+  Future<int> prune({required DateTime now, Duration maxAge = const Duration(days: 90)}) {
+    final downloaded = _db.selectOnly(_db.contentDownloads)..addColumns([_db.contentDownloads.contentId]);
+    return (_db.delete(_db.contentItems)
+          ..where((t) => t.lastSeenAt.isSmallerThanValue(now.subtract(maxAge)) & t.id.isNotInQuery(downloaded)))
+        .go();
+  }
 
   // ---- sync state ----
 

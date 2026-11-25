@@ -1,5 +1,6 @@
 /// Kinds of dynamic content the app can show.
-enum ContentKind { book, audio, exercise }
+/// Order matters only for display (Discover tabs).
+enum ContentKind { book, audiobook, audio, exercise, video }
 
 /// A content item as returned by a provider (before it is cached).
 class ContentItem {
@@ -10,7 +11,9 @@ class ContentItem {
   final String? subtitle;
   final String? description;
   final String? mediaUrl;
-  final String mediaFormat; // epub | html | mp3 | none
+  final String mediaFormat; // epub | html | mp3 | video | audiobook | none
+  final String? altMediaUrl; // e.g. MPEG-4 rendition for iOS
+  final int? mediaBytes;
   final String? imageUrl;
   final String? sourceUrl;
   final String license;
@@ -31,6 +34,8 @@ class ContentItem {
     this.description,
     this.mediaUrl,
     this.mediaFormat = 'none',
+    this.altMediaUrl,
+    this.mediaBytes,
     this.imageUrl,
     this.sourceUrl,
     this.licenseUrl,

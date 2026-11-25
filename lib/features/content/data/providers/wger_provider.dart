@@ -8,8 +8,9 @@ import 'content_provider.dart';
 /// project. Exercise texts are CC BY-SA 4.0; images carry their own author
 /// and licence. English entries only for now (Nepali in Phase 3).
 ///
-/// The full catalogue is ~1,000 exercises (~10 requests), so it refreshes
-/// weekly to keep mobile data use low.
+/// The full catalogue is ~1,000 exercises (~10 requests; the API has no
+/// "changed since" filter), refreshed at most daily. Exercise videos (~80,
+/// HEVC) are attached to their exercise and also listed as video items.
 class WgerProvider implements ContentProvider {
   WgerProvider({this.baseUrl = 'https://wger.de', this.maxPages = 12});
 
@@ -27,22 +28,113 @@ class WgerProvider implements ContentProvider {
   @override
   ContentKind get kind => ContentKind.exercise;
   @override
-  Duration get refreshEvery => const Duration(days: 7);
+  Duration get refreshEvery => const Duration(hours: 24);
 
   @override
   Future<List<ContentItem>> fetch(http.Client client, {required DateTime now}) async {
-    final out = <ContentItem>[];
+    final raw = <Map<String, dynamic>>[];
     Uri? next = Uri.parse('$baseUrl/api/v2/exerciseinfo/?limit=100&offset=0');
     var pages = 0;
     while (next != null && pages < maxPages) {
       final json = await getJson(client, next, timeout: const Duration(seconds: 40));
-      for (final e in (json['results'] as List? ?? const [])) {
-        final item = parse(e as Map<String, dynamic>);
-        if (item != null) out.add(item);
-      }
+      raw.addAll((json['results'] as List? ?? const []).cast<Map<String, dynamic>>());
       final n = json['next'] as String?;
       next = n == null ? null : Uri.parse(n);
       pages++;
+    }
+
+    // Videos are optional: a failure here must not lose the exercise list.
+    var videos = <Map<String, dynamic>>[];
+    var licences = <int, ({String name, String? url})>{};
+    try {
+      final lic = await getJson(client, Uri.parse('$baseUrl/api/v2/license/?limit=50'));
+      licences = {
+        for (final l in (lic['results'] as List? ?? const []).cast<Map<String, dynamic>>())
+          l['id'] as int: (name: '${l['short_name']}', url: l['url'] as String?),
+      };
+      final v = await getJson(client, Uri.parse('$baseUrl/api/v2/video/?limit=200'));
+      videos = (v['results'] as List? ?? const []).cast<Map<String, dynamic>>();
+    } catch (e) {
+      debugPrint('[wger] videos unavailable: $e');
+    }
+    return build(raw, videos: videos, licences: licences);
+  }
+
+  /// Exercises (with their best video attached) + one video item per
+  /// exercise that has a video.
+  @visibleForTesting
+  static List<ContentItem> build(List<Map<String, dynamic>> exercises,
+      {List<Map<String, dynamic>> videos = const [], Map<int, ({String name, String? url})> licences = const {}}) {
+    final byExercise = <int, Map<String, dynamic>>{};
+    for (final v in videos) {
+      final lic = licences[v['license']];
+      if (lic != null && !LicensePolicy.isAllowed(lic.name.replaceAll('-', ' '))) continue;
+      final ex = v['exercise'] as int?;
+      if (ex == null || v['video'] == null) continue;
+      final cur = byExercise[ex];
+      // Prefer the main video, then the smallest file (mobile data).
+      final better = cur == null ||
+          (v['is_main'] == true && cur['is_main'] != true) ||
+          ((v['is_main'] == true) == (cur['is_main'] == true) &&
+              ((v['size'] as num?) ?? 1 << 40) < ((cur['size'] as num?) ?? 1 << 40));
+      if (better) byExercise[ex] = v;
+    }
+
+    final out = <ContentItem>[];
+    for (final e in exercises) {
+      final item = parse(e);
+      if (item == null) continue;
+      final v = byExercise[e['id']];
+      if (v == null) {
+        out.add(item);
+        continue;
+      }
+      final lic = licences[v['license']];
+      final seconds = double.tryParse('${v['duration'] ?? ''}')?.round();
+      final bytes = (v['size'] as num?)?.toInt();
+      final videoCredit = (v['license_author'] as String?)?.trim();
+      final withVideo = ContentItem(
+        id: item.id,
+        provider: item.provider,
+        kind: item.kind,
+        title: item.title,
+        subtitle: item.subtitle,
+        description: item.description,
+        mediaUrl: v['video'] as String,
+        mediaFormat: 'video',
+        mediaBytes: bytes,
+        imageUrl: item.imageUrl,
+        sourceUrl: item.sourceUrl,
+        license: item.license,
+        licenseUrl: item.licenseUrl,
+        attribution: [
+          item.attribution,
+          if (videoCredit != null && videoCredit.isNotEmpty) 'Video: $videoCredit',
+        ].join(' · '),
+        tags: ['Video', ...item.tags],
+        language: item.language,
+        durationSeconds: seconds,
+        popularity: 1,
+      );
+      out.add(withVideo);
+      out.add(ContentItem(
+        id: 'wger-video:${v['id']}',
+        provider: 'wger',
+        kind: ContentKind.video,
+        title: item.title,
+        subtitle: 'Exercise demo',
+        description: item.description,
+        mediaUrl: v['video'] as String,
+        mediaFormat: 'video',
+        mediaBytes: bytes,
+        imageUrl: item.imageUrl,
+        sourceUrl: item.sourceUrl,
+        license: lic?.name ?? item.license,
+        licenseUrl: lic?.url ?? item.licenseUrl,
+        attribution: videoCredit == null || videoCredit.isEmpty ? 'wger contributors' : videoCredit,
+        tags: ['Exercise demo', ...item.tags.take(2)],
+        durationSeconds: seconds,
+      ));
     }
     return out;
   }

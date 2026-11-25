@@ -86,8 +86,15 @@ Auth (guest → linked account), Firestore per-user data with security rules + e
 ## Phase 5 — Admin dashboard ⛔ (depends on P4)
 Next.js + TypeScript, Firebase Auth custom claims for roles, modules prioritised: content catalog + licensing/approval → providers & sync jobs → feature flags/config → ad placements → users/support → analytics → notification campaigns → audit logs.
 
-## Phase 6 — Offline media ⬜
-Download manager (pause/resume, checksums, storage quota, eviction), offline audio with background playback + lock-screen controls (`just_audio_background`), offline EPUB, workout instructions cache.
+## Phase 6 — Offline media 🔄
+| Task | Status |
+|---|---|
+| Download manager (atomic temp→rename, progress, cancel, remove, clear all, storage shown) | ✅ |
+| Offline EPUB (auto-save on first open), audiobooks (per chapter), sounds, videos | ✅ |
+| Audiobooks (LibriVox/IA) + videos (Commons, wger) providers; schema v2 | ✅ |
+| Background content refresh (Android WorkManager, 12 h) | ✅ (iOS BGTask ⬜) |
+| Background playback + lock-screen controls (`just_audio_background`) | ⬜ |
+| Pause/resume of partial downloads, storage quota/eviction | ⬜ |
 
 ## Phase 7 — Engagement & monetization ⬜ / ⛔
 Insights, challenges, achievements, home-screen widgets · Ads: remote-configured placements, consent (UMP) · Premium: Play Billing / StoreKit, server-side receipt validation (⛔ store accounts) · Optional AI via backend proxy with consent and quotas.
