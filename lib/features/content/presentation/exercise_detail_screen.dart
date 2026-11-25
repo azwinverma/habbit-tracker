@@ -23,7 +23,7 @@ class ExerciseDetailScreen extends StatefulWidget {
 
   static Future<void> open(BuildContext context, ContentItemRow item, {bool replace = false}) {
     final route = MaterialPageRoute<void>(builder: (_) => ExerciseDetailScreen(item: item));
-    final nav = Navigator.of(context);
+    final nav = Navigator.of(context, rootNavigator: true);
     return replace ? nav.pushReplacement(route) : nav.push(route);
   }
 

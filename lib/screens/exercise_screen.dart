@@ -21,6 +21,8 @@ import '../features/content/data/content_repository.dart';
 import '../features/content/data/content_sync_service.dart';
 import '../features/content/domain/content_item.dart';
 import '../features/content/presentation/exercise_detail_screen.dart';
+import '../features/content/data/youtube_workouts.dart';
+import '../features/content/presentation/youtube_workout_screen.dart';
 import '../design/backdrop.dart';
 import '../app/theme.dart';
 
@@ -32,8 +34,7 @@ class ExerciseScreen extends StatefulWidget {
   State<ExerciseScreen> createState() => _ExerciseScreenState();
 }
 
-class _ExerciseScreenState extends State<ExerciseScreen>
-    with SingleTickerProviderStateMixin {
+class _ExerciseScreenState extends State<ExerciseScreen> with SingleTickerProviderStateMixin {
   final _storage = StorageService();
 
   // Habit
@@ -74,10 +75,9 @@ class _ExerciseScreenState extends State<ExerciseScreen>
 
     // Show saved (future) one-time reminders so they can be reviewed/removed.
     final nowInit = DateTime.now();
-    _oneOffReminders.addAll(_h.oneTimeReminders
-        .map(DateTime.tryParse)
-        .whereType<DateTime>()
-        .where((d) => d.isAfter(nowInit)));
+    _oneOffReminders.addAll(
+      _h.oneTimeReminders.map(DateTime.tryParse).whereType<DateTime>().where((d) => d.isAfter(nowInit)),
+    );
     _ensureTodayResets();
 
     // Reminders
@@ -111,12 +111,19 @@ class _ExerciseScreenState extends State<ExerciseScreen>
   }
 
   /// Opens the demo (video when available) for a planned exercise name.
-  void _watch(String name) {
-    final match = ExerciseText.bestMatch(name, _exercises);
+  void _watch(Map<String, String> e) {
+    final match = ExerciseText.bestMatch(e['name'] ?? '', _exercises);
     if (match != null) {
       ExerciseDetailScreen.open(context, match);
+      return;
+    }
+    // No catalogue match: a free YouTube workout for that body part/level.
+    final group = youtubeWorkouts.where((v) => v.group == e['bodyPart']);
+    final yt = group.where((v) => v.level == e['level']).firstOrNull ?? group.firstOrNull;
+    if (yt != null) {
+      YoutubeWorkoutScreen.open(context, yt);
     } else {
-      _tab.animateTo(3); // not found: show the library to browse
+      _tab.animateTo(3); // show the library to browse
     }
   }
 
@@ -165,8 +172,7 @@ class _ExerciseScreenState extends State<ExerciseScreen>
     // Persist one-time reminders on the habit so they can be cancelled and
     // restored (they used to be fire-and-forget).
     final now = DateTime.now();
-    _h.oneTimeReminders =
-        _oneOffReminders.where((dt) => dt.isAfter(now)).map((dt) => dt.toIso8601String()).toList();
+    _h.oneTimeReminders = _oneOffReminders.where((dt) => dt.isAfter(now)).map((dt) => dt.toIso8601String()).toList();
     await _persistHabitOnly();
     await ReminderService.instance.syncHabit(_h);
 
@@ -225,7 +231,6 @@ class _ExerciseScreenState extends State<ExerciseScreen>
     setState(() {});
     _snack('Workout session stopped.');
     await InterstitialHelper().showIfAvailable();
-
   }
 
   Future<void> _finalizeSessionAndNotify() async {
@@ -265,12 +270,14 @@ class _ExerciseScreenState extends State<ExerciseScreen>
   // ---------- Office move breaks (D18: now actually scheduled) ----------
   Future<void> _setOfficeInterval({required bool walk}) async {
     final l = AppLocalizations.of(context);
-    final v = await _askInt(context,
-        title: walk ? l.exWalkEvery : l.exStretchEvery,
-        initial: (walk ? _h.officeWalkEveryMin : _h.officeStretchEveryMin) ?? (walk ? 60 : 120),
-        min: HabitReminderPlanner.minOfficeInterval,
-        max: 240,
-        step: 15);
+    final v = await _askInt(
+      context,
+      title: walk ? l.exWalkEvery : l.exStretchEvery,
+      initial: (walk ? _h.officeWalkEveryMin : _h.officeStretchEveryMin) ?? (walk ? 60 : 120),
+      min: HabitReminderPlanner.minOfficeInterval,
+      max: 240,
+      step: 15,
+    );
     if (v == null) return;
     await _applyOffice(walk: walk, minutes: v);
   }
@@ -299,9 +306,7 @@ class _ExerciseScreenState extends State<ExerciseScreen>
         child: Text(on ? '${l.exEvery(every)}  ✎' : l.exOff),
       ),
       value: on,
-      onChanged: (v) => v
-          ? _setOfficeInterval(walk: walk)
-          : _applyOffice(walk: walk, minutes: null),
+      onChanged: (v) => v ? _setOfficeInterval(walk: walk) : _applyOffice(walk: walk, minutes: null),
     );
   }
 
@@ -325,10 +330,7 @@ class _ExerciseScreenState extends State<ExerciseScreen>
 
   // ---------- Milestones ----------
   Future<void> _addMilestone() async {
-    final res = await showDialog<Map<String, dynamic>>(
-      context: context,
-      builder: (_) => const _MilestoneDialog(),
-    );
+    final res = await showDialog<Map<String, dynamic>>(context: context, builder: (_) => const _MilestoneDialog());
     if (res != null) {
       _milestones.add(res);
       _h.exerciseMilestonesJson = json.encode(_milestones);
@@ -351,39 +353,38 @@ class _ExerciseScreenState extends State<ExerciseScreen>
     final todayMin = _h.exerciseTodayMin ?? 0;
     final progress = (todayMin / (goalMin == 0 ? 1 : goalMin)).clamp(0, 1.0);
 
-    return BrandBackdrop(tint: context.dm.movement.container, glow: context.dm.movement.accent, child: Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        title: const Text('Exercise'),
-        bottom: TabBar(
-          controller: _tab,
-          isScrollable: true,
-          tabs: [
-            const Tab(text: 'Overview'),
-            const Tab(text: 'Reminders'),
-            const Tab(text: 'Schedule'),
-            Tab(text: AppLocalizations.of(context).exLibraryTitle),
+    return BrandBackdrop(
+      tint: context.dm.movement.container,
+      glow: context.dm.movement.accent,
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: const Text('Exercise'),
+          bottom: TabBar(
+            controller: _tab,
+            isScrollable: true,
+            tabs: [
+              const Tab(text: 'Overview'),
+              const Tab(text: 'Reminders'),
+              const Tab(text: 'Schedule'),
+              Tab(text: AppLocalizations.of(context).exLibraryTitle),
+            ],
+          ),
+          actions: [
+            IconButton(tooltip: 'Add milestone', onPressed: _addMilestone, icon: const Icon(Icons.flag_outlined)),
           ],
         ),
-        actions: [
-          IconButton(
-            tooltip: 'Add milestone',
-            onPressed: _addMilestone,
-            icon: const Icon(Icons.flag_outlined),
-          ),
-        ],
+        body: TabBarView(
+          controller: _tab,
+          children: [
+            _buildOverview(progress as double, todayMin, goalMin),
+            _buildReminders(),
+            _buildSchedule(),
+            _buildLibrary(),
+          ],
+        ),
       ),
-      body: 
-      TabBarView(
-        controller: _tab,
-        children: [
-          _buildOverview(progress as double, todayMin, goalMin),
-          _buildReminders(),
-          _buildSchedule(),
-          _buildLibrary(),
-        ],
-      ),
-    ));
+    );
   }
 
   // ---- Tab: Overview ----
@@ -396,23 +397,21 @@ class _ExerciseScreenState extends State<ExerciseScreen>
       padding: const EdgeInsets.all(16),
       children: [
         Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12),
-              child: AdBanner(placement: 'home_bottom', padding: EdgeInsets.only(bottom: 8)),
-            ),
+          padding: EdgeInsets.symmetric(horizontal: 12),
+          child: AdBanner(placement: 'home_bottom', padding: EdgeInsets.only(bottom: 8)),
+        ),
         // Session & goals
         Card(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
             child: Column(
               children: [
-                
                 Text('Workout Session', style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 6),
                 Row(
                   children: [
                     const Expanded(
-                      child: Text('Session length (min)',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                      child: Text('Session length (min)', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
                     ),
                     IconButton.filledTonal(
                       onPressed: () => setState(() => _sessionMin = (_sessionMin - 5).clamp(5, 180)),
@@ -421,8 +420,7 @@ class _ExerciseScreenState extends State<ExerciseScreen>
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Text('$_sessionMin',
-                          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                      child: Text('$_sessionMin', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
                     ),
                     IconButton.filledTonal(
                       onPressed: () => setState(() => _sessionMin = (_sessionMin + 5).clamp(5, 180)),
@@ -432,8 +430,10 @@ class _ExerciseScreenState extends State<ExerciseScreen>
                   ],
                 ),
                 const SizedBox(height: 8),
-                Text(_running ? _fmtClock(_remainSec) : _fmtClock(_sessionMin * 60),
-                    style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold)),
+                Text(
+                  _running ? _fmtClock(_remainSec) : _fmtClock(_sessionMin * 60),
+                  style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 12),
                 Wrap(
                   spacing: 16,
@@ -445,11 +445,7 @@ class _ExerciseScreenState extends State<ExerciseScreen>
                       label: _running ? 'Pause' : 'Start',
                       onTap: _startOrPauseSession,
                     ),
-                    _BigActionButton(
-                      icon: Icons.stop,
-                      label: 'Stop',
-                      onTap: _running ? _stopSession : null,
-                    ),
+                    _BigActionButton(icon: Icons.stop, label: 'Stop', onTap: _running ? _stopSession : null),
                   ],
                 ),
                 const Divider(height: 28),
@@ -523,23 +519,28 @@ class _ExerciseScreenState extends State<ExerciseScreen>
         Card(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
-            child: Builder(builder: (context) {
-              final l = AppLocalizations.of(context);
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(l.exOfficeTitle, style: Theme.of(context).textTheme.titleLarge),
-                  const SizedBox(height: 6),
-                  _officeRow(l, walk: true),
-                  _officeRow(l, walk: false),
-                  const SizedBox(height: 6),
-                  Text(
-                    l.exOfficeHint(Habit.fmt(HabitReminderPlanner.officeStart), Habit.fmt(HabitReminderPlanner.officeEnd)),
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ],
-              );
-            }),
+            child: Builder(
+              builder: (context) {
+                final l = AppLocalizations.of(context);
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(l.exOfficeTitle, style: Theme.of(context).textTheme.titleLarge),
+                    const SizedBox(height: 6),
+                    _officeRow(l, walk: true),
+                    _officeRow(l, walk: false),
+                    const SizedBox(height: 6),
+                    Text(
+                      l.exOfficeHint(
+                        Habit.fmt(HabitReminderPlanner.officeStart),
+                        Habit.fmt(HabitReminderPlanner.officeEnd),
+                      ),
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
         ),
 
@@ -587,10 +588,10 @@ class _ExerciseScreenState extends State<ExerciseScreen>
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-         Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12),
-              child: AdBanner(placement: 'home_bottom', padding: EdgeInsets.only(bottom: 8)),
-            ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 12),
+          child: AdBanner(placement: 'home_bottom', padding: EdgeInsets.only(bottom: 8)),
+        ),
         Card(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
@@ -601,31 +602,34 @@ class _ExerciseScreenState extends State<ExerciseScreen>
                 const SizedBox(height: 8),
                 ReminderScheduleEditor(
                   dailyTimes: _dailyTimes,
-                  onDailyTimesChanged: (l) => setState(() {
-                    _dailyTimes
-                      ..clear()
-                      ..addAll(l);
-                    _dirtyReminders = true;
-                  }),
+                  onDailyTimesChanged:
+                      (l) => setState(() {
+                        _dailyTimes
+                          ..clear()
+                          ..addAll(l);
+                        _dirtyReminders = true;
+                      }),
                   oneTimeReminders: _oneOffReminders,
-                  onOneTimeRemindersChanged: (l) => setState(() {
-                    _oneOffReminders
-                      ..clear()
-                      ..addAll(l);
-                    _dirtyReminders = true;
-                  }),
+                  onOneTimeRemindersChanged:
+                      (l) => setState(() {
+                        _oneOffReminders
+                          ..clear()
+                          ..addAll(l);
+                        _dirtyReminders = true;
+                      }),
                   dailyTitle: 'Daily times',
                 ),
                 const SizedBox(height: 14),
                 FilledButton.icon(
                   // Bug fix: this used to evaluate `_saveReminders` without
                   // calling it, so exercise reminders were never saved.
-                  onPressed: _dirtyReminders
-                      ? () async {
-                          await _saveReminders();
-                          await InterstitialHelper().showIfAvailable();
-                        }
-                      : null,
+                  onPressed:
+                      _dirtyReminders
+                          ? () async {
+                            await _saveReminders();
+                            await InterstitialHelper().showIfAvailable();
+                          }
+                          : null,
                   icon: const Icon(Icons.save),
                   label: const Text('Save reminders'),
                 ),
@@ -639,15 +643,14 @@ class _ExerciseScreenState extends State<ExerciseScreen>
 
   // ---- Tab: Schedule ----
   Widget _buildSchedule() {
-    final days = _weekPlan.keys.toList()
-      ..sort((a, b) => _weekdayIndex(a).compareTo(_weekdayIndex(b)));
+    final days = _weekPlan.keys.toList()..sort((a, b) => _weekdayIndex(a).compareTo(_weekdayIndex(b)));
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-         Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12),
-              child: AdBanner(placement: 'home_bottom', padding: EdgeInsets.only(bottom: 8)),
-            ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 12),
+          child: AdBanner(placement: 'home_bottom', padding: EdgeInsets.only(bottom: 8)),
+        ),
         Card(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
@@ -663,20 +666,25 @@ class _ExerciseScreenState extends State<ExerciseScreen>
                   return Card(
                     child: ListTile(
                       title: Text(d),
-                      subtitle: list.isEmpty
-                          ? const Text('No exercises yet')
-                          : Padding(
-                              padding: const EdgeInsets.only(top: 6),
-                              child: Wrap(spacing: 6, runSpacing: 6, children: [
-                                for (final e in list)
-                                  ActionChip(
-                                    avatar: const Icon(Icons.play_circle_outline_rounded, size: 18),
-                                    label: Text(e['name'] ?? ''),
-                                    tooltip: AppLocalizations.of(context).exWatchHow,
-                                    onPressed: () => _watch(e['name'] ?? ''),
-                                  ),
-                              ]),
-                            ),
+                      subtitle:
+                          list.isEmpty
+                              ? const Text('No exercises yet')
+                              : Padding(
+                                padding: const EdgeInsets.only(top: 6),
+                                child: Wrap(
+                                  spacing: 6,
+                                  runSpacing: 6,
+                                  children: [
+                                    for (final e in list)
+                                      ActionChip(
+                                        avatar: const Icon(Icons.play_circle_outline_rounded, size: 18),
+                                        label: Text(e['name'] ?? ''),
+                                        tooltip: AppLocalizations.of(context).exWatchHow,
+                                        onPressed: () => _watch(e),
+                                      ),
+                                  ],
+                                ),
+                              ),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => _openScheduleEditor(d),
                     ),
@@ -701,22 +709,23 @@ class _ExerciseScreenState extends State<ExerciseScreen>
     return '$m:$s';
   }
 
-
-  String _ymd(DateTime d) =>
-      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+  String _ymd(DateTime d) => '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
   int _weekdayIndex(String day) {
-    const order = [
-      'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'
-    ];
+    const order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     final i = order.indexOf(day);
     return i < 0 ? 99 : i;
   }
 
   Map<String, List<Map<String, String>>> _defaultWeekPlan() => {
-        'Monday': [], 'Tuesday': [], 'Wednesday': [],
-        'Thursday': [], 'Friday': [], 'Saturday': [], 'Sunday': [],
-      };
+    'Monday': [],
+    'Tuesday': [],
+    'Wednesday': [],
+    'Thursday': [],
+    'Friday': [],
+    'Saturday': [],
+    'Sunday': [],
+  };
 
   Map<String, List<Map<String, String>>> _decodeSchedule(String? raw) {
     if (raw == null || raw.isEmpty) return {};
@@ -724,9 +733,7 @@ class _ExerciseScreenState extends State<ExerciseScreen>
       final d = json.decode(raw);
       if (d is Map<String, dynamic>) {
         return d.map<String, List<Map<String, String>>>((k, v) {
-          final list = (v as List)
-              .map<Map<String, String>>((e) => Map<String, String>.from(e))
-              .toList();
+          final list = (v as List).map<Map<String, String>>((e) => Map<String, String>.from(e)).toList();
           return MapEntry(k, list);
         });
       }
@@ -747,19 +754,19 @@ class _ExerciseScreenState extends State<ExerciseScreen>
 
   void _snack(String msg) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(msg), behavior: SnackBarBehavior.floating));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), behavior: SnackBarBehavior.floating));
   }
 
   Future<void> _showEndDialog() async {
     if (!mounted) return;
     await showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Session complete'),
-        content: const Text('Great job finishing your workout!'),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))],
-      ),
+      builder:
+          (_) => AlertDialog(
+            title: const Text('Session complete'),
+            content: const Text('Great job finishing your workout!'),
+            actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))],
+          ),
     );
   }
 }
@@ -799,8 +806,7 @@ class _ScheduleEditorSheetState extends State<_ScheduleEditorSheet> {
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
           child: Column(
             children: [
-              Text('Edit ${widget.day}',
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              Text('Edit ${widget.day}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               const SizedBox(height: 12),
               Row(
                 children: [
@@ -837,15 +843,16 @@ class _ScheduleEditorSheetState extends State<_ScheduleEditorSheet> {
                       leading: Icon(already ? Icons.check_circle : Icons.add_circle_outline),
                       title: Text(ex),
                       subtitle: Text('$_bodyPart • $_level'),
-                      trailing: demo == null
-                          ? null
-                          : IconButton(
-                              tooltip: AppLocalizations.of(context).exWatchHow,
-                              icon: Icon(demo.mediaFormat == 'video'
-                                  ? Icons.play_circle_fill_rounded
-                                  : Icons.image_outlined),
-                              onPressed: () => ExerciseDetailScreen.open(context, demo),
-                            ),
+                      trailing:
+                          demo == null
+                              ? null
+                              : IconButton(
+                                tooltip: AppLocalizations.of(context).exWatchHow,
+                                icon: Icon(
+                                  demo.mediaFormat == 'video' ? Icons.play_circle_fill_rounded : Icons.image_outlined,
+                                ),
+                                onPressed: () => ExerciseDetailScreen.open(context, demo),
+                              ),
                       onTap: () {
                         if (already) {
                           _list.removeWhere((e) => e['name'] == ex);
@@ -863,7 +870,7 @@ class _ScheduleEditorSheetState extends State<_ScheduleEditorSheet> {
                 onPressed: () => Navigator.pop(context, _list),
                 icon: const Icon(Icons.save),
                 label: const Text('Save day plan'),
-              )
+              ),
             ],
           ),
         );
@@ -889,11 +896,16 @@ class _ExerciseLibraryState extends State<_ExerciseLibrary> with AutomaticKeepAl
   String _query = '';
   bool _videoOnly = true;
   String? _group;
+  bool _youtube = false; // Exercises | YouTube workouts
+  String? _ytGroup;
   Timer? _debounce;
   late Stream<List<ContentItemRow>> _stream = _repo.watch(ContentKind.exercise);
 
   @override
   bool get wantKeepAlive => true;
+
+  List<YoutubeWorkout> get _ytList =>
+      _ytGroup == null ? youtubeWorkouts : youtubeWorkouts.where((v) => v.group == _ytGroup).toList();
 
   void _setQuery(String q) {
     setState(() {
@@ -921,16 +933,22 @@ class _ExerciseLibraryState extends State<_ExerciseLibrary> with AutomaticKeepAl
       stream: _stream,
       builder: (context, snap) {
         final all = snap.data ?? const <ContentItemRow>[];
-        final groups = {for (final e in all) if (e.tags.isNotEmpty) e.tags.first}.toList()..sort();
-        final list = all
-            .where((e) => !_videoOnly || e.mediaFormat == 'video')
-            .where((e) => _group == null || e.tags.firstOrNull == _group)
-            .toList()
-          // Videos first, then by name.
-          ..sort((a, b) {
-            final v = (b.mediaFormat == 'video' ? 1 : 0) - (a.mediaFormat == 'video' ? 1 : 0);
-            return v != 0 ? v : a.title.compareTo(b.title);
-          });
+        final groups =
+            {
+                for (final e in all)
+                  if (e.tags.isNotEmpty) e.tags.first,
+              }.toList()
+              ..sort();
+        final list =
+            all
+                .where((e) => !_videoOnly || e.mediaFormat == 'video')
+                .where((e) => _group == null || e.tags.firstOrNull == _group)
+                .toList()
+              // Videos first, then by name.
+              ..sort((a, b) {
+                final v = (b.mediaFormat == 'video' ? 1 : 0) - (a.mediaFormat == 'video' ? 1 : 0);
+                return v != 0 ? v : a.title.compareTo(b.title);
+              });
         return RefreshIndicator(
           onRefresh: _refresh,
           child: CustomScrollView(
@@ -939,49 +957,110 @@ class _ExerciseLibraryState extends State<_ExerciseLibrary> with AutomaticKeepAl
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    TextField(
-                      decoration: InputDecoration(
-                        hintText: l.exSearchHint,
-                        prefixIcon: const Icon(Icons.search_rounded),
-                        border: const OutlineInputBorder(),
-                        isDense: true,
-                      ),
-                      onChanged: (v) {
-                        _debounce?.cancel();
-                        _debounce = Timer(const Duration(milliseconds: 250), () => _setQuery(v.trim()));
-                      },
-                    ),
-                    const SizedBox(height: 8),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(children: [
-                        FilterChip(
-                          avatar: const Icon(Icons.play_circle_outline_rounded, size: 18),
-                          label: Text(l.exWithVideo),
-                          selected: _videoOnly,
-                          showCheckmark: false,
-                          onSelected: (v) => setState(() => _videoOnly = v),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: double.infinity,
+                        child: SegmentedButton<bool>(
+                          segments: [
+                            ButtonSegment(
+                              value: false,
+                              icon: const Icon(Icons.fitness_center_rounded),
+                              label: Text(l.exExercises),
+                            ),
+                            ButtonSegment(
+                              value: true,
+                              icon: const Icon(Icons.smart_display_rounded),
+                              label: Text(l.ytWorkouts),
+                            ),
+                          ],
+                          selected: {_youtube},
+                          onSelectionChanged: (v) => setState(() => _youtube = v.first),
                         ),
-                        for (final g in groups) ...[
-                          const SizedBox(width: 6),
-                          ChoiceChip(
-                            label: Text(g),
-                            selected: _group == g,
-                            onSelected: (v) => setState(() => _group = v ? g : null),
+                      ),
+                      const SizedBox(height: 12),
+                      if (_youtube) ...[
+                        Text(l.ytWorkoutsHint, style: Theme.of(context).textTheme.bodySmall),
+                        const SizedBox(height: 8),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              for (final g in youtubeWorkoutGroups) ...[
+                                ChoiceChip(
+                                  label: Text(g),
+                                  selected: _ytGroup == g,
+                                  onSelected: (v) => setState(() => _ytGroup = v ? g : null),
+                                ),
+                                const SizedBox(width: 6),
+                              ],
+                            ],
                           ),
-                        ],
-                      ]),
-                    ),
-                  ]),
+                        ),
+                      ] else ...[
+                        TextField(
+                          decoration: InputDecoration(
+                            hintText: l.exSearchHint,
+                            prefixIcon: const Icon(Icons.search_rounded),
+                            border: const OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          onChanged: (v) {
+                            _debounce?.cancel();
+                            _debounce = Timer(const Duration(milliseconds: 250), () => _setQuery(v.trim()));
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              FilterChip(
+                                avatar: const Icon(Icons.play_circle_outline_rounded, size: 18),
+                                label: Text(l.exWithVideo),
+                                selected: _videoOnly,
+                                showCheckmark: false,
+                                onSelected: (v) => setState(() => _videoOnly = v),
+                              ),
+                              for (final g in groups) ...[
+                                const SizedBox(width: 6),
+                                ChoiceChip(
+                                  label: Text(g),
+                                  selected: _group == g,
+                                  onSelected: (v) => setState(() => _group = v ? g : null),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
               ),
-              if (snap.hasData && list.isEmpty)
+              if (_youtube)
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                  sliver: SliverGrid.builder(
+                    gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                      maxCrossAxisExtent: 260,
+                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 12,
+                      mainAxisExtent: 200,
+                    ),
+                    itemCount: _ytList.length,
+                    itemBuilder: (_, i) => YoutubeWorkoutCard(video: _ytList[i]),
+                  ),
+                )
+              else if (snap.hasData && list.isEmpty)
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.all(32),
-                    child: Text(all.isEmpty && _query.isEmpty ? l.exLibraryEmpty : l.nothingMatches(_query),
-                        textAlign: TextAlign.center),
+                    child: Text(
+                      all.isEmpty && _query.isEmpty ? l.exLibraryEmpty : l.nothingMatches(_query),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 )
               else
@@ -995,10 +1074,8 @@ class _ExerciseLibraryState extends State<_ExerciseLibrary> with AutomaticKeepAl
                       childAspectRatio: 0.95,
                     ),
                     itemCount: list.length,
-                    itemBuilder: (_, i) => ExerciseCard(
-                      item: list[i],
-                      onTap: () => ExerciseDetailScreen.open(context, list[i]),
-                    ),
+                    itemBuilder:
+                        (_, i) => ExerciseCard(item: list[i], onTap: () => ExerciseDetailScreen.open(context, list[i])),
                   ),
                 ),
             ],
@@ -1023,12 +1100,12 @@ class _BigActionButton extends StatelessWidget {
       child: ElevatedButton.icon(
         onPressed: onTap,
         icon: Icon(icon, size: 28),
-        label: Text(label,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-        style: ElevatedButton.styleFrom(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        label: Text(
+          label,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
         ),
+        style: ElevatedButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
       ),
     );
   }
@@ -1053,12 +1130,7 @@ class _Dropdown<T> extends StatelessWidget {
   final T value;
   final List<T> items;
   final ValueChanged<T?> onChanged;
-  const _Dropdown({
-    required this.label,
-    required this.value,
-    required this.items,
-    required this.onChanged,
-  });
+  const _Dropdown({required this.label, required this.value, required this.items, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -1069,9 +1141,7 @@ class _Dropdown<T> extends StatelessWidget {
           value: value,
           isDense: true,
           onChanged: onChanged,
-          items: items
-              .map((e) => DropdownMenuItem<T>(value: e, child: Text(e.toString())))
-              .toList(),
+          items: items.map((e) => DropdownMenuItem<T>(value: e, child: Text(e.toString()))).toList(),
         ),
       ),
     );
@@ -1090,26 +1160,27 @@ Future<int?> _askInt(
   final ctrl = TextEditingController(text: '$initial');
   return showDialog<int>(
     context: context,
-    builder: (_) => AlertDialog(
-      title: Text(title),
-      content: TextField(
-        controller: ctrl,
-        keyboardType: TextInputType.number,
-        decoration: const InputDecoration(border: OutlineInputBorder(), isDense: true),
-      ),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-        FilledButton(
-          onPressed: () {
-            final v = int.tryParse(ctrl.text.trim());
-            if (v == null) return;
-            final clamped = v.clamp(min, max);
-            Navigator.pop(context, clamped);
-          },
-          child: const Text('Save'),
+    builder:
+        (_) => AlertDialog(
+          title: Text(title),
+          content: TextField(
+            controller: ctrl,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(border: OutlineInputBorder(), isDense: true),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+            FilledButton(
+              onPressed: () {
+                final v = int.tryParse(ctrl.text.trim());
+                if (v == null) return;
+                final clamped = v.clamp(min, max);
+                Navigator.pop(context, clamped);
+              },
+              child: const Text('Save'),
+            ),
+          ],
         ),
-      ],
-    ),
   );
 }
 
@@ -1153,10 +1224,7 @@ class _MilestoneDialogState extends State<_MilestoneDialog> {
         FilledButton(
           onPressed: () {
             if (_title.text.trim().isEmpty) return;
-            Navigator.pop(context, {
-              'title': _title.text.trim(),
-              'notes': _notes.text.trim(),
-            });
+            Navigator.pop(context, {'title': _title.text.trim(), 'notes': _notes.text.trim()});
           },
           child: const Text('Add'),
         ),
@@ -1168,106 +1236,33 @@ class _MilestoneDialogState extends State<_MilestoneDialog> {
 // ================== Exercise Catalog ==================
 final Map<String, Map<String, List<String>>> _catalog = {
   'Chest': {
-    'Beginner': [
-      'Push-ups (knee/incline)',
-      'Wall push-ups',
-      'Decline push-up hold',
-    ],
-    'Mild': [
-      'Bench press (barbell/dumbbell)',
-      'Incline dumbbell press',
-      'Cable flyes',
-    ],
-    'Pro': [
-      'Weighted dips',
-      'Barbell bench heavy sets',
-      'Paused bench press',
-    ],
+    'Beginner': ['Push-ups (knee/incline)', 'Wall push-ups', 'Decline push-up hold'],
+    'Mild': ['Bench press (barbell/dumbbell)', 'Incline dumbbell press', 'Cable flyes'],
+    'Pro': ['Weighted dips', 'Barbell bench heavy sets', 'Paused bench press'],
   },
   'Back': {
-    'Beginner': [
-      'Supermans',
-      'Bird-dogs',
-      'Resistance band rows',
-    ],
-    'Mild': [
-      'Lat pulldown',
-      'Seated cable row',
-      'Dumbbell rows',
-    ],
-    'Pro': [
-      'Weighted pull-ups',
-      'T-bar row',
-      'Deadlifts (advanced)',
-    ],
+    'Beginner': ['Supermans', 'Bird-dogs', 'Resistance band rows'],
+    'Mild': ['Lat pulldown', 'Seated cable row', 'Dumbbell rows'],
+    'Pro': ['Weighted pull-ups', 'T-bar row', 'Deadlifts (advanced)'],
   },
   'Legs': {
-    'Beginner': [
-      'Bodyweight squats',
-      'Glute bridges',
-      'Lunges (assisted)',
-    ],
-    'Mild': [
-      'Barbell back squat',
-      'Leg press',
-      'Romanian deadlift',
-    ],
-    'Pro': [
-      'Front squats heavy',
-      'Bulgarian split squats',
-      'Power cleans (advanced)',
-    ],
+    'Beginner': ['Bodyweight squats', 'Glute bridges', 'Lunges (assisted)'],
+    'Mild': ['Barbell back squat', 'Leg press', 'Romanian deadlift'],
+    'Pro': ['Front squats heavy', 'Bulgarian split squats', 'Power cleans (advanced)'],
   },
   'Shoulders': {
-    'Beginner': [
-      'Arm circles',
-      'Wall slides',
-      'Band lateral raises',
-    ],
-    'Mild': [
-      'Dumbbell shoulder press',
-      'Lateral raises',
-      'Face pulls',
-    ],
-    'Pro': [
-      'Barbell overhead press',
-      'Arnold press',
-      'Snatch press (advanced)',
-    ],
+    'Beginner': ['Arm circles', 'Wall slides', 'Band lateral raises'],
+    'Mild': ['Dumbbell shoulder press', 'Lateral raises', 'Face pulls'],
+    'Pro': ['Barbell overhead press', 'Arnold press', 'Snatch press (advanced)'],
   },
   'Arms': {
-    'Beginner': [
-      'Bicep curls (light)',
-      'Bench dips (assisted)',
-      'Band triceps extensions',
-    ],
-    'Mild': [
-      'EZ-bar curls',
-      'Skull crushers',
-      'Cable triceps pressdown',
-    ],
-    'Pro': [
-      'Weighted dips',
-      'Heavy preacher curls',
-      'Close-grip bench press',
-    ],
+    'Beginner': ['Bicep curls (light)', 'Bench dips (assisted)', 'Band triceps extensions'],
+    'Mild': ['EZ-bar curls', 'Skull crushers', 'Cable triceps pressdown'],
+    'Pro': ['Weighted dips', 'Heavy preacher curls', 'Close-grip bench press'],
   },
   'Abdomen': {
-    'Beginner': [
-      'Crunches',
-      'Dead bug',
-      'Plank (short holds)',
-    ],
-    'Mild': [
-      'Hanging knee raises',
-      'Side plank',
-      'Bicycle crunch',
-    ],
-    'Pro': [
-      'Dragon flags (advanced)',
-      'Ab wheel rollouts',
-      'Long plank holds',
-    ],
+    'Beginner': ['Crunches', 'Dead bug', 'Plank (short holds)'],
+    'Mild': ['Hanging knee raises', 'Side plank', 'Bicycle crunch'],
+    'Pro': ['Dragon flags (advanced)', 'Ab wheel rollouts', 'Long plank holds'],
   },
 };
-

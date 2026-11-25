@@ -63,6 +63,8 @@ dependencies:
   video_player: ^2.10.1
   workmanager: ^0.7.0
   crypto: ^3.0.8
+  url_launcher: ^6.3.2
+  webview_flutter_android: ^4.10.1
 
 dev_dependencies:
   flutter_test:

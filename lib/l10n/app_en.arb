@@ -550,5 +550,12 @@
   "exWithVideo": "With video",
   "exSearchHint": "Search exercises",
   "exWatchHow": "Watch how",
-  "exLibraryEmpty": "Exercises appear here after the first update. Connect to the internet and pull down to refresh."
+  "exLibraryEmpty": "Exercises appear here after the first update. Connect to the internet and pull down to refresh.",
+  "ytCantPlayHere": "This video can't play inside the app.",
+  "ytOpenInYoutube": "Open in YouTube",
+  "ytNote": "Free video from YouTube, shown with YouTube's own player. The creator keeps the views; YouTube may show ads.",
+  "ytWorkouts": "YouTube workouts",
+  "ytWorkoutsHint": "Free follow-along workouts from popular trainers",
+  "exExercises": "Exercises",
+  "ytFullscreenHint": "Full screen: tap the player, then ⛶ on the right."
 }

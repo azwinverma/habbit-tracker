@@ -17,6 +17,8 @@ import '../data/playback_store.dart';
 import '../domain/content_item.dart';
 import 'audiobook_screen.dart';
 import 'exercise_detail_screen.dart';
+import 'youtube_workout_screen.dart';
+import '../data/youtube_workouts.dart';
 import 'video_player_screen.dart';
 import '../../../design/backdrop.dart';
 import '../../../design/motion.dart';
@@ -231,7 +233,7 @@ class _ContentList extends ConsumerWidget {
         error: (e, _) => ListView(children: [EmptyState(icon: Icons.error_outline_rounded, title: l.couldNotLoad('$e'))]),
         data: (all) {
           final list = savedOnly ? all.where((i) => saved.contains(i.id)).toList() : all;
-          if (list.isEmpty) {
+          if (list.isEmpty && !(kind == ContentKind.video && !savedOnly && query.isEmpty)) {
             return ListView(children: [
               EmptyState(
                 icon: savedOnly ? Icons.download_rounded : Icons.cloud_download_outlined,
@@ -255,6 +257,7 @@ class _ContentList extends ConsumerWidget {
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 if (cont.isNotEmpty) SliverToBoxAdapter(child: ContinueStrip(entries: cont)),
+                if (video && !savedOnly) SliverToBoxAdapter(child: _YoutubeStrip(query: query)),
                 SliverPadding(
                   padding: pad,
                   sliver: cols == 1
@@ -822,4 +825,50 @@ String fmtBytes(int b) {
   if (b < 1024 * 1024) return '${(b / 1024).ceil()} KB';
   if (b < 1024 * 1024 * 1024) return '${(b / (1024 * 1024)).toStringAsFixed(b < 10 * 1024 * 1024 ? 1 : 0)} MB';
   return '${(b / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
+}
+
+/// Free follow-along workouts from YouTube (official embedded player).
+class _YoutubeStrip extends StatelessWidget {
+  const _YoutubeStrip({required this.query});
+  final String query;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final q = query.toLowerCase();
+    final items = q.isEmpty
+        ? youtubeWorkouts
+        : youtubeWorkouts
+            .where((v) => '${v.title} ${v.channel} ${v.group}'.toLowerCase().contains(q))
+            .toList();
+    if (items.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: Space.md),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: Space.page),
+          child: Row(children: [
+            Icon(Icons.smart_display_rounded, size: 20, color: theme.colorScheme.primary),
+            const SizedBox(width: Space.xs),
+            Text(l.ytWorkouts, style: theme.textTheme.titleMedium),
+          ]),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(Space.page, 2, Space.page, Space.sm),
+          child: Text(l.ytWorkoutsHint, style: theme.textTheme.bodySmall),
+        ),
+        SizedBox(
+          height: 200,
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: Space.page),
+            scrollDirection: Axis.horizontal,
+            itemCount: items.length,
+            separatorBuilder: (_, __) => const SizedBox(width: Space.md),
+            itemBuilder: (_, i) => YoutubeWorkoutCard(video: items[i], width: 220),
+          ),
+        ),
+      ]),
+    );
+  }
 }

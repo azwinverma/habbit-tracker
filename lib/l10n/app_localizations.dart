@@ -1774,6 +1774,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Exercises appear here after the first update. Connect to the internet and pull down to refresh.'**
   String get exLibraryEmpty;
+
+  /// No description provided for @ytCantPlayHere.
+  ///
+  /// In en, this message translates to:
+  /// **'This video can\'t play inside the app.'**
+  String get ytCantPlayHere;
+
+  /// No description provided for @ytOpenInYoutube.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in YouTube'**
+  String get ytOpenInYoutube;
+
+  /// No description provided for @ytNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Free video from YouTube, shown with YouTube\'s own player. The creator keeps the views; YouTube may show ads.'**
+  String get ytNote;
+
+  /// No description provided for @ytWorkouts.
+  ///
+  /// In en, this message translates to:
+  /// **'YouTube workouts'**
+  String get ytWorkouts;
+
+  /// No description provided for @ytWorkoutsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Free follow-along workouts from popular trainers'**
+  String get ytWorkoutsHint;
+
+  /// No description provided for @exExercises.
+  ///
+  /// In en, this message translates to:
+  /// **'Exercises'**
+  String get exExercises;
+
+  /// No description provided for @ytFullscreenHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Full screen: tap the player, then ⛶ on the right.'**
+  String get ytFullscreenHint;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

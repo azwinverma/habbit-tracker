@@ -11,6 +11,7 @@ DailyMantra has no licensed content of its own. It uses only content that is **f
 | **[Wikimedia Commons](https://commons.wikimedia.org)** | Nature / mindfulness sounds | Audio 30 s – 3 h, MP3 transcode, 10 collections | PD / CC0 / CC BY / CC BY-SA | 6 h | Author, licence, collection |
 | **Wikimedia Commons (video)** | Exercise, yoga, meditation videos | Categories *Videos of physical exercises*, *Videos of yoga*, *Videos of meditation*; 5 s – 45 min; VP9 WebM (Android) + MPEG-4 (iOS) transcodes; files with personality/trademark restrictions skipped | PD / CC0 / CC BY / CC BY-SA | 12 h | Author, licence |
 | **[wger](https://wger.de)** | Exercise library + demo videos | ~980 English exercises (instructions, muscles, equipment, image) and ~45 demo videos (HEVC MOV, 30–60 MB each, streamed on tap) | Texts CC BY-SA 3/4; videos/images per author (NC rejected) | 24 h (~12 requests; API has no "changed since" filter) | Text, image and video authors, licence |
+| **YouTube** (curated, not synced) | Follow-along workout videos | 32 hand-picked videos from well-known trainers (FitnessBlender, Yoga With Adriene, Pamela Reif, The Body Coach TV, Calisthenicmovement, …) in 11 groups that match the weekly-plan body parts. List: `lib/features/content/data/youtube_workouts.dart` | YouTube Terms: played only through YouTube's official embedded player (no download/offline, no ad blocking); views and ads stay with the creator | Static list, checked with `LIVE=1` test (oEmbed 200 = exists and embeddable) | Channel name, "Open in YouTube" |
 
 Live check (2026-11-25, `LIVE=1 flutter test test/content/live_providers_test.dart`, and on a Pixel 9 Pro emulator with the release build): Gutendex 60–86 books, LibriVox 287 audiobooks (chapters stream), Commons 97 sounds, Commons 39–65 videos (36/39 with an iOS rendition), wger 979 exercises + 46 videos. About 1,500 items on first open. Every item passed the licence filter.
 
@@ -37,6 +38,7 @@ Live check (2026-11-25, `LIVE=1 flutter test test/content/live_providers_test.da
 - **wger:** texts are CC BY-SA. If you modify a description and redistribute it, the change must be shared under the same licence.
 - **Internet Archive / LibriVox:** recordings are public domain. LibriVox asks that its name isn't used to imply endorsement; we credit "Read by LibriVox volunteers" only.
 - **Wikimedia videos** may show identifiable people. Files tagged with personality-rights or trademark restrictions are skipped. Others are used as Commons provides them, with attribution.
+- **YouTube videos are not ours and not openly licensed.** They are only embedded with YouTube's official player (allowed by YouTube's Terms of Service), never downloaded, cached or shown without YouTube's controls/branding. They can't be saved for offline. A creator can delete a video or turn off embedding at any time: run the `LIVE=1` test before each release and replace failures. If a video refuses to play, the app offers "Open in YouTube".
 - **Not medical content:** none of these sources are used for health advice.
 
 ## Retired source

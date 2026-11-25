@@ -22,7 +22,8 @@ class VideoPlayerScreen extends StatelessWidget {
       videoCandidates(it, platform: platform);
 
   static Future<void> open(BuildContext context, ContentItemRow item) =>
-      Navigator.of(context).push(MaterialPageRoute(builder: (_) => VideoPlayerScreen(item: item)));
+      Navigator.of(context, rootNavigator: true)
+          .push(MaterialPageRoute(builder: (_) => VideoPlayerScreen(item: item)));
 
   @override
   Widget build(BuildContext context) {

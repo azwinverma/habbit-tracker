@@ -175,7 +175,7 @@ class _DmVideoPlayerState extends State<DmVideoPlayer> {
       await SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]);
     }
     if (!mounted) return;
-    await Navigator.of(context).push(PageRouteBuilder<void>(
+    await Navigator.of(context, rootNavigator: true).push(PageRouteBuilder<void>(
       opaque: true,
       pageBuilder: (_, __, ___) => _FullscreenPage(model: m, title: widget.item.title),
       transitionsBuilder: (_, a, __, child) => FadeTransition(opacity: a, child: child),

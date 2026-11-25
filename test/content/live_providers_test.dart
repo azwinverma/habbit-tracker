@@ -9,8 +9,9 @@ import 'package:habit_tracker_nepali/features/content/data/providers/content_pro
 import 'package:habit_tracker_nepali/features/content/data/providers/gutendex_provider.dart';
 import 'package:habit_tracker_nepali/features/content/data/providers/wger_provider.dart';
 import 'package:habit_tracker_nepali/features/content/data/providers/wikimedia_audio_provider.dart';
-import 'package:habit_tracker_nepali/features/content/domain/content_item.dart';
+import 'package:habit_tracker_nepali/features/content/data/youtube_workouts.dart';
 import 'package:http/http.dart' as http;
+import 'package:habit_tracker_nepali/features/content/domain/content_item.dart';
 
 void main() {
   final live = Platform.environment['LIVE'] == '1';
@@ -55,4 +56,15 @@ void main() {
     print('  ${videos.length} exercise videos, e.g. "${videos.first.title}" ${videos.first.mediaBytes} bytes');
     expect(videos.length, greaterThan(20));
   }, skip: !live, timeout: const Timeout(Duration(minutes: 5)));
+
+  test('every YouTube workout still exists and allows embedding (oEmbed 200)', () async {
+    final client = http.Client();
+    final bad = <String>[];
+    for (final v in youtubeWorkouts) {
+      final r = await client.get(Uri.parse('https://www.youtube.com/oembed?format=json&url=${Uri.encodeComponent(v.watchUrl)}'));
+      if (r.statusCode != 200) bad.add('${v.id} (${r.statusCode}) ${v.title}');
+    }
+    client.close();
+    expect(bad, isEmpty, reason: 'Replace these videos in youtube_workouts.dart');
+  }, skip: !live, timeout: const Timeout(Duration(minutes: 3)));
 }

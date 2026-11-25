@@ -915,4 +915,25 @@ class AppLocalizationsNe extends AppLocalizations {
 
   @override
   String get exLibraryEmpty => 'पहिलो अपडेटपछि व्यायामहरू यहाँ देखिन्छन्। इन्टरनेट जोडेर तल तानेर ताजा गर्नुहोस्।';
+
+  @override
+  String get ytCantPlayHere => 'यो भिडियो एपभित्र चल्न सकेन।';
+
+  @override
+  String get ytOpenInYoutube => 'YouTube मा खोल्नुहोस्';
+
+  @override
+  String get ytNote => 'YouTube को निःशुल्क भिडियो, YouTube कै प्लेयरमा। हेराइ सिर्जनाकर्तालाई जान्छ; YouTube ले विज्ञापन देखाउन सक्छ।';
+
+  @override
+  String get ytWorkouts => 'YouTube व्यायाम';
+
+  @override
+  String get ytWorkoutsHint => 'लोकप्रिय प्रशिक्षकका निःशुल्क सँगै गर्ने व्यायाम';
+
+  @override
+  String get exExercises => 'व्यायामहरू';
+
+  @override
+  String get ytFullscreenHint => 'पूरा स्क्रिन: प्लेयरमा थिच्नुहोस्, अनि दायाँको ⛶।';
 }

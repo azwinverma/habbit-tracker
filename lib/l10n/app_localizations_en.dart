@@ -915,4 +915,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exLibraryEmpty => 'Exercises appear here after the first update. Connect to the internet and pull down to refresh.';
+
+  @override
+  String get ytCantPlayHere => 'This video can\'t play inside the app.';
+
+  @override
+  String get ytOpenInYoutube => 'Open in YouTube';
+
+  @override
+  String get ytNote => 'Free video from YouTube, shown with YouTube\'s own player. The creator keeps the views; YouTube may show ads.';
+
+  @override
+  String get ytWorkouts => 'YouTube workouts';
+
+  @override
+  String get ytWorkoutsHint => 'Free follow-along workouts from popular trainers';
+
+  @override
+  String get exExercises => 'Exercises';
+
+  @override
+  String get ytFullscreenHint => 'Full screen: tap the player, then ⛶ on the right.';
 }

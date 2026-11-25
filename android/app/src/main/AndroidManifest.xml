@@ -82,4 +82,11 @@
             </intent-filter>
         </receiver>
     </application>
+    <!-- Open workout videos in the YouTube app / browser (url_launcher). -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+    </queries>
 </manifest>
