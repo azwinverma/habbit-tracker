@@ -23,6 +23,7 @@ import '../features/content/domain/content_item.dart';
 import '../features/content/presentation/exercise_detail_screen.dart';
 import '../features/content/data/youtube_workouts.dart';
 import '../features/content/presentation/youtube_workout_screen.dart';
+import '../features/content/presentation/home_workouts_screen.dart';
 import '../design/backdrop.dart';
 import '../app/theme.dart';
 
@@ -117,7 +118,13 @@ class _ExerciseScreenState extends State<ExerciseScreen> with SingleTickerProvid
       ExerciseDetailScreen.open(context, match);
       return;
     }
-    // No catalogue match: a free YouTube workout for that body part/level.
+    // No catalogue match: the coach's exercise guide, else a free YouTube
+    // workout for that body part/level.
+    final guide = ExerciseText.howToFor(e['name'] ?? '');
+    if (guide != null) {
+      YoutubeWorkoutScreen.open(context, guide);
+      return;
+    }
     final group = youtubeWorkouts.where((v) => v.group == e['bodyPart']);
     final yt = group.where((v) => v.level == e['level']).firstOrNull ?? group.firstOrNull;
     if (yt != null) {
@@ -400,6 +407,7 @@ class _ExerciseScreenState extends State<ExerciseScreen> with SingleTickerProvid
           padding: EdgeInsets.symmetric(horizontal: 12),
           child: AdBanner(placement: 'home_bottom', padding: EdgeInsets.only(bottom: 8)),
         ),
+        const HomeWorkoutsCard(margin: EdgeInsets.only(bottom: 14)),
         // Session & goals
         Card(
           child: Padding(

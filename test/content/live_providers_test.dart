@@ -10,6 +10,7 @@ import 'package:habit_tracker_nepali/features/content/data/providers/gutendex_pr
 import 'package:habit_tracker_nepali/features/content/data/providers/wger_provider.dart';
 import 'package:habit_tracker_nepali/features/content/data/providers/wikimedia_audio_provider.dart';
 import 'package:habit_tracker_nepali/features/content/data/youtube_workouts.dart';
+import 'package:habit_tracker_nepali/features/content/data/providers/youtube_channel_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:habit_tracker_nepali/features/content/domain/content_item.dart';
 
@@ -60,11 +61,19 @@ void main() {
   test('every YouTube workout still exists and allows embedding (oEmbed 200)', () async {
     final client = http.Client();
     final bad = <String>[];
-    for (final v in youtubeWorkouts) {
+    for (final v in [...youtubeWorkouts, ...youtubeHowTos]) {
       final r = await client.get(Uri.parse('https://www.youtube.com/oembed?format=json&url=${Uri.encodeComponent(v.watchUrl)}'));
       if (r.statusCode != 200) bad.add('${v.id} (${r.statusCode}) ${v.title}');
     }
     client.close();
     expect(bad, isEmpty, reason: 'Replace these videos in youtube_workouts.dart');
   }, skip: !live, timeout: const Timeout(Duration(minutes: 3)));
+
+  test('Bodybuilding.com channel feed', () async {
+    final items = await YoutubeChannelProvider().fetch(http.Client(), now: DateTime.now());
+    // ignore: avoid_print
+    print('  ${items.length} Bodybuilding.com videos, e.g. "${items.firstOrNull?.title}"');
+    expect(items, isNotEmpty);
+    expect(items.every((i) => i.mediaFormat == 'youtube' && i.id.startsWith('yt:')), isTrue);
+  }, skip: !live, timeout: const Timeout(Duration(minutes: 2)));
 }

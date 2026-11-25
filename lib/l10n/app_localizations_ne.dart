@@ -936,4 +936,39 @@ class AppLocalizationsNe extends AppLocalizations {
 
   @override
   String get ytFullscreenHint => 'पूरा स्क्रिन: प्लेयरमा थिच्नुहोस्, अनि दायाँको ⛶।';
+
+  @override
+  String get licNoteYoutube => 'Bodybuilding.com र छानिएका प्रशिक्षकका नयाँ व्यायाम भिडियो, YouTube कै प्लेयरमा (डाउनलोड गरिँदैन); सिर्जनाकर्ताको नाम देखाइन्छ।';
+
+  @override
+  String get homeWorkouts => 'घरमै व्यायाम';
+
+  @override
+  String get homeWorkoutsHint => 'जिम चाहिँदैन: सँगै गर्ने भिडियो, शरीरकै तौलका व्यायाम र स्ट्रेच';
+
+  @override
+  String get followAlong => 'सँगै गर्ने व्यायाम';
+
+  @override
+  String get bodyweightMoves => 'शरीरकै तौलका व्यायाम';
+
+  @override
+  String get coachGuides => 'प्रशिक्षकका व्यायाम निर्देशन';
+
+  @override
+  String get yogaStretch => 'योग र स्ट्रेचिङ';
+
+  @override
+  String latestFrom(String channel) {
+    return '$channel बाट नयाँ';
+  }
+
+  @override
+  String get demoLoop => 'डेमो';
+
+  @override
+  String get coachVideo => 'प्रशिक्षक भिडियो';
+
+  @override
+  String get adPrivacyChoices => 'विज्ञापन गोपनीयता छनोट';
 }

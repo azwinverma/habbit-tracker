@@ -6,6 +6,7 @@ import '../services/storage_service.dart';
 import '../core/reminders/reminder_service.dart';
 import '../design/backdrop.dart';
 import '../app/theme.dart';
+import '../widgets/ad_banner.dart';
 
 class WaterScreen extends StatefulWidget {
   final Habit habit; // pass an unsaved or existing water habit
@@ -51,8 +52,7 @@ class _WaterScreenState extends State<WaterScreen> {
 
   void _ensureWaterDate() {
     final today = DateTime.now();
-    final ymd =
-        '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+    final ymd = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
     if (_h.waterLastDate != ymd) {
       _h.waterLastDate = ymd;
       _h.waterCompleted = 0;
@@ -73,8 +73,7 @@ class _WaterScreenState extends State<WaterScreen> {
 
   // Reminders are planned from _h.reminderTimes by HabitReminderPlanner and
   // replace any previously armed ones (removed times are cancelled).
-  Future<void> _scheduleAllWithNativeAlarm() =>
-      ReminderService.instance.syncHabit(_h);
+  Future<void> _scheduleAllWithNativeAlarm() => ReminderService.instance.syncHabit(_h);
 
   Future<void> _applyAndSchedule() async {
     // Apply staged times into model
@@ -87,17 +86,14 @@ class _WaterScreenState extends State<WaterScreen> {
     if (!mounted) return;
     setState(() => _dirty = false);
     _snack('Reminders saved.');
-                  await InterstitialHelper().showIfAvailable();
+    await InterstitialHelper().showIfAvailable();
 
     // Optionally pop back to Home so it shows in the list immediately:
     // Navigator.pop(context);
   }
 
   Future<void> _addTime() async {
-    final t = await showTimePicker(
-      context: context,
-      initialTime: const TimeOfDay(hour: 9, minute: 0),
-    );
+    final t = await showTimePicker(context: context, initialTime: const TimeOfDay(hour: 9, minute: 0));
     if (t != null) {
       setState(() {
         _times.add(t);
@@ -107,10 +103,7 @@ class _WaterScreenState extends State<WaterScreen> {
   }
 
   Future<void> _editTime(int i) async {
-    final t = await showTimePicker(
-      context: context,
-      initialTime: _times[i],
-    );
+    final t = await showTimePicker(context: context, initialTime: _times[i]);
     if (t != null) {
       setState(() {
         _times[i] = t;
@@ -155,9 +148,7 @@ class _WaterScreenState extends State<WaterScreen> {
 
   void _snack(String s) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(s), behavior: SnackBarBehavior.floating),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(s), behavior: SnackBarBehavior.floating));
   }
 
   @override
@@ -172,134 +163,119 @@ class _WaterScreenState extends State<WaterScreen> {
     final target = _h.waterTarget ?? 8;
     final pct = (done / (target == 0 ? 1 : target)).clamp(0, 1.0);
 
-    return BrandBackdrop(tint: context.dm.water.container, glow: context.dm.water.accent, child: Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        title: const Text('Water Intake'),
-        actions: [
-          TextButton.icon(
-            onPressed: _dirty ? _applyAndSchedule : null,
-            icon: const Icon(Icons.save, size: 18),
-            label: const Text('Save'),
-          ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // Progress card
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  Text('Today', style: Theme.of(context).textTheme.titleLarge),
-                  const SizedBox(height: 8),
-                  LinearProgressIndicator(value: pct as double?),
-                  const SizedBox(height: 8),
-                  Text('$done / $target glasses'),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        onPressed: _minus,
-                        icon: const Icon(Icons.remove_circle_outline),
-                        iconSize: 36,
-                      ),
-                      const SizedBox(width: 24),
-                      IconButton(
-                        onPressed: _plus,
-                        icon: const Icon(Icons.add_circle_outline),
-                        iconSize: 36,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+    return BrandBackdrop(
+      tint: context.dm.water.container,
+      glow: context.dm.water.accent,
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: const Text('Water Intake'),
+          actions: [
+            TextButton.icon(
+              onPressed: _dirty ? _applyAndSchedule : null,
+              icon: const Icon(Icons.save, size: 18),
+              label: const Text('Save'),
             ),
-          ),
-
-          // Target editor
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  const Expanded(child: Text('Daily target (glasses):')),
-                  SizedBox(
-                    width: 80,
-                    child: TextField(
-                      controller: _targetCtrl,
-                      textAlign: TextAlign.center,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        isDense: true,
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  FilledButton(
-                    onPressed: _saveTarget,
-                    child: const Text('Save target'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Times list (staged until Save)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Text('Reminder times', style: Theme.of(context).textTheme.titleLarge),
-          ),
-          ...List.generate(_times.length, (i) {
-            final t = _times[i];
-            return Card(
-              child: ListTile(
-                leading: const Icon(Icons.schedule),
-                title: Text(Habit.fmt(t)),
-                trailing: Wrap(
-                  spacing: 8,
+          ],
+        ),
+        body: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            // Progress card
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
                   children: [
-                    IconButton(
-                      onPressed: () => _editTime(i),
-                      icon: const Icon(Icons.edit_outlined),
-                    ),
-                    IconButton(
-                      onPressed: () => _removeTime(i),
-                      icon: const Icon(Icons.delete_outline),
+                    Text('Today', style: Theme.of(context).textTheme.titleLarge),
+                    const SizedBox(height: 8),
+                    LinearProgressIndicator(value: pct as double?),
+                    const SizedBox(height: 8),
+                    Text('$done / $target glasses'),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(onPressed: _minus, icon: const Icon(Icons.remove_circle_outline), iconSize: 36),
+                        const SizedBox(width: 24),
+                        IconButton(onPressed: _plus, icon: const Icon(Icons.add_circle_outline), iconSize: 36),
+                      ],
                     ),
                   ],
                 ),
               ),
-            );
-          }),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: OutlinedButton.icon(
-              onPressed: _addTime,
-              icon: const Icon(Icons.add),
-              label: const Text('Add time'),
             ),
-          ),
-          const SizedBox(height: 24),
-        ],
-      ),
 
-      // Bottom-wide Save (convenience)
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-          child: FilledButton.icon(
-            onPressed: _dirty ? _applyAndSchedule : null,
-            icon: const Icon(Icons.save),
-            label: const Text('Save reminders'),
+            // Target editor
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    const Expanded(child: Text('Daily target (glasses):')),
+                    SizedBox(
+                      width: 80,
+                      child: TextField(
+                        controller: _targetCtrl,
+                        textAlign: TextAlign.center,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(isDense: true, border: OutlineInputBorder()),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    FilledButton(onPressed: _saveTarget, child: const Text('Save target')),
+                  ],
+                ),
+              ),
+            ),
+
+            // Times list (staged until Save)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text('Reminder times', style: Theme.of(context).textTheme.titleLarge),
+            ),
+            ...List.generate(_times.length, (i) {
+              final t = _times[i];
+              return Card(
+                child: ListTile(
+                  leading: const Icon(Icons.schedule),
+                  title: Text(Habit.fmt(t)),
+                  trailing: Wrap(
+                    spacing: 8,
+                    children: [
+                      IconButton(onPressed: () => _editTime(i), icon: const Icon(Icons.edit_outlined)),
+                      IconButton(onPressed: () => _removeTime(i), icon: const Icon(Icons.delete_outline)),
+                    ],
+                  ),
+                ),
+              );
+            }),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: OutlinedButton.icon(
+                onPressed: _addTime,
+                icon: const Icon(Icons.add),
+                label: const Text('Add time'),
+              ),
+            ),
+            const SizedBox(height: 24),
+            const SizedBox(height: Space.lg),
+            const AdBanner(placement: 'water_bottom'),
+          ],
+        ),
+
+        // Bottom-wide Save (convenience)
+        bottomNavigationBar: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            child: FilledButton.icon(
+              onPressed: _dirty ? _applyAndSchedule : null,
+              icon: const Icon(Icons.save),
+              label: const Text('Save reminders'),
+            ),
           ),
         ),
       ),
-    ));
+    );
   }
 }
-

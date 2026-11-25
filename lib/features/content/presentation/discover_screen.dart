@@ -18,10 +18,12 @@ import '../domain/content_item.dart';
 import 'audiobook_screen.dart';
 import 'exercise_detail_screen.dart';
 import 'youtube_workout_screen.dart';
+import 'home_workouts_screen.dart';
 import '../data/youtube_workouts.dart';
 import 'video_player_screen.dart';
 import '../../../design/backdrop.dart';
 import '../../../design/motion.dart';
+import '../../../widgets/ad_banner.dart';
 
 /// Browse the free content catalogue (works offline from the cache).
 /// New items from the latest refresh are listed first with a "New" badge;
@@ -205,6 +207,8 @@ final _newCountByKind = StreamProvider.family<int, ContentKind>(
 final savedContentIdsProvider = StreamProvider<Set<String>>(
     (ref) => DownloadService.instance.watchAll().map((rows) => {for (final r in rows) r.contentId}));
 
+const _adAfter = 6;
+
 class _ContentList extends ConsumerWidget {
   const _ContentList({required this.kind, required this.query, required this.savedOnly, required this.onRefresh});
   final ContentKind kind;
@@ -258,13 +262,27 @@ class _ContentList extends ConsumerWidget {
               slivers: [
                 if (cont.isNotEmpty) SliverToBoxAdapter(child: ContinueStrip(entries: cont)),
                 if (video && !savedOnly) SliverToBoxAdapter(child: _YoutubeStrip(query: query)),
+                if (kind == ContentKind.exercise && !savedOnly && query.isEmpty)
+                  const SliverToBoxAdapter(
+                    child: HomeWorkoutsCard(margin: EdgeInsets.fromLTRB(Space.page, Space.md, Space.page, 0)),
+                  ),
                 SliverPadding(
                   padding: pad,
                   sliver: cols == 1
                       ? SliverList.separated(
-                          itemCount: list.length,
+                          // One banner after the 6th item (in the flow, not over content).
+                          itemCount: list.length + (list.length > _adAfter ? 1 : 0),
                           separatorBuilder: (_, __) => const SizedBox(height: Space.sm),
-                          itemBuilder: (_, i) => Entrance(index: i < 8 ? i : 0, child: _ContentTile(item: list[i], saved: saved.contains(list[i].id))),
+                          itemBuilder: (_, i) {
+                            if (list.length > _adAfter && i == _adAfter) {
+                              return const AdBanner(placement: 'discover_list');
+                            }
+                            final idx = list.length > _adAfter && i > _adAfter ? i - 1 : i;
+                            return Entrance(
+                              index: idx < 8 ? idx : 0,
+                              child: _ContentTile(item: list[idx], saved: saved.contains(list[idx].id)),
+                            );
+                          },
                         )
                       : SliverGrid.builder(
                           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -282,6 +300,13 @@ class _ContentList extends ConsumerWidget {
                           ),
                         ),
                 ),
+                if (cols > 1 && list.isNotEmpty)
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(Space.page, 0, Space.page, Space.xxl),
+                      child: AdBanner(placement: 'discover_grid'),
+                    ),
+                  ),
               ],
             );
           });
@@ -298,7 +323,7 @@ void _openDetail(BuildContext context, ContentItemRow item) {
     case ContentKind.exercise:
       ExerciseDetailScreen.open(context, item);
     case ContentKind.video:
-      VideoPlayerScreen.open(context, item);
+      item.mediaFormat == 'youtube' ? YoutubeWorkoutScreen.openRow(context, item) : VideoPlayerScreen.open(context, item);
     default:
       showModalBottomSheet<void>(
         context: context,
@@ -319,7 +344,7 @@ void openContinue(BuildContext context, ContentItemRow item) {
     case ContentKind.audiobook:
       AudiobookScreen.open(context, item);
     case ContentKind.video:
-      VideoPlayerScreen.open(context, item);
+      item.mediaFormat == 'youtube' ? YoutubeWorkoutScreen.openRow(context, item) : VideoPlayerScreen.open(context, item);
     case ContentKind.exercise:
       ExerciseDetailScreen.open(context, item);
     case ContentKind.audio:

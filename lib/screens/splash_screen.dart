@@ -66,11 +66,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       }
 
       // 3) Preload your interstitial ads helper (optional but matches your app’s pattern).
-      try {
-        await InterstitialHelper().load();
-      } catch (_) {
-        // Ads failing to preload shouldn't block app start.
-      }
+      // Never blocks start-up (consent + SDK init can take a few seconds).
+      unawaited(InterstitialHelper().load().catchError((_) {}));
 
       // 4) Keep splash visible just a touch for brand feel.
       await Future.delayed(const Duration(milliseconds: 500));

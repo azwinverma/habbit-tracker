@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import 'app/app.dart';
 import 'core/reminders/reminder_service.dart';
@@ -36,8 +35,8 @@ Future<void> main() async {
     debugPrint('[Firebase] init failed, continuing without it: $e');
   }
 
-  await MobileAds.instance.initialize();
-  await AdService.init();
+  // Ads: consent (EEA/UK) then the SDK, without blocking app start.
+  unawaited(AdService.init());
   await NotificationService.initializeForeground();
   await NotificationService.initializeBackground();
   await AndroidAlarmManager.initialize();

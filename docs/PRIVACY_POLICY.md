@@ -27,7 +27,7 @@ Uninstalling the app deletes all of it. Clearing the app's storage does too.
 | commons.wikimedia.org, upload.wikimedia.org | Sounds and videos | Same |
 | wger.de | Exercise library and demo videos | Same |
 | YouTube (Google), youtube-nocookie.com | Free workout videos, only when you open one (official embedded player) | IP address, device/browser data and viewing activity for that video, per [Google's Privacy Policy](https://policies.google.com/privacy). The privacy-enhanced (no-cookie) player is used; YouTube may show ads |
-| Google AdMob | Ads (requested as **non-personalised**) | Device and advertising identifiers, IP address, app interaction data, per [Google's policy](https://policies.google.com/technologies/partner-sites) |
+| Google AdMob (+ Google consent form in the EEA/UK/Switzerland) | Ads (requested as **non-personalised**; where required, Google's consent form is shown first and choices can be changed in You → Ad privacy choices) | Device and advertising identifiers, IP address, app interaction data, per [Google's policy](https://policies.google.com/technologies/partner-sites) |
 | Google Firebase (core only) | App configuration | Firebase installation data. No analytics or crash reporting is enabled in this version |
 
 The app never sends your habits, medicine information or history to any of these services.

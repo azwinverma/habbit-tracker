@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -15,6 +16,7 @@ import '../../../screens/water_screen.dart';
 import '../../../services/ad_service.dart';
 import '../../../services/storage_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../services/review_prompt.dart';
 
 enum QuickAddKind { medicine, water, meditation, reading, exercise, custom }
 
@@ -178,5 +180,7 @@ abstract final class HabitFlows {
       h.lastCompleted = now;
     }
     await upsert(h);
+    // Happy moment: maybe ask for a store rating (rare, rules in ReviewPrompt).
+    if (h.lastCompleted != null) unawaited(ReviewPrompt.instance.onHabitCompleted());
   }
 }

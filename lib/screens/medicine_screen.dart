@@ -14,6 +14,7 @@ import '../services/storage_service.dart';
 import '../widgets/reminder_schedule_editor.dart';
 import '../design/backdrop.dart';
 import '../app/theme.dart';
+import '../widgets/ad_banner.dart';
 
 /// Medicine: course details, dose times, and today's taken/skipped log.
 ///
@@ -52,11 +53,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
     if (_h.reminderTimes.isNotEmpty) {
       _times = ReminderScheduleEditor.normalize(_h.reminderTimes.map(Habit.parseHHmm));
     } else {
-      _times = const [
-        TimeOfDay(hour: 8, minute: 0),
-        TimeOfDay(hour: 14, minute: 0),
-        TimeOfDay(hour: 20, minute: 0),
-      ];
+      _times = const [TimeOfDay(hour: 8, minute: 0), TimeOfDay(hour: 14, minute: 0), TimeOfDay(hour: 20, minute: 0)];
       _dirty = true;
     }
 
@@ -86,9 +83,9 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
   }
 
   void _touch(VoidCallback f) => setState(() {
-        f();
-        _dirty = true;
-      });
+    f();
+    _dirty = true;
+  });
 
   // ---------- Save ----------
   Future<void> _save() async {
@@ -144,9 +141,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
 
   void _snack(String s) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(s), behavior: SnackBarBehavior.floating),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(s), behavior: SnackBarBehavior.floating));
   }
 
   String _fmtDate(DateTime? d, AppLocalizations l) {
@@ -160,105 +155,119 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
     // The saved copy drives today's dose list (staged edits apply on Save).
     final saved = ref.watch(habitsProvider).valueOrNull?.where((x) => x.id == _h.id).firstOrNull;
 
-    return BrandBackdrop(tint: context.dm.medicine.container, glow: context.dm.medicine.accent, child: Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        title: Text(l.medTitle),
-        actions: [
-          TextButton.icon(
-            onPressed: _dirty ? _save : null,
-            icon: const Icon(Icons.save, size: 18),
-            label: Text(l.medSave),
-          ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _TodayDoses(habit: saved),
-          const SizedBox(height: 12),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  TextField(
-                    controller: _nameCtrl,
-                    decoration: InputDecoration(labelText: l.medName, border: const OutlineInputBorder()),
-                    onChanged: (_) => setState(() => _dirty = true),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _doseCtrl,
-                    decoration: InputDecoration(labelText: l.medDose, border: const OutlineInputBorder()),
-                    onChanged: (_) => setState(() => _dirty = true),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _notesCtrl,
-                    decoration: InputDecoration(labelText: l.medNotes, border: const OutlineInputBorder()),
-                    maxLines: 2,
-                    onChanged: (_) => setState(() => _dirty = true),
-                  ),
-                  const SizedBox(height: 4),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    value: _enabled,
-                    onChanged: (v) => _touch(() => _enabled = v),
-                    title: Text(l.medEnable),
-                  ),
-                ],
+    return BrandBackdrop(
+      tint: context.dm.medicine.container,
+      glow: context.dm.medicine.accent,
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: Text(l.medTitle),
+          actions: [
+            TextButton.icon(
+              onPressed: _dirty ? _save : null,
+              icon: const Icon(Icons.save, size: 18),
+              label: Text(l.medSave),
+            ),
+          ],
+        ),
+        body: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            _TodayDoses(habit: saved),
+            const SizedBox(height: 12),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: _nameCtrl,
+                      decoration: InputDecoration(labelText: l.medName, border: const OutlineInputBorder()),
+                      onChanged: (_) => setState(() => _dirty = true),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _doseCtrl,
+                      decoration: InputDecoration(labelText: l.medDose, border: const OutlineInputBorder()),
+                      onChanged: (_) => setState(() => _dirty = true),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _notesCtrl,
+                      decoration: InputDecoration(labelText: l.medNotes, border: const OutlineInputBorder()),
+                      maxLines: 2,
+                      onChanged: (_) => setState(() => _dirty = true),
+                    ),
+                    const SizedBox(height: 4),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      value: _enabled,
+                      onChanged: (v) => _touch(() => _enabled = v),
+                      title: Text(l.medEnable),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _DateRow(label: l.medStart, value: _fmtDate(_startDate, l), pick: l.medPick,
-                      onPick: () => _pickDate(start: true)),
-                  const SizedBox(height: 8),
-                  _DateRow(label: l.medEnd, value: _fmtDate(_endDate, l), pick: l.medPick,
-                      onPick: () => _pickDate(start: false)),
-                  const SizedBox(height: 8),
-                  Text(l.medCourseHint, style: Theme.of(context).textTheme.bodySmall),
-                ],
+            const SizedBox(height: 12),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _DateRow(
+                      label: l.medStart,
+                      value: _fmtDate(_startDate, l),
+                      pick: l.medPick,
+                      onPick: () => _pickDate(start: true),
+                    ),
+                    const SizedBox(height: 8),
+                    _DateRow(
+                      label: l.medEnd,
+                      value: _fmtDate(_endDate, l),
+                      pick: l.medPick,
+                      onPick: () => _pickDate(start: false),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(l.medCourseHint, style: Theme.of(context).textTheme.bodySmall),
+                  ],
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: ReminderScheduleEditor(
-                dailyTimes: _times,
-                onDailyTimesChanged: (t) => _touch(() => _times = t),
-                dailyTitle: l.medDoseTimes,
-                addDailyLabel: l.medAddTime,
-                emptyDailyText: l.medNoTimes,
-                defaultTime: const TimeOfDay(hour: 8, minute: 0),
+            const SizedBox(height: 12),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: ReminderScheduleEditor(
+                  dailyTimes: _times,
+                  onDailyTimesChanged: (t) => _touch(() => _times = t),
+                  dailyTitle: l.medDoseTimes,
+                  addDailyLabel: l.medAddTime,
+                  emptyDailyText: l.medNoTimes,
+                  defaultTime: const TimeOfDay(hour: 8, minute: 0),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          Text(l.reminderAidDisclaimer, style: Theme.of(context).textTheme.bodySmall),
-          const SizedBox(height: 24),
-        ],
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-          child: FilledButton.icon(
-            onPressed: _dirty ? _save : null,
-            icon: const Icon(Icons.save),
-            label: Text(l.medSaveSchedule),
+            const SizedBox(height: 12),
+            Text(l.reminderAidDisclaimer, style: Theme.of(context).textTheme.bodySmall),
+            const SizedBox(height: 24),
+            const SizedBox(height: Space.lg),
+            const AdBanner(placement: 'medicine_bottom'),
+          ],
+        ),
+        bottomNavigationBar: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            child: FilledButton.icon(
+              onPressed: _dirty ? _save : null,
+              icon: const Icon(Icons.save),
+              label: Text(l.medSaveSchedule),
+            ),
           ),
         ),
       ),
-    ));
+    );
   }
 }
 
@@ -269,13 +278,13 @@ class _DateRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Row(
-        children: [
-          Expanded(child: Text(label)),
-          Text(value),
-          const SizedBox(width: 8),
-          OutlinedButton.icon(onPressed: onPick, icon: const Icon(Icons.event), label: Text(pick)),
-        ],
-      );
+    children: [
+      Expanded(child: Text(label)),
+      Text(value),
+      const SizedBox(width: 8),
+      OutlinedButton.icon(onPressed: onPick, icon: const Icon(Icons.event), label: Text(pick)),
+    ],
+  );
 }
 
 /// Today's scheduled doses with Taken / Skip, plus 7-day adherence.
@@ -290,15 +299,14 @@ class _TodayDoses extends ConsumerWidget {
     final h = habit;
 
     Widget card(List<Widget> children) => Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(l.medToday, style: theme.textTheme.titleMedium),
-              const SizedBox(height: 8),
-              ...children,
-            ]),
-          ),
-        );
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [Text(l.medToday, style: theme.textTheme.titleMedium), const SizedBox(height: 8), ...children],
+        ),
+      ),
+    );
 
     if (h == null) return card([Text(l.medSaveFirst)]);
 
@@ -318,11 +326,7 @@ class _TodayDoses extends ConsumerWidget {
     final adherence = Adherence.compute(h, statuses, now: now);
     return card([
       for (final t in times)
-        _DoseRow(
-          time: t,
-          status: statuses[today]?[t],
-          onSet: (s) => repo.setStatus(h.id, today, t, s),
-        ),
+        _DoseRow(time: t, status: statuses[today]?[t], onSet: (s) => repo.setStatus(h.id, today, t, s)),
       const Divider(height: 20),
       Text(
         adherence.due == 0 ? l.medAdherenceNone : l.medAdherence(adherence.taken, adherence.due),
@@ -362,9 +366,7 @@ class _DoseRow extends StatelessWidget {
           children: [
             icon,
             const SizedBox(width: 12),
-            Expanded(
-              child: Text('$time · $label', style: Theme.of(context).textTheme.bodyLarge),
-            ),
+            Expanded(child: Text('$time · $label', style: Theme.of(context).textTheme.bodyLarge)),
             if (status == null) ...[
               TextButton(onPressed: () => onSet(DoseStatus.skipped), child: Text(l.medSkip)),
               const SizedBox(width: 4),

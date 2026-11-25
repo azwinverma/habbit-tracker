@@ -286,5 +286,16 @@
   "ytWorkouts": "YouTube व्यायाम",
   "ytWorkoutsHint": "लोकप्रिय प्रशिक्षकका निःशुल्क सँगै गर्ने व्यायाम",
   "exExercises": "व्यायामहरू",
-  "ytFullscreenHint": "पूरा स्क्रिन: प्लेयरमा थिच्नुहोस्, अनि दायाँको ⛶।"
+  "ytFullscreenHint": "पूरा स्क्रिन: प्लेयरमा थिच्नुहोस्, अनि दायाँको ⛶।",
+  "licNoteYoutube": "Bodybuilding.com र छानिएका प्रशिक्षकका नयाँ व्यायाम भिडियो, YouTube कै प्लेयरमा (डाउनलोड गरिँदैन); सिर्जनाकर्ताको नाम देखाइन्छ।",
+  "homeWorkouts": "घरमै व्यायाम",
+  "homeWorkoutsHint": "जिम चाहिँदैन: सँगै गर्ने भिडियो, शरीरकै तौलका व्यायाम र स्ट्रेच",
+  "followAlong": "सँगै गर्ने व्यायाम",
+  "bodyweightMoves": "शरीरकै तौलका व्यायाम",
+  "coachGuides": "प्रशिक्षकका व्यायाम निर्देशन",
+  "yogaStretch": "योग र स्ट्रेचिङ",
+  "latestFrom": "{channel} बाट नयाँ",
+  "demoLoop": "डेमो",
+  "coachVideo": "प्रशिक्षक भिडियो",
+  "adPrivacyChoices": "विज्ञापन गोपनीयता छनोट"
 }

@@ -7,7 +7,9 @@ import 'package:habit_tracker_nepali/features/content/data/content_repository.da
 import 'package:habit_tracker_nepali/features/content/data/playback_store.dart';
 import 'package:habit_tracker_nepali/features/content/domain/content_item.dart';
 import 'package:habit_tracker_nepali/features/content/presentation/exercise_detail_screen.dart';
+import 'package:habit_tracker_nepali/features/content/presentation/youtube_player.dart';
 import 'package:habit_tracker_nepali/l10n/app_localizations.dart';
+import 'package:habit_tracker_nepali/services/ad_service.dart';
 
 ContentItemRow row(String id, String title, {String format = 'none', List<String> tags = const [], String? desc}) =>
     ContentItemRow(
@@ -18,6 +20,8 @@ ContentItemRow row(String id, String title, {String format = 'none', List<String
 
 void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+  AdService.enabled = false; // no ads plugin in unit tests
+  YoutubeInlinePlayer.showThumbnails = false;
 
   group('ResumePoint', () {
     test('only resumes long videos, past the start and before the end', () {
@@ -117,8 +121,8 @@ void main() {
     });
   });
 
-  testWidgets('exercise page without video shows picture fallback, steps and muscles', (tester) async {
-    final it = row('wger:9', 'Glute Bridge',
+  testWidgets('exercise page without any video shows picture fallback, steps and muscles', (tester) async {
+    final it = row('wger:9', 'Turkish Get-Up',
         tags: const ['Legs', 'Glutes'],
         desc: 'Lie on your back.\nLift your hips.\n\nMuscles: Glutes\nEquipment: Mat');
     final db = AppDatabase(NativeDatabase.memory());
@@ -137,5 +141,23 @@ void main() {
     expect(find.text('Lift your hips.'), findsOneWidget);
     expect(find.text('2'), findsOneWidget); // numbered steps
     expect(find.textContaining('Glutes'), findsWidgets);
+  });
+
+  testWidgets('exercise without a demo loop puts the Bodybuilding.com coach video on top', (tester) async {
+    final db = AppDatabase(NativeDatabase.memory());
+    AppDatabase.instance = db;
+    addTearDown(db.close);
+    await tester.pumpWidget(MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: ExerciseDetailScreen(item: row('wger:10', 'Glute Bridge', tags: const ['Legs'], desc: 'Lift your hips.')),
+    ));
+    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+    await tester.pump();
+    final l = await AppLocalizations.delegate.load(const Locale('en'));
+    expect(find.byType(YoutubeInlinePlayer), findsOneWidget);
+    expect(find.text(l.noVideoYet), findsNothing);
+    expect(find.text('Bodybuilding.com'), findsWidgets); // badge + chip
+    expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget); // waits for a tap, no autoplay
   });
 }

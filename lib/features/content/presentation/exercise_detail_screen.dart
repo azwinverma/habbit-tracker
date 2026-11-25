@@ -9,6 +9,9 @@ import '../data/content_repository.dart';
 import '../domain/content_item.dart';
 import 'discover_screen.dart' show ContentCredits, DownloadButton;
 import 'dm_video_player.dart';
+import 'youtube_player.dart';
+import '../data/youtube_workouts.dart';
+import '../../../widgets/ad_banner.dart';
 import '../../../design/backdrop.dart';
 
 /// One exercise: demo video pinned at the top (play / pause / skip / speed /
@@ -33,9 +36,18 @@ class ExerciseDetailScreen extends StatefulWidget {
 
 class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
   List<ContentItemRow> _related = const [];
+  late final YoutubeWorkout? _coach = ExerciseText.howToFor(widget.item.title);
+  bool _showCoach = false; // which video is on top when both exist
 
   ContentItemRow get it => widget.item;
   bool get _hasVideo => it.mediaFormat == 'video' && videoCandidates(it).isNotEmpty;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // No demo loop → the coach video takes the top spot.
+    if (!_hasVideo && _coach != null) _showCoach = true;
+  }
 
   @override
   void initState() {
@@ -63,7 +75,17 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
       appBar: AppBar(title: Text(it.title, maxLines: 1, overflow: TextOverflow.ellipsis)),
       body: Column(children: [
         // Pinned media: stays visible while the steps scroll underneath.
-        if (_hasVideo) DmVideoPlayer(key: ValueKey(it.id), item: it) else _ImageHero(item: it),
+        if (_showCoach && _coach != null)
+          YoutubeInlinePlayer(
+            key: ValueKey('yt-${_coach.id}'),
+            videoId: _coach.id,
+            resumeKey: _coach.resumeKey,
+            badge: _coach.channel,
+          )
+        else if (_hasVideo)
+          DmVideoPlayer(key: ValueKey(it.id), item: it)
+        else
+          _ImageHero(item: it),
         Expanded(
           child: ListView(
             padding: const EdgeInsets.fromLTRB(Space.page, Space.lg, Space.page, Space.xxl),
@@ -75,15 +97,31 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
                     style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
               ],
               const SizedBox(height: Space.md),
+              if (_hasVideo && _coach != null) ...[
+                SegmentedButton<bool>(
+                  segments: [
+                    ButtonSegment(value: false, icon: const Icon(Icons.loop_rounded), label: Text(l.demoLoop)),
+                    ButtonSegment(value: true, icon: const Icon(Icons.smart_display_rounded), label: Text(l.coachVideo)),
+                  ],
+                  selected: {_showCoach},
+                  onSelectionChanged: (v) => setState(() => _showCoach = v.first),
+                ),
+                const SizedBox(height: Space.md),
+              ],
               Wrap(spacing: Space.sm, runSpacing: Space.xs, children: [
                 if (_hasVideo) StatusChip(icon: Icons.play_arrow_rounded, label: l.videoDemo),
+                if (_coach != null) StatusChip(icon: Icons.smart_display_rounded, label: _coach.channel),
                 for (final t in it.tags.where((t) => t != 'Video')) StatusChip(label: t),
               ]),
-              if (!_hasVideo) ...[
+              if (!_hasVideo && _coach == null) ...[
                 const SizedBox(height: Space.md),
                 Text(l.noVideoYet, style: theme.textTheme.bodySmall),
               ],
-              if (_hasVideo && it.mediaUrl != null) ...[
+              if (_showCoach && _coach != null) ...[
+                const SizedBox(height: Space.sm),
+                Text('${_coach.title} · ${_coach.channel} · ${l.ytFullscreenHint}', style: theme.textTheme.bodySmall),
+              ],
+              if (_hasVideo && !_showCoach && it.mediaUrl != null) ...[
                 const SizedBox(height: Space.md),
                 DownloadButton(contentId: it.id, url: videoCandidates(it).first, bytes: it.mediaBytes),
               ],
@@ -137,6 +175,10 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
               const Divider(),
               const SizedBox(height: Space.sm),
               ContentCredits(item: it),
+              if (_showCoach && _coach != null)
+                Text(l.ytNote, style: theme.textTheme.bodySmall),
+              const SizedBox(height: Space.lg),
+              const AdBanner(placement: 'exercise_detail'),
             ],
           ),
         ),
@@ -291,19 +333,27 @@ abstract final class ExerciseText {
 
   /// Best catalogue match for a plan entry such as "Push-ups (knee/incline)"
   /// (prefers exercises with a video). Null when nothing is close.
-  static ContentItemRow? bestMatch(String name, Iterable<ContentItemRow> items) {
+  static ContentItemRow? bestMatch(String name, Iterable<ContentItemRow> items) =>
+      bestMatchBy(name, items, (it) => it.title, (it) => it.mediaFormat == 'video');
+
+  /// Bodybuilding.com exercise guide for an exercise name, if one is close.
+  static YoutubeWorkout? howToFor(String name) => bestMatchBy(name, youtubeHowTos, (v) => v.title, (_) => false);
+
+  static T? bestMatchBy<T>(String name, Iterable<T> items, String Function(T) titleOf, bool Function(T) hasVideo) {
     final q = _norm(name);
     if (q.isEmpty) return null;
     final qWords = q.split(' ').toSet();
-    ContentItemRow? best;
+    T? best;
     var bestScore = 0.0;
     for (final it in items) {
-      final t = _norm(it.title);
+      final t = _norm(titleOf(it));
       if (t.isEmpty) continue;
       final tWords = t.split(' ').toSet();
       double score;
       if (t == q || t.replaceAll(' ', '') == q.replaceAll(' ', '')) {
         score = 3; // also "pulldown" vs "Pull Down"
+      } else if (q.length >= 6 && t.replaceAll(' ', '').contains(q.replaceAll(' ', ''))) {
+        score = 1.9 - tWords.length * 0.05; // "lat pull down" inside "wide grip lat pulldown"
       } else {
         final common = qWords.intersection(tWords).length;
         if (common == 0) continue;
@@ -312,7 +362,7 @@ abstract final class ExerciseText {
         if (score < 0.5) continue;
         score -= (tWords.length - common) * 0.05; // fewer extra words is better
       }
-      if (it.mediaFormat == 'video') score += 0.3;
+      if (hasVideo(it)) score += 0.3;
       if (score > bestScore) {
         bestScore = score;
         best = it;

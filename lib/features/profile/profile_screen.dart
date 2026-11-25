@@ -12,6 +12,7 @@ import '../../app/theme.dart';
 import '../../design/components.dart';
 import '../../design/backdrop.dart';
 import '../../design/motion.dart';
+import '../../services/ad_service.dart';
 
 /// You: appearance, reminders, content sources & licences, privacy.
 class ProfileScreen extends ConsumerWidget {
@@ -211,6 +212,15 @@ class ProfileScreen extends ConsumerWidget {
                       trailing: const Icon(Icons.chevron_right_rounded),
                       onTap: () => showLicensePage(context: context, applicationName: l.appTitle),
                     ),
+                    if (AdService.privacyOptionsRequired) ...[
+                      const Divider(indent: Space.lg, endIndent: Space.lg),
+                      ListTile(
+                        leading: const Icon(Icons.privacy_tip_outlined),
+                        title: Text(l.adPrivacyChoices),
+                        trailing: const Icon(Icons.chevron_right_rounded),
+                        onTap: AdService.showPrivacyOptions,
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -227,6 +237,7 @@ class ProfileScreen extends ConsumerWidget {
     'wger' => Icons.fitness_center,
     'librivox' => Icons.headphones_outlined,
     'commons-video' => Icons.smart_display_outlined,
+    'youtube' => Icons.smart_display_rounded,
     _ => Icons.public,
   };
 
@@ -236,6 +247,7 @@ class ProfileScreen extends ConsumerWidget {
     'wger' => l.licNoteWger,
     'librivox' => l.licNoteLibrivox,
     'commons-video' => l.licNoteCommonsVideo,
+    'youtube' => l.licNoteYoutube,
     _ => p.homepage,
   };
 }

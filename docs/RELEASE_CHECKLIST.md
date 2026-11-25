@@ -27,3 +27,12 @@ Status as of 2026-11-25. ✅ verified · ⬜ owner action · ⚠️ known limita
 - The free video library is small (~110). Some Commons videos are in other languages or are amateur recordings.
 - iOS: no background refresh (refreshes on open); medicine Taken/Snooze notification buttons are Android-only.
 - Remaining English-only screens: water, meditation, reading and parts of exercise.
+
+## Ads (AdMob)
+- ⬜ Create **iOS** banner + interstitial ad units in AdMob and put them in `AdService` (iOS currently uses the Android unit IDs, so iOS ads won't fill).
+- ⬜ Publish `app-ads.txt` on the developer website: `google.com, pub-2249746804787716, DIRECT, f08c47fec0942fa0`.
+- ⬜ AdMob → Privacy & messaging: create the **GDPR consent message** (the app shows it via Google UMP; without a published message nothing is shown in the EEA/UK).
+- ⬜ Never click your own ads on a real device; add your phone as a test device in AdMob.
+
+## Store listing / ASO
+- ⬜ Follow `docs/ASO.md` section 9.

@@ -1816,6 +1816,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Full screen: tap the player, then ⛶ on the right.'**
   String get ytFullscreenHint;
+
+  /// No description provided for @licNoteYoutube.
+  ///
+  /// In en, this message translates to:
+  /// **'newest workout videos from Bodybuilding.com and hand-picked trainers, played with YouTube\'s own player (not downloaded); creator credited.'**
+  String get licNoteYoutube;
+
+  /// No description provided for @homeWorkouts.
+  ///
+  /// In en, this message translates to:
+  /// **'Home workouts'**
+  String get homeWorkouts;
+
+  /// No description provided for @homeWorkoutsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'No gym needed: follow-along videos, bodyweight moves and stretches'**
+  String get homeWorkoutsHint;
+
+  /// No description provided for @followAlong.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow-along workouts'**
+  String get followAlong;
+
+  /// No description provided for @bodyweightMoves.
+  ///
+  /// In en, this message translates to:
+  /// **'Bodyweight exercises'**
+  String get bodyweightMoves;
+
+  /// No description provided for @coachGuides.
+  ///
+  /// In en, this message translates to:
+  /// **'Coach exercise guides'**
+  String get coachGuides;
+
+  /// No description provided for @yogaStretch.
+  ///
+  /// In en, this message translates to:
+  /// **'Yoga & stretching'**
+  String get yogaStretch;
+
+  /// No description provided for @latestFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest from {channel}'**
+  String latestFrom(String channel);
+
+  /// No description provided for @demoLoop.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo'**
+  String get demoLoop;
+
+  /// No description provided for @coachVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'Coach video'**
+  String get coachVideo;
+
+  /// No description provided for @adPrivacyChoices.
+  ///
+  /// In en, this message translates to:
+  /// **'Ad privacy choices'**
+  String get adPrivacyChoices;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

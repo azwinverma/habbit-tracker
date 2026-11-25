@@ -936,4 +936,39 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ytFullscreenHint => 'Full screen: tap the player, then ⛶ on the right.';
+
+  @override
+  String get licNoteYoutube => 'newest workout videos from Bodybuilding.com and hand-picked trainers, played with YouTube\'s own player (not downloaded); creator credited.';
+
+  @override
+  String get homeWorkouts => 'Home workouts';
+
+  @override
+  String get homeWorkoutsHint => 'No gym needed: follow-along videos, bodyweight moves and stretches';
+
+  @override
+  String get followAlong => 'Follow-along workouts';
+
+  @override
+  String get bodyweightMoves => 'Bodyweight exercises';
+
+  @override
+  String get coachGuides => 'Coach exercise guides';
+
+  @override
+  String get yogaStretch => 'Yoga & stretching';
+
+  @override
+  String latestFrom(String channel) {
+    return 'Latest from $channel';
+  }
+
+  @override
+  String get demoLoop => 'Demo';
+
+  @override
+  String get coachVideo => 'Coach video';
+
+  @override
+  String get adPrivacyChoices => 'Ad privacy choices';
 }

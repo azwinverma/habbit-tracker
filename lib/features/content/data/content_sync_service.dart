@@ -11,6 +11,7 @@ import 'providers/content_provider.dart';
 import 'providers/gutendex_provider.dart';
 import 'providers/wger_provider.dart';
 import 'providers/wikimedia_audio_provider.dart';
+import 'providers/youtube_channel_provider.dart';
 
 class ProviderSyncResult {
   final String provider;
@@ -60,6 +61,7 @@ class ContentSyncService {
         WikimediaAudioProvider(),
         WgerProvider(),
         CommonsVideoProvider(),
+        YoutubeChannelProvider(),
       ];
 
   static const failureBackoff = Duration(minutes: 15);

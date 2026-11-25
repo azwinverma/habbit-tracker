@@ -557,5 +557,23 @@
   "ytWorkouts": "YouTube workouts",
   "ytWorkoutsHint": "Free follow-along workouts from popular trainers",
   "exExercises": "Exercises",
-  "ytFullscreenHint": "Full screen: tap the player, then ⛶ on the right."
+  "ytFullscreenHint": "Full screen: tap the player, then ⛶ on the right.",
+  "licNoteYoutube": "newest workout videos from Bodybuilding.com and hand-picked trainers, played with YouTube's own player (not downloaded); creator credited.",
+  "homeWorkouts": "Home workouts",
+  "homeWorkoutsHint": "No gym needed: follow-along videos, bodyweight moves and stretches",
+  "followAlong": "Follow-along workouts",
+  "bodyweightMoves": "Bodyweight exercises",
+  "coachGuides": "Coach exercise guides",
+  "yogaStretch": "Yoga & stretching",
+  "latestFrom": "Latest from {channel}",
+  "demoLoop": "Demo",
+  "coachVideo": "Coach video",
+  "@latestFrom": {
+    "placeholders": {
+      "channel": {
+        "type": "String"
+      }
+    }
+  },
+  "adPrivacyChoices": "Ad privacy choices"
 }
