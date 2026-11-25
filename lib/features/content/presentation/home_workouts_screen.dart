@@ -204,8 +204,7 @@ class _CatalogVideoCard extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            AspectRatio(
-              aspectRatio: 16 / 9,
+            Expanded(
               child: Stack(fit: StackFit.expand, children: [
                 if (item.imageUrl != null)
                   CachedNetworkImage(

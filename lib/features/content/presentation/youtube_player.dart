@@ -44,8 +44,9 @@ class YoutubeInlinePlayer extends StatefulWidget {
   /// Total seconds watched so far (for ad pacing on the host page).
   final ValueChanged<int>? onWatched;
 
-  /// Off in widget tests (thumbnails need the image cache's file system).
-  @visibleForTesting
+  /// Off in widget tests and store screenshots (thumbnails need the image
+  /// cache's file system, and creators' thumbnails don't belong in our
+  /// store listing).
   static bool showThumbnails = true;
 
   static String thumbnail(String id) => 'https://i.ytimg.com/vi/$id/hqdefault.jpg';

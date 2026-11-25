@@ -173,20 +173,18 @@ class YoutubeWorkoutCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AspectRatio(
-                aspectRatio: 16 / 9,
+              Expanded(
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    CachedNetworkImage(
-                      imageUrl: video.thumbnail,
-                      fit: BoxFit.cover,
-                      errorWidget:
-                          (_, __, ___) => ColoredBox(
-                            color: theme.colorScheme.primaryContainer,
-                            child: Icon(Icons.smart_display_rounded, color: theme.colorScheme.onPrimaryContainer),
-                          ),
-                    ),
+                    if (YoutubeInlinePlayer.showThumbnails)
+                      CachedNetworkImage(
+                        imageUrl: video.thumbnail,
+                        fit: BoxFit.cover,
+                        errorWidget: (_, __, ___) => _Placeholder(video: video),
+                      )
+                    else
+                      _Placeholder(video: video),
                     const Center(
                       child: DecoratedBox(
                         decoration: BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
@@ -228,6 +226,34 @@ class YoutubeWorkoutCard extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Brand-styled stand-in when thumbnails aren't loaded (offline / tests).
+class _Placeholder extends StatelessWidget {
+  const _Placeholder({required this.video});
+  final YoutubeWorkout video;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.dm.movement;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [p.container, Color.lerp(p.container, p.accent, 0.35)!],
+        ),
+      ),
+      child: Align(
+        alignment: Alignment.topLeft,
+        child: Padding(
+          padding: const EdgeInsets.all(Space.sm),
+          child: Text(video.group.toUpperCase(),
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(color: p.onContainer, letterSpacing: 0.8)),
         ),
       ),
     );

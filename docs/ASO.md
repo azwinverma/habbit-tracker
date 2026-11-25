@@ -35,6 +35,8 @@ How to refine (do this monthly):
 
 ## 3. Store listing copy (ready to paste)
 
+> Final files: `store/listing/en-US.md`, `store/listing/ne-NP.md`, `store/release_notes.txt`; graphics in `store/` (see `store/README.md`). Don't name third-party brands (YouTube channels) in the listing.
+
 ### English (default, en-US)
 
 **App name (≤ 30):** `DailyMantra: Habit Tracker` (26)
@@ -61,7 +63,7 @@ REMINDERS THAT ARRIVE ON TIME
 
 HOME WORKOUTS, NO GYM NEEDED
 • Follow-along home workout videos from popular trainers
-• Exercise guides from Bodybuilding.com on how to do each move
+• Short coach videos showing how to do each exercise
 • 1,000 exercises with steps, muscles and demo videos
 • Workout timer, steps and your own weekly workout plan
 
@@ -97,7 +99,7 @@ DailyMantra is a reminder and wellness aid, not medical advice. Always follow yo
   1. "Build better habits, one tap a day" (Today screen)
   2. "Water & medicine reminders that arrive on time" (Medicine screen with Taken/Skip notification)
   3. "Home workouts with video, no gym needed" (Home workouts hub)
-  4. "Learn every exercise with coach videos" (exercise page with Bodybuilding.com video)
+  4. "Your workout, your way" (Exercise screen: timer, steps, plan)
   5. "Meditate with calming sounds" (meditation)
   6. "Free books & audiobooks, offline" (Discover)
   7. "See your progress" (Insights)

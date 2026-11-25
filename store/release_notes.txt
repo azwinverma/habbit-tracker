@@ -1,0 +1,8 @@
+<en-US>
+All-new design with home workout videos, exercise guides and a Home workouts section.
+Reliable water & medicine reminders, free books & audiobooks, and continue where you left off.
+</en-US>
+<ne-NP>
+नयाँ डिजाइन: घरमै व्यायामका भिडियो, व्यायाम निर्देशन र "घरमै व्यायाम" सेक्सन।
+भरपर्दो पानी र औषधि रिमाइन्डर, निःशुल्क किताब र अडियोबुक, र छोडेको ठाउँबाट जारी राख्ने सुविधा।
+</ne-NP>
