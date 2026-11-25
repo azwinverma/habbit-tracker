@@ -13,8 +13,10 @@ import '../../../design/components.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../screens/reading_screen.dart' show BookReader;
 import '../data/download_service.dart';
+import '../data/playback_store.dart';
 import '../domain/content_item.dart';
 import 'audiobook_screen.dart';
+import 'exercise_detail_screen.dart';
 import 'video_player_screen.dart';
 
 /// Browse the free content catalogue (works offline from the cache).
@@ -239,28 +241,39 @@ class _ContentList extends ConsumerWidget {
             ]);
           }
           final video = kind == ContentKind.video;
+          final showContinue = !savedOnly && query.isEmpty && kind != ContentKind.exercise && kind != ContentKind.audio;
+          final cont = showContinue
+              ? (ref.watch(continueProvider(kind)).valueOrNull ?? const <ContinueEntry>[])
+              : const <ContinueEntry>[];
           return LayoutBuilder(builder: (context, c) {
             final cols = video ? (c.maxWidth >= 640 ? 3 : 2) : (c.maxWidth >= 720 ? 2 : 1);
-            if (cols == 1) {
-              return ListView.separated(
-                padding: const EdgeInsets.fromLTRB(Space.page, Space.md, Space.page, Space.xxl),
-                itemCount: list.length,
-                separatorBuilder: (_, __) => const SizedBox(height: Space.sm),
-                itemBuilder: (_, i) => _ContentTile(item: list[i], saved: saved.contains(list[i].id)),
-              );
-            }
-            return GridView.builder(
-              padding: const EdgeInsets.fromLTRB(Space.page, Space.md, Space.page, Space.xxl),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: cols,
-                mainAxisSpacing: Space.md,
-                crossAxisSpacing: Space.md,
-                mainAxisExtent: video ? 200 : 112,
-              ),
-              itemCount: list.length,
-              itemBuilder: (_, i) => video
-                  ? _VideoCard(item: list[i], saved: saved.contains(list[i].id))
-                  : _ContentTile(item: list[i], saved: saved.contains(list[i].id)),
+            const pad = EdgeInsets.fromLTRB(Space.page, Space.md, Space.page, Space.xxl);
+            return CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                if (cont.isNotEmpty) SliverToBoxAdapter(child: ContinueStrip(entries: cont)),
+                SliverPadding(
+                  padding: pad,
+                  sliver: cols == 1
+                      ? SliverList.separated(
+                          itemCount: list.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: Space.sm),
+                          itemBuilder: (_, i) => _ContentTile(item: list[i], saved: saved.contains(list[i].id)),
+                        )
+                      : SliverGrid.builder(
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: cols,
+                            mainAxisSpacing: Space.md,
+                            crossAxisSpacing: Space.md,
+                            mainAxisExtent: video ? 200 : 112,
+                          ),
+                          itemCount: list.length,
+                          itemBuilder: (_, i) => video
+                              ? _VideoCard(item: list[i], saved: saved.contains(list[i].id))
+                              : _ContentTile(item: list[i], saved: saved.contains(list[i].id)),
+                        ),
+                ),
+              ],
             );
           });
         },
@@ -269,12 +282,135 @@ class _ContentList extends ConsumerWidget {
   }
 }
 
-void _openDetail(BuildContext context, ContentItemRow item) => showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      builder: (_) => ContentDetailSheet(item: item),
+/// Exercises open their own page (video on top), videos play straight
+/// away; everything else shows the detail sheet.
+void _openDetail(BuildContext context, ContentItemRow item) {
+  switch (ContentKind.values.byName(item.kind)) {
+    case ContentKind.exercise:
+      ExerciseDetailScreen.open(context, item);
+    case ContentKind.video:
+      VideoPlayerScreen.open(context, item);
+    default:
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        builder: (_) => ContentDetailSheet(item: item),
+      );
+  }
+}
+
+/// Opens an item where the user left off.
+void openContinue(BuildContext context, ContentItemRow item) {
+  switch (ContentKind.values.byName(item.kind)) {
+    case ContentKind.book:
+      if (item.mediaUrl != null) {
+        BookReader.open(context, title: item.title, url: item.mediaUrl!, format: item.mediaFormat, contentId: item.id);
+      }
+    case ContentKind.audiobook:
+      AudiobookScreen.open(context, item);
+    case ContentKind.video:
+      VideoPlayerScreen.open(context, item);
+    case ContentKind.exercise:
+      ExerciseDetailScreen.open(context, item);
+    case ContentKind.audio:
+      _openDetail(context, item);
+  }
+}
+
+final continueProvider = StreamProvider.family<List<ContinueEntry>, ContentKind>(
+    (ref, k) => PlaybackStore.instance.watchContinue(kind: k));
+
+/// "Continue where you left off": books, audiobooks and videos in progress.
+class ContinueStrip extends StatelessWidget {
+  const ContinueStrip({super.key, required this.entries});
+  final List<ContinueEntry> entries;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(top: Space.md),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: Space.page),
+          child: Text(l.continueTitle, style: theme.textTheme.titleMedium),
+        ),
+        const SizedBox(height: Space.sm),
+        SizedBox(
+          height: 96,
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: Space.page),
+            scrollDirection: Axis.horizontal,
+            itemCount: entries.length,
+            separatorBuilder: (_, __) => const SizedBox(width: Space.md),
+            itemBuilder: (_, i) => _ContinueCard(entry: entries[i]),
+          ),
+        ),
+      ]),
     );
+  }
+}
+
+class _ContinueCard extends StatelessWidget {
+  const _ContinueCard({required this.entry});
+  final ContinueEntry entry;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final it = entry.item;
+    final p = entry.point;
+    final kind = ContentKind.values.byName(it.kind);
+    final progress = p.progress;
+    final left = p.durationMs > 0 ? Duration(milliseconds: p.durationMs - p.positionMs) : null;
+    final detail = [
+      if (p.label != null && p.label!.isNotEmpty) p.label!,
+      if (left != null && kind != ContentKind.book) l.timeLeft(fmtDuration(left.inSeconds)),
+    ].join(' · ');
+    return SizedBox(
+      width: 260,
+      child: SurfaceCard(
+        padding: const EdgeInsets.all(Space.sm),
+        onTap: () => openContinue(context, it),
+        child: Row(children: [
+          _Thumb(url: it.imageUrl, kind: kind, width: 56, height: 76),
+          const SizedBox(width: Space.sm),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
+              Text(it.title, style: theme.textTheme.titleSmall, maxLines: 2, overflow: TextOverflow.ellipsis),
+              if (detail.isNotEmpty)
+                Text(detail, style: theme.textTheme.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis),
+              const SizedBox(height: Space.xs),
+              Row(children: [
+                Icon(kind == ContentKind.book ? Icons.menu_book_rounded : Icons.play_arrow_rounded,
+                    size: 16, color: theme.colorScheme.primary),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: progress == null
+                      ? Text(l.resumeAction,
+                          style: theme.textTheme.labelMedium?.copyWith(color: theme.colorScheme.primary))
+                      : ClipRRect(
+                          borderRadius: BorderRadius.circular(Radii.pill),
+                          child: LinearProgressIndicator(value: progress, minHeight: 4),
+                        ),
+                ),
+              ]),
+            ]),
+          ),
+          IconButton(
+            tooltip: l.removeFromContinue,
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.close_rounded, size: 18),
+            onPressed: () => PlaybackStore.instance.clear(it.id),
+          ),
+        ]),
+      ),
+    );
+  }
+}
 
 class _ContentTile extends StatelessWidget {
   const _ContentTile({required this.item, required this.saved});
@@ -557,25 +693,40 @@ class _ContentDetailSheetState extends State<ContentDetailSheet> {
           const SizedBox(height: Space.xl),
           const Divider(),
           const SizedBox(height: Space.sm),
-          Text(l.creditsLicence, style: theme.textTheme.titleSmall),
-          const SizedBox(height: Space.xs),
-          if (it.attribution != null) Text(it.attribution!, style: theme.textTheme.bodySmall),
-          Text(l.licenceLabel(it.license), style: theme.textTheme.bodySmall),
-          if (it.sourceUrl != null)
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton.icon(
-                icon: const Icon(Icons.link_rounded, size: 18),
-                label: Text(l.copySourceLink),
-                onPressed: () {
-                  Clipboard.setData(ClipboardData(text: it.sourceUrl!));
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.sourceCopied)));
-                },
-              ),
-            ),
+          ContentCredits(item: it),
         ],
       ),
     );
+  }
+}
+
+/// Credits, licence and source link for one item.
+class ContentCredits extends StatelessWidget {
+  const ContentCredits({super.key, required this.item});
+  final ContentItemRow item;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(l.creditsLicence, style: theme.textTheme.titleSmall),
+      const SizedBox(height: Space.xs),
+      if (item.attribution != null) Text(item.attribution!, style: theme.textTheme.bodySmall),
+      Text(l.licenceLabel(item.license), style: theme.textTheme.bodySmall),
+      if (item.sourceUrl != null)
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            icon: const Icon(Icons.link_rounded, size: 18),
+            label: Text(l.copySourceLink),
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: item.sourceUrl!));
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.sourceCopied)));
+            },
+          ),
+        ),
+    ]);
   }
 }
 

@@ -833,4 +833,86 @@ class AppLocalizationsNe extends AppLocalizations {
 
   @override
   String get licNoteCommonsVideo => 'खुला इजाजतका व्यायाम, योग र ध्यान भिडियो (PD, CC0, CC BY, CC BY-SA); लेखकलाई श्रेय।';
+
+  @override
+  String get fullscreen => 'पूरा स्क्रिन';
+
+  @override
+  String get exitFullscreen => 'पूरा स्क्रिनबाट बाहिर';
+
+  @override
+  String get back10 => '१० सेकेन्ड पछाडि';
+
+  @override
+  String get forward10 => '१० सेकेन्ड अगाडि';
+
+  @override
+  String get playbackSpeed => 'बजाउने गति';
+
+  @override
+  String get mute => 'आवाज बन्द';
+
+  @override
+  String get unmute => 'आवाज खोल्नुहोस्';
+
+  @override
+  String resumedAt(String time) {
+    return '$time बाट जारी';
+  }
+
+  @override
+  String get startOver => 'सुरुदेखि';
+
+  @override
+  String get videoDemo => 'भिडियो प्रदर्शन';
+
+  @override
+  String get noVideoYet => 'यो व्यायामको भिडियो अहिले छैन। तलको तस्बिर र चरणहरू पालना गर्नुहोस्।';
+
+  @override
+  String get howToDoIt => 'कसरी गर्ने';
+
+  @override
+  String get musclesLabel => 'मांसपेशी';
+
+  @override
+  String get equipmentLabel => 'उपकरण';
+
+  @override
+  String get moreWithVideo => 'भिडियो भएका थप व्यायाम';
+
+  @override
+  String get continueTitle => 'जहाँ छोड्नुभएको थियो त्यहीँबाट';
+
+  @override
+  String timeLeft(String time) {
+    return '$time बाँकी';
+  }
+
+  @override
+  String get resumeAction => 'जारी राख्नुहोस्';
+
+  @override
+  String get removeFromContinue => 'सूचीबाट हटाउनुहोस्';
+
+  @override
+  String get openedWhereLeft => 'जहाँ छोड्नुभएको थियो त्यहीँबाट खोलियो';
+
+  @override
+  String get continueReading => 'पढाइ जारी राख्नुहोस्';
+
+  @override
+  String get exLibraryTitle => 'व्यायाम पुस्तकालय';
+
+  @override
+  String get exWithVideo => 'भिडियो भएका';
+
+  @override
+  String get exSearchHint => 'व्यायाम खोज्नुहोस्';
+
+  @override
+  String get exWatchHow => 'कसरी गर्ने हेर्नुहोस्';
+
+  @override
+  String get exLibraryEmpty => 'पहिलो अपडेटपछि व्यायामहरू यहाँ देखिन्छन्। इन्टरनेट जोडेर तल तानेर ताजा गर्नुहोस्।';
 }

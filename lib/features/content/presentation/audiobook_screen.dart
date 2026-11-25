@@ -11,6 +11,8 @@ import '../../../core/db/app_database.dart';
 import '../../../design/components.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/download_service.dart';
+import '../data/playback_store.dart';
+import '../domain/content_item.dart';
 import '../data/providers/archive_audiobook_provider.dart';
 
 /// Public-domain audiobook player (LibriVox). Chapters come from the
@@ -103,6 +105,26 @@ class _AudiobookScreenState extends State<AudiobookScreen> {
     if (now.difference(_lastSave) < const Duration(seconds: 5)) return;
     _lastSave = now;
     _db.setMeta(_posKey, '${_player.currentIndex ?? 0}|${p.inMilliseconds}');
+    _markProgress(p);
+  }
+
+  /// Book-wide progress for "Continue listening" (chapter lengths permitting).
+  void _markProgress(Duration p) {
+    final chapters = _chapters;
+    if (chapters == null || chapters.isEmpty) return;
+    final i = (_player.currentIndex ?? 0).clamp(0, chapters.length - 1);
+    final known = chapters.every((c) => c.seconds != null);
+    final before = known ? chapters.take(i).fold<int>(0, (a, c) => a + c.seconds!) : 0;
+    final total = known ? chapters.fold<int>(0, (a, c) => a + c.seconds!) : 0;
+    PlaybackStore.instance.saveMedia(
+      widget.item.id,
+      ContentKind.audiobook,
+      position: Duration(seconds: before) + p,
+      duration: Duration(seconds: total),
+      index: i,
+      label: chapters[i].title,
+      force: true,
+    );
   }
 
   Future<void> _downloadAll() async {
@@ -135,6 +157,7 @@ class _AudiobookScreenState extends State<AudiobookScreen> {
   void dispose() {
     _posSub?.cancel();
     _db.setMeta(_posKey, '${_player.currentIndex ?? 0}|${_player.position.inMilliseconds}');
+    _markProgress(_player.position);
     _player.dispose();
     super.dispose();
   }

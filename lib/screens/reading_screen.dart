@@ -3,6 +3,8 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import '../features/content/data/download_service.dart';
+import '../features/content/data/playback_store.dart';
+import '../l10n/app_localizations.dart';
 import 'package:habit_tracker_nepali/services/ad_service.dart';
 import 'package:habit_tracker_nepali/widgets/ad_banner.dart';
 
@@ -51,6 +53,8 @@ class _ReadingScreenState extends State<ReadingScreen> {
   List<_BookItem> _books = [];
   bool _loadingBooks = true;
   int? _currentIndex; // selected book
+  String? _resumeBookId; // last book read (opens where it was left)
+  String? _resumeLabel; // e.g. its chapter title
 
   // Reading session
   int _sessionMin = 25; // default session length (user adjustable)
@@ -118,11 +122,19 @@ class _ReadingScreenState extends State<ReadingScreen> {
         await ContentSyncService.instance.syncIfStale(force: true);
         rows = await repo.list(ContentKind.book);
       }
+      // The book read most recently is preselected ("continue reading").
+      final recent = await PlaybackStore.instance.watchContinue(kind: ContentKind.book, limit: 1).first;
       if (!mounted) return;
       setState(() {
         _books = rows.where((r) => r.mediaUrl != null).map(_BookItem.fromContent).toList();
         _loadingBooks = false;
-        if (_books.isNotEmpty && (_currentIndex == null || _currentIndex! >= _books.length)) {
+        final last = recent.firstOrNull;
+        _resumeLabel = last?.point.label;
+        final lastIdx = last == null ? -1 : _books.indexWhere((b) => b.id == last.item.id);
+        if (lastIdx >= 0 && _currentIndex == null) {
+          _currentIndex = lastIdx;
+          _resumeBookId = last!.item.id;
+        } else if (_books.isNotEmpty && (_currentIndex == null || _currentIndex! >= _books.length)) {
           _currentIndex = 0; // preselect first
         }
       });
@@ -134,6 +146,18 @@ class _ReadingScreenState extends State<ReadingScreen> {
     }
   }
 
+
+  /// Updates the "Continue reading" line after the reader closes.
+  Future<void> _refreshResume() async {
+    // Give the reader's final position save a moment to land.
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+    final last = (await PlaybackStore.instance.watchContinue(kind: ContentKind.book, limit: 1).first).firstOrNull;
+    if (!mounted || last == null) return;
+    setState(() {
+      _resumeBookId = last.item.id;
+      _resumeLabel = last.point.label;
+    });
+  }
 
   // ---------- Reminder save ----------
   Future<void> _saveReminders() async {
@@ -221,6 +245,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
         ))
         .whenComplete(() {
           _readerOpen = false;
+          _refreshResume();
         });
   }
 
@@ -420,6 +445,18 @@ class _ReadingScreenState extends State<ReadingScreen> {
                       style: const TextStyle(
                           fontSize: 18, fontWeight: FontWeight.w600),
                     ),
+                    if (_currentIndex != null &&
+                        _currentIndex! < _books.length &&
+                        _books[_currentIndex!].id == _resumeBookId) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        _resumeLabel == null
+                            ? AppLocalizations.of(context).continueReading
+                            : '${AppLocalizations.of(context).continueReading} · $_resumeLabel',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Theme.of(context).colorScheme.primary),
+                      ),
+                    ],
                     const SizedBox(height: 16),
 
                     // Session length selector
@@ -607,6 +644,11 @@ class _EpubReaderPageState extends State<_EpubReaderPage> {
   EpubController? _controller;
   bool _loading = true;
   String? _error;
+  ResumePoint? _resume;
+  int _totalChapters = 0;
+  Timer? _saveDebounce;
+
+  String get _id => widget.contentId ?? widget.url;
 
   @override
   void initState() {
@@ -616,8 +658,9 @@ class _EpubReaderPageState extends State<_EpubReaderPage> {
 
   Future<void> _loadEpub() async {
     try {
+      _resume = await PlaybackStore.instance.get(_id);
       // Saved on first open, so the book opens offline afterwards.
-      final bytes = await DownloadService.instance.bytesFor(widget.contentId ?? widget.url, widget.url);
+      final bytes = await DownloadService.instance.bytesFor(_id, widget.url);
       await _openFromBytes(bytes);
     } catch (e) {
       if (!mounted) return;
@@ -629,17 +672,70 @@ class _EpubReaderPageState extends State<_EpubReaderPage> {
   }
 
   Future<void> _openFromBytes(Uint8List data) async {
-    final controller = EpubController(
-      document: EpubDocument.openData(data),
-    );
+    // Opens at the saved location (EPUB CFI) — "continue where you left off".
+    final controller = EpubController(document: EpubDocument.openData(data), epubCfi: _resume?.cfi);
+    controller.currentValueListenable.addListener(_onPositionChanged);
     setState(() {
       _controller = controller;
       _loading = false;
     });
   }
 
+  void _onDocumentLoaded(EpubBook book) {
+    _totalChapters = book.Chapters?.length ?? 0;
+    final r = _resume;
+    if (r == null || r.index <= 0) return;
+    // Fallback when the CFI could not be resolved: jump to the paragraph.
+    if (r.cfi == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Future.delayed(const Duration(milliseconds: 300), () => _controller?.jumpTo(index: r.index));
+      });
+    }
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(AppLocalizations.of(context).openedWhereLeft),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
+      ));
+    }
+  }
+
+  void _onPositionChanged() {
+    _saveDebounce?.cancel();
+    _saveDebounce = Timer(const Duration(seconds: 2), _savePosition);
+  }
+
+  Future<void> _savePosition() async {
+    final c = _controller;
+    final v = c?.currentValue;
+    if (c == null || v == null) return;
+    String? cfi;
+    try {
+      cfi = c.generateEpubCfi();
+    } catch (_) {
+      cfi = null; // some books have no usable CFI: the paragraph index is kept
+    }
+    final title = v.chapter?.Title?.trim();
+    await PlaybackStore.instance.save(
+      _id,
+      ResumePoint(
+        kind: ContentKind.book,
+        // For books: chapter number / total chapters (drives the progress bar).
+        positionMs: v.chapterNumber,
+        durationMs: _totalChapters,
+        index: v.position.index,
+        cfi: cfi,
+        label: (title == null || title.isEmpty) ? null : title,
+        updatedAt: DateTime.now(),
+      ),
+    );
+  }
+
   @override
   void dispose() {
+    _saveDebounce?.cancel();
+    if (_controller?.currentValue != null) _savePosition();
+    _controller?.currentValueListenable.removeListener(_onPositionChanged);
     _controller?.dispose();
     super.dispose();
   }
@@ -670,7 +766,7 @@ class _EpubReaderPageState extends State<_EpubReaderPage> {
                   child: Text(_error!, textAlign: TextAlign.center),
                 ),
               )
-            : EpubView(controller: _controller!);
+            : EpubView(controller: _controller!, onDocumentLoaded: _onDocumentLoaded);
 
     return Scaffold(
       appBar: AppBar(

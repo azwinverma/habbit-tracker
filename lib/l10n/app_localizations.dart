@@ -1618,6 +1618,162 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'freely licensed exercise, yoga and meditation videos (PD, CC0, CC BY, CC BY-SA); author credited.'**
   String get licNoteCommonsVideo;
+
+  /// No description provided for @fullscreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Full screen'**
+  String get fullscreen;
+
+  /// No description provided for @exitFullscreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit full screen'**
+  String get exitFullscreen;
+
+  /// No description provided for @back10.
+  ///
+  /// In en, this message translates to:
+  /// **'Back 10 seconds'**
+  String get back10;
+
+  /// No description provided for @forward10.
+  ///
+  /// In en, this message translates to:
+  /// **'Forward 10 seconds'**
+  String get forward10;
+
+  /// No description provided for @playbackSpeed.
+  ///
+  /// In en, this message translates to:
+  /// **'Playback speed'**
+  String get playbackSpeed;
+
+  /// No description provided for @mute.
+  ///
+  /// In en, this message translates to:
+  /// **'Mute'**
+  String get mute;
+
+  /// No description provided for @unmute.
+  ///
+  /// In en, this message translates to:
+  /// **'Unmute'**
+  String get unmute;
+
+  /// No description provided for @resumedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Resumed at {time}'**
+  String resumedAt(String time);
+
+  /// No description provided for @startOver.
+  ///
+  /// In en, this message translates to:
+  /// **'Start over'**
+  String get startOver;
+
+  /// No description provided for @videoDemo.
+  ///
+  /// In en, this message translates to:
+  /// **'Video demo'**
+  String get videoDemo;
+
+  /// No description provided for @noVideoYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No video for this exercise yet. Follow the picture and steps below.'**
+  String get noVideoYet;
+
+  /// No description provided for @howToDoIt.
+  ///
+  /// In en, this message translates to:
+  /// **'How to do it'**
+  String get howToDoIt;
+
+  /// No description provided for @musclesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Muscles'**
+  String get musclesLabel;
+
+  /// No description provided for @equipmentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Equipment'**
+  String get equipmentLabel;
+
+  /// No description provided for @moreWithVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'More exercises with video'**
+  String get moreWithVideo;
+
+  /// No description provided for @continueTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue where you left off'**
+  String get continueTitle;
+
+  /// No description provided for @timeLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{time} left'**
+  String timeLeft(String time);
+
+  /// No description provided for @resumeAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get resumeAction;
+
+  /// No description provided for @removeFromContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from Continue'**
+  String get removeFromContinue;
+
+  /// No description provided for @openedWhereLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Opened where you left off'**
+  String get openedWhereLeft;
+
+  /// No description provided for @continueReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue reading'**
+  String get continueReading;
+
+  /// No description provided for @exLibraryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Exercise library'**
+  String get exLibraryTitle;
+
+  /// No description provided for @exWithVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'With video'**
+  String get exWithVideo;
+
+  /// No description provided for @exSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search exercises'**
+  String get exSearchHint;
+
+  /// No description provided for @exWatchHow.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch how'**
+  String get exWatchHow;
+
+  /// No description provided for @exLibraryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Exercises appear here after the first update. Connect to the internet and pull down to refresh.'**
+  String get exLibraryEmpty;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

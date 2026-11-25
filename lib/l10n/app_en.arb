@@ -510,5 +510,45 @@
   "clearDownloadsConfirm": "Remove all saved books, audio and videos from this phone? You can download them again later.",
   "autoUpdateNote": "New content is checked every time you open the app, and in the background about twice a day on Wi-Fi or mobile data.",
   "licNoteLibrivox": "public-domain audiobooks read by volunteers.",
-  "licNoteCommonsVideo": "freely licensed exercise, yoga and meditation videos (PD, CC0, CC BY, CC BY-SA); author credited."
+  "licNoteCommonsVideo": "freely licensed exercise, yoga and meditation videos (PD, CC0, CC BY, CC BY-SA); author credited.",
+  "fullscreen": "Full screen",
+  "exitFullscreen": "Exit full screen",
+  "back10": "Back 10 seconds",
+  "forward10": "Forward 10 seconds",
+  "playbackSpeed": "Playback speed",
+  "mute": "Mute",
+  "unmute": "Unmute",
+  "resumedAt": "Resumed at {time}",
+  "@resumedAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "startOver": "Start over",
+  "videoDemo": "Video demo",
+  "noVideoYet": "No video for this exercise yet. Follow the picture and steps below.",
+  "howToDoIt": "How to do it",
+  "musclesLabel": "Muscles",
+  "equipmentLabel": "Equipment",
+  "moreWithVideo": "More exercises with video",
+  "continueTitle": "Continue where you left off",
+  "timeLeft": "{time} left",
+  "@timeLeft": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "resumeAction": "Continue",
+  "removeFromContinue": "Remove from Continue",
+  "openedWhereLeft": "Opened where you left off",
+  "continueReading": "Continue reading",
+  "exLibraryTitle": "Exercise library",
+  "exWithVideo": "With video",
+  "exSearchHint": "Search exercises",
+  "exWatchHow": "Watch how",
+  "exLibraryEmpty": "Exercises appear here after the first update. Connect to the internet and pull down to refresh."
 }

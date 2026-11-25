@@ -15,8 +15,12 @@ import '../core/reminders/reminder_service.dart';
 import '../core/reminders/habit_reminder_planner.dart';
 import '../l10n/app_localizations.dart';
 
-// In-app video (free resources via YouTube)
-import 'package:webview_flutter/webview_flutter.dart';
+// Free exercise library (wger) with demo videos, cached offline
+import '../core/db/app_database.dart';
+import '../features/content/data/content_repository.dart';
+import '../features/content/data/content_sync_service.dart';
+import '../features/content/domain/content_item.dart';
+import '../features/content/presentation/exercise_detail_screen.dart';
 
 class ExerciseScreen extends StatefulWidget {
   final Habit habit; // category == HabitCategory.exercise
@@ -58,6 +62,9 @@ class _ExerciseScreenState extends State<ExerciseScreen>
   // Milestones [{title, notes}]
   List<Map<String, dynamic>> _milestones = [];
 
+  // Free exercise catalogue (for "watch how" on planned exercises)
+  List<ContentItemRow> _exercises = const [];
+
   @override
   void initState() {
     super.initState();
@@ -93,6 +100,22 @@ class _ExerciseScreenState extends State<ExerciseScreen>
     _lastShownSteps = _h.stepsToday ?? 0;
 
     _tab = TabController(length: 4, vsync: this);
+    _loadExercises();
+  }
+
+  Future<void> _loadExercises() async {
+    final rows = await ContentRepository(AppDatabase.instance).list(ContentKind.exercise);
+    if (mounted) setState(() => _exercises = rows);
+  }
+
+  /// Opens the demo (video when available) for a planned exercise name.
+  void _watch(String name) {
+    final match = ExerciseText.bestMatch(name, _exercises);
+    if (match != null) {
+      ExerciseDetailScreen.open(context, match);
+    } else {
+      _tab.animateTo(3); // not found: show the library to browse
+    }
   }
 
   @override
@@ -288,7 +311,7 @@ class _ExerciseScreenState extends State<ExerciseScreen>
       isScrollControlled: true,
       useSafeArea: true,
       showDragHandle: true,
-      builder: (_) => _ScheduleEditorSheet(day: day, initial: before),
+      builder: (_) => _ScheduleEditorSheet(day: day, initial: before, exercises: _exercises),
     );
     if (res != null) {
       _weekPlan[day] = res;
@@ -332,11 +355,11 @@ class _ExerciseScreenState extends State<ExerciseScreen>
         bottom: TabBar(
           controller: _tab,
           isScrollable: true,
-          tabs: const [
-            Tab(text: 'Overview'),
-            Tab(text: 'Reminders'),
-            Tab(text: 'Schedule'),
-            Tab(text: 'Library'),
+          tabs: [
+            const Tab(text: 'Overview'),
+            const Tab(text: 'Reminders'),
+            const Tab(text: 'Schedule'),
+            Tab(text: AppLocalizations.of(context).exLibraryTitle),
           ],
         ),
         actions: [
@@ -639,7 +662,18 @@ class _ExerciseScreenState extends State<ExerciseScreen>
                       title: Text(d),
                       subtitle: list.isEmpty
                           ? const Text('No exercises yet')
-                          : Text(list.map((e) => e['name']).join(', ')),
+                          : Padding(
+                              padding: const EdgeInsets.only(top: 6),
+                              child: Wrap(spacing: 6, runSpacing: 6, children: [
+                                for (final e in list)
+                                  ActionChip(
+                                    avatar: const Icon(Icons.play_circle_outline_rounded, size: 18),
+                                    label: Text(e['name'] ?? ''),
+                                    tooltip: AppLocalizations.of(context).exWatchHow,
+                                    onPressed: () => _watch(e['name'] ?? ''),
+                                  ),
+                              ]),
+                            ),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => _openScheduleEditor(d),
                     ),
@@ -653,37 +687,8 @@ class _ExerciseScreenState extends State<ExerciseScreen>
     );
   }
 
-  // ---- Tab: Library (free videos) ----
-  Widget _buildLibrary() {
-    final items = _videoLibraryItems;
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: items.length,
-      itemBuilder: (_, i) {
-        final v = items[i];
-        if(i==0){
-          return Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12),
-              child: AdBanner(placement: 'home_bottom', padding: EdgeInsets.only(bottom: 8)),
-            );
-        }
-        return Card(
-          child: ListTile(
-            leading: const Icon(Icons.play_circle),
-            title: Text(v.title),
-            subtitle: Text('${v.bodyPart} • ${v.level}'),
-            trailing: const Icon(Icons.open_in_new),
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => _VideoPage(url: v.url, title: v.title),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
+  // ---- Tab: Library (free exercises with demo videos) ----
+  Widget _buildLibrary() => _ExerciseLibrary(onChanged: _loadExercises);
 
   // ---------- utils ----------
 
@@ -760,7 +765,8 @@ class _ExerciseScreenState extends State<ExerciseScreen>
 class _ScheduleEditorSheet extends StatefulWidget {
   final String day;
   final List<Map<String, String>> initial;
-  const _ScheduleEditorSheet({required this.day, required this.initial});
+  final List<ContentItemRow> exercises;
+  const _ScheduleEditorSheet({required this.day, required this.initial, this.exercises = const []});
 
   @override
   State<_ScheduleEditorSheet> createState() => _ScheduleEditorSheetState();
@@ -823,10 +829,20 @@ class _ScheduleEditorSheetState extends State<_ScheduleEditorSheet> {
                   itemBuilder: (_, i) {
                     final ex = catalog[i];
                     final already = _list.any((e) => e['name'] == ex);
+                    final demo = ExerciseText.bestMatch(ex, widget.exercises);
                     return ListTile(
                       leading: Icon(already ? Icons.check_circle : Icons.add_circle_outline),
                       title: Text(ex),
                       subtitle: Text('$_bodyPart • $_level'),
+                      trailing: demo == null
+                          ? null
+                          : IconButton(
+                              tooltip: AppLocalizations.of(context).exWatchHow,
+                              icon: Icon(demo.mediaFormat == 'video'
+                                  ? Icons.play_circle_fill_rounded
+                                  : Icons.image_outlined),
+                              onPressed: () => ExerciseDetailScreen.open(context, demo),
+                            ),
                       onTap: () {
                         if (already) {
                           _list.removeWhere((e) => e['name'] == ex);
@@ -853,113 +869,139 @@ class _ScheduleEditorSheetState extends State<_ScheduleEditorSheet> {
   }
 }
 
-// ================== Video Library (free YT) ==================
-class _VideoItem {
-  final String title;
-  final String url; // YouTube link
-  final String bodyPart;
-  final String level;
-  const _VideoItem(
-      {required this.title, required this.url, required this.bodyPart, required this.level});
-}
-
-final List<_VideoItem> _videoLibraryItems = [
-  // Chest
-  _VideoItem(
-    title: 'Beginner Chest Workout (No Equipment)',
-    url: 'https://www.youtube.com/watch?v=IODxDxX7oi4',
-    bodyPart: 'Chest',
-    level: 'Beginner',
-  ),
-  _VideoItem(
-    title: 'Chest Workout at Gym (Intermediate)',
-    url: 'https://www.youtube.com/watch?v=rT7DgCr-3pg',
-    bodyPart: 'Chest',
-    level: 'Mild',
-  ),
-  // Back
-  _VideoItem(
-    title: 'Beginner Back Workout',
-    url: 'https://www.youtube.com/watch?v=UoC_O3HzsH0',
-    bodyPart: 'Back',
-    level: 'Beginner',
-  ),
-  _VideoItem(
-    title: 'Complete Back Day (Advanced)',
-    url: 'https://www.youtube.com/watch?v=GZbfZ033f74',
-    bodyPart: 'Back',
-    level: 'Pro',
-  ),
-  // Legs
-  _VideoItem(
-    title: '20-Min Leg Workout at Home',
-    url: 'https://www.youtube.com/watch?v=2pLT-olgUJs',
-    bodyPart: 'Legs',
-    level: 'Beginner',
-  ),
-  _VideoItem(
-    title: 'Leg Day at the Gym',
-    url: 'https://www.youtube.com/watch?v=2PNqBPi4XRM',
-    bodyPart: 'Legs',
-    level: 'Mild',
-  ),
-  // Shoulders
-  _VideoItem(
-    title: 'Shoulder Workout (Dumbbells)',
-    url: 'https://www.youtube.com/watch?v=8d2mF-8Cw2o',
-    bodyPart: 'Shoulders',
-    level: 'Mild',
-  ),
-  // Arms
-  _VideoItem(
-    title: 'Arms & Biceps (No Equipment)',
-    url: 'https://www.youtube.com/watch?v=2-MBfn8XjIU',
-    bodyPart: 'Arms',
-    level: 'Beginner',
-  ),
-  // Abs
-  _VideoItem(
-    title: '10-Min Ab Workout',
-    url: 'https://www.youtube.com/watch?v=1919eTCoESo',
-    bodyPart: 'Abdomen',
-    level: 'Beginner',
-  ),
-];
-
-class _VideoPage extends StatefulWidget {
-  final String url;
-  final String title;
-  const _VideoPage({required this.url, required this.title});
+// ================== Exercise library (wger) ==================
+/// Searchable exercise catalogue; "With video" (on by default) shows the
+/// exercises that have a demo video. Tapping opens the exercise page with
+/// the video on top.
+class _ExerciseLibrary extends StatefulWidget {
+  const _ExerciseLibrary({required this.onChanged});
+  final VoidCallback onChanged;
 
   @override
-  State<_VideoPage> createState() => _VideoPageState();
+  State<_ExerciseLibrary> createState() => _ExerciseLibraryState();
 }
 
-class _VideoPageState extends State<_VideoPage> {
-  late final WebViewController _c;
-  bool _loading = true;
+class _ExerciseLibraryState extends State<_ExerciseLibrary> with AutomaticKeepAliveClientMixin {
+  final _repo = ContentRepository(AppDatabase.instance);
+  String _query = '';
+  bool _videoOnly = true;
+  String? _group;
+  Timer? _debounce;
+  late Stream<List<ContentItemRow>> _stream = _repo.watch(ContentKind.exercise);
 
   @override
-  void initState() {
-    super.initState();
-    _c = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(
-        NavigationDelegate(onPageFinished: (_) => setState(() => _loading = false)),
-      )
-      ..loadRequest(Uri.parse(widget.url));
+  bool get wantKeepAlive => true;
+
+  void _setQuery(String q) {
+    setState(() {
+      _query = q;
+      _stream = _repo.watch(ContentKind.exercise, search: q.isEmpty ? null : q);
+    });
+  }
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _refresh() async {
+    await ContentSyncService.instance.syncIfStale(force: true);
+    widget.onChanged();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(widget.title, overflow: TextOverflow.ellipsis)),
-      body: Stack(
-        children: [
-          WebViewWidget(controller: _c),
-          if (_loading) const Center(child: CircularProgressIndicator()),
-        ],
-      ),
+    super.build(context);
+    final l = AppLocalizations.of(context);
+    return StreamBuilder<List<ContentItemRow>>(
+      stream: _stream,
+      builder: (context, snap) {
+        final all = snap.data ?? const <ContentItemRow>[];
+        final groups = {for (final e in all) if (e.tags.isNotEmpty) e.tags.first}.toList()..sort();
+        final list = all
+            .where((e) => !_videoOnly || e.mediaFormat == 'video')
+            .where((e) => _group == null || e.tags.firstOrNull == _group)
+            .toList()
+          // Videos first, then by name.
+          ..sort((a, b) {
+            final v = (b.mediaFormat == 'video' ? 1 : 0) - (a.mediaFormat == 'video' ? 1 : 0);
+            return v != 0 ? v : a.title.compareTo(b.title);
+          });
+        return RefreshIndicator(
+          onRefresh: _refresh,
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    TextField(
+                      decoration: InputDecoration(
+                        hintText: l.exSearchHint,
+                        prefixIcon: const Icon(Icons.search_rounded),
+                        border: const OutlineInputBorder(),
+                        isDense: true,
+                      ),
+                      onChanged: (v) {
+                        _debounce?.cancel();
+                        _debounce = Timer(const Duration(milliseconds: 250), () => _setQuery(v.trim()));
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(children: [
+                        FilterChip(
+                          avatar: const Icon(Icons.play_circle_outline_rounded, size: 18),
+                          label: Text(l.exWithVideo),
+                          selected: _videoOnly,
+                          showCheckmark: false,
+                          onSelected: (v) => setState(() => _videoOnly = v),
+                        ),
+                        for (final g in groups) ...[
+                          const SizedBox(width: 6),
+                          ChoiceChip(
+                            label: Text(g),
+                            selected: _group == g,
+                            onSelected: (v) => setState(() => _group = v ? g : null),
+                          ),
+                        ],
+                      ]),
+                    ),
+                  ]),
+                ),
+              ),
+              if (snap.hasData && list.isEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Text(all.isEmpty && _query.isEmpty ? l.exLibraryEmpty : l.nothingMatches(_query),
+                        textAlign: TextAlign.center),
+                  ),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                  sliver: SliverGrid.builder(
+                    gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                      maxCrossAxisExtent: 220,
+                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 12,
+                      childAspectRatio: 0.95,
+                    ),
+                    itemCount: list.length,
+                    itemBuilder: (_, i) => ExerciseCard(
+                      item: list[i],
+                      onTap: () => ExerciseDetailScreen.open(context, list[i]),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

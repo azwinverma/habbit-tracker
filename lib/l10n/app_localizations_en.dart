@@ -833,4 +833,86 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get licNoteCommonsVideo => 'freely licensed exercise, yoga and meditation videos (PD, CC0, CC BY, CC BY-SA); author credited.';
+
+  @override
+  String get fullscreen => 'Full screen';
+
+  @override
+  String get exitFullscreen => 'Exit full screen';
+
+  @override
+  String get back10 => 'Back 10 seconds';
+
+  @override
+  String get forward10 => 'Forward 10 seconds';
+
+  @override
+  String get playbackSpeed => 'Playback speed';
+
+  @override
+  String get mute => 'Mute';
+
+  @override
+  String get unmute => 'Unmute';
+
+  @override
+  String resumedAt(String time) {
+    return 'Resumed at $time';
+  }
+
+  @override
+  String get startOver => 'Start over';
+
+  @override
+  String get videoDemo => 'Video demo';
+
+  @override
+  String get noVideoYet => 'No video for this exercise yet. Follow the picture and steps below.';
+
+  @override
+  String get howToDoIt => 'How to do it';
+
+  @override
+  String get musclesLabel => 'Muscles';
+
+  @override
+  String get equipmentLabel => 'Equipment';
+
+  @override
+  String get moreWithVideo => 'More exercises with video';
+
+  @override
+  String get continueTitle => 'Continue where you left off';
+
+  @override
+  String timeLeft(String time) {
+    return '$time left';
+  }
+
+  @override
+  String get resumeAction => 'Continue';
+
+  @override
+  String get removeFromContinue => 'Remove from Continue';
+
+  @override
+  String get openedWhereLeft => 'Opened where you left off';
+
+  @override
+  String get continueReading => 'Continue reading';
+
+  @override
+  String get exLibraryTitle => 'Exercise library';
+
+  @override
+  String get exWithVideo => 'With video';
+
+  @override
+  String get exSearchHint => 'Search exercises';
+
+  @override
+  String get exWatchHow => 'Watch how';
+
+  @override
+  String get exLibraryEmpty => 'Exercises appear here after the first update. Connect to the internet and pull down to refresh.';
 }
