@@ -9,6 +9,7 @@ import '../data/content_repository.dart';
 import '../domain/content_item.dart';
 import 'discover_screen.dart' show ContentCredits, DownloadButton;
 import 'dm_video_player.dart';
+import '../../../design/backdrop.dart';
 
 /// One exercise: demo video pinned at the top (play / pause / skip / speed /
 /// loop / full screen), then how to do it, muscles, equipment and more
@@ -57,7 +58,8 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
     final theme = Theme.of(context);
     final parts = ExerciseText.split(it.description);
 
-    return Scaffold(
+    return BrandBackdrop(tint: context.dm.movement.container, glow: context.dm.movement.accent, child: Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(title: Text(it.title, maxLines: 1, overflow: TextOverflow.ellipsis)),
       body: Column(children: [
         // Pinned media: stays visible while the steps scroll underneath.
@@ -139,7 +141,7 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
           ),
         ),
       ]),
-    );
+    ));
   }
 }
 

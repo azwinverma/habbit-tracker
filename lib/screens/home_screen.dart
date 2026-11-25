@@ -20,6 +20,8 @@ import '../services/quote_service.dart';
 import '../services/storage_service.dart';
 import '../widgets/ad_banner.dart';
 import '../widgets/habit_tile.dart';
+import '../design/backdrop.dart';
+import '../design/motion.dart';
 
 /// Today: greeting, progress ring, category snapshot (bento), what's next,
 /// habits with one-tap completion, and a thought for the day.
@@ -110,7 +112,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final newCount = ref.watch(newContentCountProvider).valueOrNull ?? 0;
     final date = MaterialLocalizations.of(context).formatFullDate(now);
 
-    return Scaffold(
+    return BrandBackdrop(ridge: true, child: Scaffold(
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         bottom: false,
         child: RefreshIndicator(
@@ -185,7 +188,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 
   List<Widget> _dashboard(BuildContext context, AppLocalizations l, TodaySummary t, List<Habit> habits) {
@@ -193,18 +196,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return [
       SliverPadding(
         padding: const EdgeInsets.fromLTRB(Space.page, Space.sm, Space.page, 0),
-        sliver: SliverToBoxAdapter(child: _HeroProgress(t: t)),
+        sliver: SliverToBoxAdapter(child: Entrance(index: 0, child: _HeroProgress(t: t))),
       ),
       SliverPadding(
         padding: const EdgeInsets.fromLTRB(Space.page, Space.md, Space.page, 0),
-        sliver: SliverToBoxAdapter(child: _Bento(t: t)),
+        sliver: SliverToBoxAdapter(child: Entrance(index: 1, child: _Bento(t: t))),
       ),
       SliverToBoxAdapter(
         child: SectionHeader(l.upNextToday, action: l.seeAll, onAction: () => context.go('/plan')),
       ),
       SliverPadding(
         padding: const EdgeInsets.symmetric(horizontal: Space.page),
-        sliver: SliverToBoxAdapter(child: _UpNext(t: t)),
+        sliver: SliverToBoxAdapter(child: Entrance(index: 2, child: _UpNext(t: t))),
       ),
       SliverToBoxAdapter(child: SectionHeader(l.yourHabits)),
       SliverPadding(
@@ -214,21 +217,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           separatorBuilder: (_, __) => const SizedBox(height: Space.sm),
           itemBuilder: (c, i) {
             final h = habits[i];
-            return HabitTile(
+            return Entrance(index: 3 + i, child: HabitTile(
               habit: h,
               doneToday: TodaySummary.isDoneToday(h, t.now),
               onToggleComplete: () => HabitFlows.toggleToday(h),
               onOpen: h.category == HabitCategory.generic ? null : () => HabitFlows.openHabit(context, h),
               onEdit: () => HabitFlows.editGeneric(context, h),
               onDelete: () => HabitFlows.delete(h),
-            );
+            ));
           },
         ),
       ),
       SliverToBoxAdapter(child: SectionHeader(l.thoughtForToday)),
       SliverPadding(
         padding: const EdgeInsets.symmetric(horizontal: Space.page),
-        sliver: SliverToBoxAdapter(child: _QuoteCard(quote: quote)),
+        sliver: SliverToBoxAdapter(child: Entrance(index: 6, child: _QuoteCard(quote: quote))),
       ),
       // Ads stay below the user's own content (never between core tasks).
       const SliverPadding(
@@ -258,7 +261,13 @@ class _HeroProgress extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(Space.xl - 4),
       decoration: BoxDecoration(
-        color: s.primaryContainer,
+        // The one featured surface: a soft tonal gradient within the brand
+        // container colour (text contrast stays AA, see contrast_test).
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [s.primaryContainer, heroGradientEnd(s)],
+        ),
         borderRadius: BorderRadius.circular(Radii.lg + 4),
       ),
       child: Row(

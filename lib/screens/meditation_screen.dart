@@ -22,6 +22,8 @@ import '../features/content/domain/content_item.dart';
 
 // Reminders
 import '../core/reminders/reminder_service.dart';
+import '../design/backdrop.dart';
+import '../app/theme.dart';
 
 class MeditationScreen extends StatefulWidget {
   final Habit habit; // category == HabitCategory.meditation
@@ -418,7 +420,8 @@ class _MeditationScreenState extends State<MeditationScreen> {
         ? _tracks[_currentIndex!].name
         : 'No sound selected';
 
-    return Scaffold(
+    return BrandBackdrop(tint: context.dm.mind.container, glow: context.dm.mind.accent, child: Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Meditation'),
         centerTitle: true,
@@ -570,7 +573,7 @@ class _MeditationScreenState extends State<MeditationScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 }
 

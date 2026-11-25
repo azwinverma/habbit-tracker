@@ -10,6 +10,8 @@ import '../content/data/download_service.dart';
 import '../content/presentation/discover_screen.dart' show fmtBytes;
 import '../../app/theme.dart';
 import '../../design/components.dart';
+import '../../design/backdrop.dart';
+import '../../design/motion.dart';
 
 /// You: appearance, reminders, content sources & licences, privacy.
 class ProfileScreen extends ConsumerWidget {
@@ -39,14 +41,15 @@ class ProfileScreen extends ConsumerWidget {
       return l.daysAgo(diff.inDays);
     }
 
-    return Scaffold(
+    return BrandBackdrop(child: Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(title: Text(l.youTitle)),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 720),
           child: ListView(
             padding: const EdgeInsets.fromLTRB(Space.page, Space.sm, Space.page, Space.xxl),
-            children: [
+            children: Entrance.list([
               _BrandHeader(l: l),
               section(l.language),
               SegmentedButton<String>(
@@ -211,11 +214,11 @@ class ProfileScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-            ],
+            ]),
           ),
         ),
       ),
-    );
+    ));
   }
 
   static IconData _iconFor(ContentProvider p) => switch (p.id) {

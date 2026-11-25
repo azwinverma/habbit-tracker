@@ -16,7 +16,7 @@ abstract final class BrandColors {
   static const backgroundLight = Color(0xFFF7FAF8);
   static const surfaceLight = Color(0xFFFFFFFF);
   static const ink = Color(0xFF1B2B2A);
-  static const muted = Color(0xFF647572);
+  static const muted = Color(0xFF5A6B68); // AA (4.5:1) on every tinted backdrop wash
 
   static const backgroundDark = Color(0xFF101A1A);
   static const surfaceDark = Color(0xFF1A2828);
@@ -42,6 +42,9 @@ abstract final class Radii {
   static const lg = 24.0;
   static const pill = 999.0;
 }
+
+/// End colour of the Today hero gradient (container nudged toward primary).
+Color heroGradientEnd(ColorScheme s) => Color.lerp(s.primaryContainer, s.primary, 0.14)!;
 
 abstract final class Motion {
   static const short = Duration(milliseconds: 200);
@@ -225,12 +228,15 @@ ThemeData buildTheme(Brightness brightness) {
     visualDensity: VisualDensity.standard,
     materialTapTargetSize: MaterialTapTargetSize.padded,
     splashFactory: InkSparkle.splashFactory,
+    // iOS-style slide with edge swipe-back on every platform.
     pageTransitionsTheme: const PageTransitionsTheme(builders: {
-      TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
+      TargetPlatform.android: CupertinoPageTransitionsBuilder(),
       TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+      TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
     }),
     appBarTheme: AppBarTheme(
-      backgroundColor: s.surface,
+      // Transparent so the brand backdrop runs behind the title.
+      backgroundColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       scrolledUnderElevation: 0,
       elevation: 0,

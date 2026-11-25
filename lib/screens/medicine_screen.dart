@@ -12,6 +12,8 @@ import '../models/habit.dart';
 import '../services/native_alarm.dart';
 import '../services/storage_service.dart';
 import '../widgets/reminder_schedule_editor.dart';
+import '../design/backdrop.dart';
+import '../app/theme.dart';
 
 /// Medicine: course details, dose times, and today's taken/skipped log.
 ///
@@ -158,7 +160,8 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
     // The saved copy drives today's dose list (staged edits apply on Save).
     final saved = ref.watch(habitsProvider).valueOrNull?.where((x) => x.id == _h.id).firstOrNull;
 
-    return Scaffold(
+    return BrandBackdrop(tint: context.dm.medicine.container, glow: context.dm.medicine.accent, child: Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: Text(l.medTitle),
         actions: [
@@ -255,7 +258,7 @@ class _MedicineScreenState extends ConsumerState<MedicineScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 }
 

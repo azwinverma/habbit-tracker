@@ -10,6 +10,8 @@ import '../habits/presentation/habit_flows.dart';
 import '../../l10n/app_localizations.dart';
 import '../../app/theme.dart';
 import '../../design/components.dart';
+import '../../design/backdrop.dart';
+import '../../design/motion.dart';
 
 /// Plan: what's coming up, and whether reminders can actually be delivered
 /// ("Reminder health", blueprint §7).
@@ -20,7 +22,8 @@ class PlanScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final habits = ref.watch(habitsProvider);
     final l = AppLocalizations.of(context);
-    return Scaffold(
+    return BrandBackdrop(child: Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(title: Text(l.planTitle)),
       body: habits.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -35,17 +38,17 @@ class PlanScreen extends ConsumerWidget {
               constraints: const BoxConstraints(maxWidth: 840),
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(Space.page, Space.sm, Space.page, Space.xxl),
-                children: [
+                children: Entrance.list([
                   const _ReminderHealthCard(),
                   const SizedBox(height: Space.xl),
                   _Upcoming(habits: list),
-                ],
+                ]),
               ),
             ),
           ),
         ),
       ),
-    );
+    ));
   }
 }
 

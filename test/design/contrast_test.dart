@@ -33,6 +33,13 @@ void main() {
         'primary (text buttons) / background': (s.primary, s.surface),
         'onPrimary / primary (filled buttons)': (s.onPrimary, s.primary),
         'onPrimaryContainer / primaryContainer (hero)': (s.onPrimaryContainer, s.primaryContainer),
+        'onPrimaryContainer / hero gradient end': (s.onPrimaryContainer, heroGradientEnd(s)),
+        // Headings and labels sit directly on the backdrop wash (worst case:
+        // the full-strength tint at the very top).
+        'onSurface / brand wash': (s.onSurface, b == Brightness.dark ? const Color(0xFF123B38) : BrandColors.mint),
+        'muted text / brand wash': (s.onSurfaceVariant, b == Brightness.dark ? const Color(0xFF123B38) : BrandColors.mint),
+        for (final (n, p) in [('water', dm.water), ('medicine', dm.medicine), ('mind', dm.mind), ('reading', dm.reading), ('movement', dm.movement)])
+          'muted text / $n wash': (s.onSurfaceVariant, p.container),
         'onTertiaryContainer / tertiaryContainer (quote)': (s.onTertiaryContainer, s.tertiaryContainer),
         'onSecondaryContainer / secondaryContainer (chips)': (s.onSecondaryContainer, s.secondaryContainer),
         'error / background': (s.error, s.surface),

@@ -4,7 +4,7 @@ Source of truth: `lib/app/theme.dart` (tokens + theme) and `lib/design/component
 
 ## Principles
 - **One coherent product.** Screens compose shared components; no ad-hoc colours or radii.
-- **Calm, not busy.** Soft tinted surfaces, hairline borders, no gradients, no shadows on cards.
+- **Calm, not busy.** Soft tinted surfaces, hairline borders, no shadows on cards. Gradients only as quiet tonal washes behind content (`BrandBackdrop`: Mint or the category tint fading into the background, faint glows, a barely-visible Himalayan ridge on Today / onboarding / splash) and on the one featured surface (Today hero, within the primary container colour). Never on cards, buttons or text.
 - **Real data only.** Every number on Today/Insights comes from the user's own logs.
 - **Kind copy.** "Keep going — 3 left today", never "failed" or "broken streak".
 - **Accessible by default.** WCAG AA text contrast, 3:1 for graphics, 48 dp targets, semantics on custom controls, reduced-motion respected.
@@ -16,12 +16,12 @@ Source of truth: `lib/app/theme.dart` (tokens + theme) and `lib/design/component
 | Soft surface | Mint `#DCF3E9` (primaryContainer) |
 | Celebrate | Coral `#F4A58A` (badges, streak flame — never text) |
 | Background / card | `#F7FAF8` / `#FFFFFF`; dark `#101A1A` / `#1A2828` |
-| Ink / muted | `#1B2B2A` / `#647572` |
+| Ink / muted | `#1B2B2A` / `#5A6B68` (darkened from #647572 so it stays AA on every tinted wash) |
 | Category accents | medicine coral-red, water sky, mind lavender, reading amber, movement green, habit teal — each with a container + onContainer (`DmColors`) |
 | Status | `DmColors.success`, `.warning`, `ColorScheme.error` (not category colours) |
 | Spacing | 4 · 8 · 12 · 16 · 24 · 32; page gutter 20 (`Space`) |
 | Radii | 12 · 16 · 24 · pill (`Radii`); hero cards 28 |
-| Motion | 200 ms / 450 ms, easeOutCubic; zero when the OS disables animations (`Motion.of`) |
+| Motion | 200 ms / 450 ms, easeOutCubic; zero when the OS disables animations (`Motion.of`). iOS-style slide + edge swipe-back page transitions on all platforms; bouncy (elastic) scrolling app-wide (`DmScrollBehavior`); cards cascade in (`Entrance`, 55 ms stagger); tappable cards press in to 97 % (`Pressable`); bottom tabs fade through (`TabFadeThrough`) |
 
 Contrast for every text and graphic pairing in both themes is asserted in `test/design/contrast_test.dart` (66 checks).
 

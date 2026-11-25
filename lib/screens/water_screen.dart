@@ -4,6 +4,8 @@ import 'package:habit_tracker_nepali/services/ad_service.dart';
 import '../models/habit.dart';
 import '../services/storage_service.dart';
 import '../core/reminders/reminder_service.dart';
+import '../design/backdrop.dart';
+import '../app/theme.dart';
 
 class WaterScreen extends StatefulWidget {
   final Habit habit; // pass an unsaved or existing water habit
@@ -170,7 +172,8 @@ class _WaterScreenState extends State<WaterScreen> {
     final target = _h.waterTarget ?? 8;
     final pct = (done / (target == 0 ? 1 : target)).clamp(0, 1.0);
 
-    return Scaffold(
+    return BrandBackdrop(tint: context.dm.water.container, glow: context.dm.water.accent, child: Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Water Intake'),
         actions: [
@@ -296,7 +299,7 @@ class _WaterScreenState extends State<WaterScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 }
 

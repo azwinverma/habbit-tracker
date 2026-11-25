@@ -29,6 +29,8 @@ import 'package:epub_view/epub_view.dart';
 
 // WebView (fallback for non-EPUB URLs)
 import 'package:webview_flutter/webview_flutter.dart';
+import '../design/backdrop.dart';
+import '../app/theme.dart';
 
 class ReadingScreen extends StatefulWidget {
   final Habit habit; // category == HabitCategory.reading
@@ -409,7 +411,8 @@ class _ReadingScreenState extends State<ReadingScreen> {
             ? _books[_currentIndex!].name
             : 'No book selected';
 
-    return Scaffold(
+    return BrandBackdrop(tint: context.dm.reading.container, glow: context.dm.reading.accent, child: Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Reading'),
         centerTitle: true,
@@ -585,7 +588,7 @@ class _ReadingScreenState extends State<ReadingScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 }
 

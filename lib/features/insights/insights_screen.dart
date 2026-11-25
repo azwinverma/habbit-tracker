@@ -8,6 +8,8 @@ import '../../l10n/app_localizations.dart';
 import '../../app/theme.dart';
 import '../../design/components.dart';
 import '../../models/habit.dart';
+import '../../design/backdrop.dart';
+import '../../design/motion.dart';
 
 /// Insights: the last 7 days from the local history. Statements stay modest
 /// and factual ("4 of 7 days") — no health claims (blueprint §3.5).
@@ -26,7 +28,8 @@ class InsightsScreen extends ConsumerWidget {
       for (var i = days - 1; i >= 0; i--) HabitRepository.ymd(DateTime(now.year, now.month, now.day - i)),
     ];
 
-    return Scaffold(
+    return BrandBackdrop(child: Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(title: Text(l.insightsTitle)),
       body: totals.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -59,7 +62,7 @@ class InsightsScreen extends ConsumerWidget {
                 Wrap(
                   spacing: Space.md,
                   runSpacing: Space.md,
-                  children: [for (final card in cards) SizedBox(width: w, child: card)],
+                  children: [for (var i = 0; i < cards.length; i++) SizedBox(width: w, child: Entrance(index: i, child: cards[i]))],
                 ),
                 const SizedBox(height: Space.lg),
                 Text(l.historyNote, style: theme.textTheme.bodySmall),
@@ -68,7 +71,7 @@ class InsightsScreen extends ConsumerWidget {
           });
         },
       ),
-    );
+    ));
   }
 
   static List<int> _series(Map<String, int>? byDay, List<String> keys) =>

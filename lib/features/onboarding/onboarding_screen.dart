@@ -8,6 +8,7 @@ import '../../l10n/app_localizations.dart';
 import '../../services/storage_service.dart';
 import '../../widgets/reminder_schedule_editor.dart';
 import 'onboarding_logic.dart';
+import '../../design/backdrop.dart';
 
 /// First-run flow: welcome + language → goals → 1–3 starter habits → privacy.
 /// Skippable at every step; no account; notification permission is asked only
@@ -82,8 +83,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    return Scaffold(
+    return BrandBackdrop(ridge: true, child: Scaffold(
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         child: Column(
           children: [
@@ -155,8 +156,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ],
         ),
       ),
-      backgroundColor: theme.colorScheme.surface,
-    );
+    ));
   }
 }
 

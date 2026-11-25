@@ -21,6 +21,8 @@ import '../features/content/data/content_repository.dart';
 import '../features/content/data/content_sync_service.dart';
 import '../features/content/domain/content_item.dart';
 import '../features/content/presentation/exercise_detail_screen.dart';
+import '../design/backdrop.dart';
+import '../app/theme.dart';
 
 class ExerciseScreen extends StatefulWidget {
   final Habit habit; // category == HabitCategory.exercise
@@ -349,7 +351,8 @@ class _ExerciseScreenState extends State<ExerciseScreen>
     final todayMin = _h.exerciseTodayMin ?? 0;
     final progress = (todayMin / (goalMin == 0 ? 1 : goalMin)).clamp(0, 1.0);
 
-    return Scaffold(
+    return BrandBackdrop(tint: context.dm.movement.container, glow: context.dm.movement.accent, child: Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Exercise'),
         bottom: TabBar(
@@ -380,7 +383,7 @@ class _ExerciseScreenState extends State<ExerciseScreen>
           _buildLibrary(),
         ],
       ),
-    );
+    ));
   }
 
   // ---- Tab: Overview ----

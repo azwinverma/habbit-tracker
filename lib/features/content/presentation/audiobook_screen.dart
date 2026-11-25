@@ -14,6 +14,7 @@ import '../data/download_service.dart';
 import '../data/playback_store.dart';
 import '../domain/content_item.dart';
 import '../data/providers/archive_audiobook_provider.dart';
+import '../../../design/backdrop.dart';
 
 /// Public-domain audiobook player (LibriVox). Chapters come from the
 /// Internet Archive the first time and are cached; saved chapters play
@@ -176,7 +177,8 @@ class _AudiobookScreenState extends State<AudiobookScreen> {
     final chapters = _chapters;
     final allSaved = chapters != null && chapters.every((c) => _saved.contains(c.url));
 
-    return Scaffold(
+    return BrandBackdrop(tint: context.dm.reading.container, glow: context.dm.reading.accent, child: Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(title: Text(l.tabAudiobooks)),
       body: _error != null
           ? EmptyState(icon: Icons.wifi_off_rounded, title: l.couldNotPlay)
@@ -247,7 +249,7 @@ class _AudiobookScreenState extends State<AudiobookScreen> {
                     Text('${it.attribution ?? ''} · ${it.license}', style: theme.textTheme.bodySmall),
                   ],
                 ),
-    );
+    ));
   }
 }
 

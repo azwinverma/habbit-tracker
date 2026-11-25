@@ -7,6 +7,7 @@ import '../l10n/app_localizations.dart';
 import 'providers.dart';
 import 'router.dart';
 import 'theme.dart';
+import '../design/motion.dart';
 
 class HabitApp extends ConsumerStatefulWidget {
   const HabitApp({super.key});
@@ -22,6 +23,7 @@ class _HabitAppState extends ConsumerState<HabitApp> {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
+      scrollBehavior: const DmScrollBehavior(),
       onGenerateTitle: (c) => AppLocalizations.of(c).appTitle,
       locale: ref.watch(localeProvider),
       supportedLocales: AppLocalizations.supportedLocales,

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../app/theme.dart';
 import '../models/habit.dart';
+import 'motion.dart';
 
 /// Shared DailyMantra UI components. Screens compose these instead of
 /// styling widgets ad hoc, so everything reads as one product.
@@ -11,22 +12,22 @@ import '../models/habit.dart';
 // ------------------------------------------------------------------ category
 
 CategoryPalette paletteFor(HabitCategory c, DmColors dm) => switch (c) {
-      HabitCategory.medicine => dm.medicine,
-      HabitCategory.water => dm.water,
-      HabitCategory.meditation => dm.mind,
-      HabitCategory.reading => dm.reading,
-      HabitCategory.exercise => dm.movement,
-      HabitCategory.generic => dm.habit,
-    };
+  HabitCategory.medicine => dm.medicine,
+  HabitCategory.water => dm.water,
+  HabitCategory.meditation => dm.mind,
+  HabitCategory.reading => dm.reading,
+  HabitCategory.exercise => dm.movement,
+  HabitCategory.generic => dm.habit,
+};
 
 IconData iconFor(HabitCategory c) => switch (c) {
-      HabitCategory.medicine => Icons.medication_rounded,
-      HabitCategory.water => Icons.water_drop_rounded,
-      HabitCategory.meditation => Icons.self_improvement_rounded,
-      HabitCategory.reading => Icons.auto_stories_rounded,
-      HabitCategory.exercise => Icons.directions_run_rounded,
-      HabitCategory.generic => Icons.task_alt_rounded,
-    };
+  HabitCategory.medicine => Icons.medication_rounded,
+  HabitCategory.water => Icons.water_drop_rounded,
+  HabitCategory.meditation => Icons.self_improvement_rounded,
+  HabitCategory.reading => Icons.auto_stories_rounded,
+  HabitCategory.exercise => Icons.directions_run_rounded,
+  HabitCategory.generic => Icons.task_alt_rounded,
+};
 
 /// Rounded-square icon on a soft category tint.
 class CategoryBadge extends StatelessWidget {
@@ -37,14 +38,11 @@ class CategoryBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: palette.container,
-          borderRadius: BorderRadius.circular(size * 0.32),
-        ),
-        child: Icon(icon, color: palette.accent, size: size * 0.52),
-      );
+    width: size,
+    height: size,
+    decoration: BoxDecoration(color: palette.container, borderRadius: BorderRadius.circular(size * 0.32)),
+    child: Icon(icon, color: palette.accent, size: size * 0.52),
+  );
 }
 
 // ------------------------------------------------------------------ surfaces
@@ -67,12 +65,12 @@ class SurfaceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final card = Card(
-      color: color,
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(padding: padding, child: child),
+    final card = Pressable(
+      enabled: onTap != null,
+      child: Card(
+        color: color,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(onTap: onTap, child: Padding(padding: padding, child: child)),
       ),
     );
     return semanticLabel == null
@@ -90,19 +88,14 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.fromLTRB(Space.page, Space.xl, Space.sm, Space.sm),
-        child: Row(
-          children: [
-            Expanded(
-              child: Semantics(
-                header: true,
-                child: Text(title, style: Theme.of(context).textTheme.titleLarge),
-              ),
-            ),
-            if (action != null) TextButton(onPressed: onAction, child: Text(action!)),
-          ],
-        ),
-      );
+    padding: const EdgeInsets.fromLTRB(Space.page, Space.xl, Space.sm, Space.sm),
+    child: Row(
+      children: [
+        Expanded(child: Semantics(header: true, child: Text(title, style: Theme.of(context).textTheme.titleLarge))),
+        if (action != null) TextButton(onPressed: onAction, child: Text(action!)),
+      ],
+    ),
+  );
 }
 
 // ------------------------------------------------------------------ progress
@@ -143,10 +136,11 @@ class ProgressRing extends StatelessWidget {
           tween: Tween(end: v),
           duration: Motion.of(context, Motion.medium),
           curve: Motion.curve,
-          builder: (context, a, child) => CustomPaint(
-            painter: _RingPainter(a, stroke, color ?? s.primary, trackColor ?? s.surfaceContainerHighest),
-            child: Center(child: child),
-          ),
+          builder:
+              (context, a, child) => CustomPaint(
+                painter: _RingPainter(a, stroke, color ?? s.primary, trackColor ?? s.surfaceContainerHighest),
+                child: Center(child: child),
+              ),
           child: child,
         ),
       ),
@@ -163,10 +157,11 @@ class _RingPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
     final r = rect.deflate(stroke / 2);
-    final base = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = stroke
-      ..strokeCap = StrokeCap.round;
+    final base =
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = stroke
+          ..strokeCap = StrokeCap.round;
     canvas.drawArc(r, 0, math.pi * 2, false, base..color = track);
     if (value > 0) {
       canvas.drawArc(r, -math.pi / 2, math.pi * 2 * value, false, base..color = color);
@@ -174,8 +169,7 @@ class _RingPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_RingPainter o) =>
-      o.value != value || o.color != color || o.track != track || o.stroke != stroke;
+  bool shouldRepaint(_RingPainter o) => o.value != value || o.color != color || o.track != track || o.stroke != stroke;
 }
 
 // ------------------------------------------------------------------ status
@@ -198,10 +192,13 @@ class StatusChip extends StatelessWidget {
         color: background ?? s.secondaryContainer,
         borderRadius: BorderRadius.circular(Radii.pill),
       ),
-      child: Row(mainAxisSize: MainAxisSize.min, children: [
-        if (icon != null) ...[Icon(icon, size: 14, color: fg), const SizedBox(width: 4)],
-        Text(label, style: Theme.of(context).textTheme.labelMedium?.copyWith(color: fg)),
-      ]),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[Icon(icon, size: 14, color: fg), const SizedBox(width: 4)],
+          Text(label, style: Theme.of(context).textTheme.labelMedium?.copyWith(color: fg)),
+        ],
+      ),
     );
   }
 }
@@ -210,14 +207,7 @@ class StatusChip extends StatelessWidget {
 
 /// Friendly empty state: icon on a soft circle, title, body, optional action.
 class EmptyState extends StatelessWidget {
-  const EmptyState({
-    super.key,
-    required this.icon,
-    required this.title,
-    this.body,
-    this.actionLabel,
-    this.onAction,
-  });
+  const EmptyState({super.key, required this.icon, required this.title, this.body, this.actionLabel, this.onAction});
   final IconData icon;
   final String title;
   final String? body;
@@ -242,8 +232,11 @@ class EmptyState extends StatelessWidget {
           Text(title, style: theme.textTheme.titleLarge, textAlign: TextAlign.center),
           if (body != null) ...[
             const SizedBox(height: Space.sm),
-            Text(body!, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                textAlign: TextAlign.center),
+            Text(
+              body!,
+              style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              textAlign: TextAlign.center,
+            ),
           ],
           if (actionLabel != null) ...[
             const SizedBox(height: Space.lg),
@@ -267,8 +260,7 @@ class Skeleton extends StatefulWidget {
 }
 
 class _SkeletonState extends State<Skeleton> with SingleTickerProviderStateMixin {
-  late final AnimationController _c =
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 1100));
+  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 1100));
 
   @override
   void didChangeDependencies() {

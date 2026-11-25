@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../features/habits/presentation/habit_flows.dart';
 import '../services/native_alarm.dart';
 import '../design/components.dart';
+import '../design/motion.dart';
 import '../models/habit.dart';
 import 'providers.dart';
 import 'theme.dart';
@@ -77,7 +78,7 @@ class _AppShellState extends ConsumerState<AppShell> with WidgetsBindingObserver
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     return Scaffold(
-      body: widget.shell,
+      body: TabFadeThrough(index: widget.shell.currentIndex, child: widget.shell),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _navIndex,
         onDestinationSelected: (i) {

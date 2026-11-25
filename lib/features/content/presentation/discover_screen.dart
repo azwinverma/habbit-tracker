@@ -18,6 +18,8 @@ import '../domain/content_item.dart';
 import 'audiobook_screen.dart';
 import 'exercise_detail_screen.dart';
 import 'video_player_screen.dart';
+import '../../../design/backdrop.dart';
+import '../../../design/motion.dart';
 
 /// Browse the free content catalogue (works offline from the cache).
 /// New items from the latest refresh are listed first with a "New" badge;
@@ -84,7 +86,8 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> with SingleTick
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    return Scaffold(
+    return BrandBackdrop(child: Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: Text(l.discover),
         bottom: PreferredSize(
@@ -151,7 +154,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> with SingleTick
             _ContentList(kind: k, query: _query, savedOnly: _savedOnly, onRefresh: _refresh),
         ],
       ),
-    );
+    ));
   }
 }
 
@@ -258,7 +261,7 @@ class _ContentList extends ConsumerWidget {
                       ? SliverList.separated(
                           itemCount: list.length,
                           separatorBuilder: (_, __) => const SizedBox(height: Space.sm),
-                          itemBuilder: (_, i) => _ContentTile(item: list[i], saved: saved.contains(list[i].id)),
+                          itemBuilder: (_, i) => Entrance(index: i < 8 ? i : 0, child: _ContentTile(item: list[i], saved: saved.contains(list[i].id))),
                         )
                       : SliverGrid.builder(
                           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -268,9 +271,12 @@ class _ContentList extends ConsumerWidget {
                             mainAxisExtent: video ? 200 : 112,
                           ),
                           itemCount: list.length,
-                          itemBuilder: (_, i) => video
-                              ? _VideoCard(item: list[i], saved: saved.contains(list[i].id))
-                              : _ContentTile(item: list[i], saved: saved.contains(list[i].id)),
+                          itemBuilder: (_, i) => Entrance(
+                            index: i < 8 ? i : 0,
+                            child: video
+                                ? _VideoCard(item: list[i], saved: saved.contains(list[i].id))
+                                : _ContentTile(item: list[i], saved: saved.contains(list[i].id)),
+                          ),
                         ),
                 ),
               ],
