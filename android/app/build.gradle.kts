@@ -23,14 +23,16 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.daily.mantra"
-    compileSdk = flutter.compileSdkVersion
+    // Google Play requires apps to target API 36 (Android 16).
+    compileSdk = 36
     ndkVersion = "27.0.12077973"
 
     defaultConfig {
         applicationId = "com.daily.mantra"
-        // Android 7.0+: required by firebase_core 5 (Firebase BoM 34+).
-        minSdk = maxOf(24, flutter.minSdkVersion)
-        targetSdk = flutter.targetSdkVersion
+        // Android 5.0+ (API 21), as in 1.0.0: every plugin supports it. Re-check
+        // before adding Firebase (firebase_core 5 needs API 24).
+        minSdk = maxOf(21, flutter.minSdkVersion)
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }

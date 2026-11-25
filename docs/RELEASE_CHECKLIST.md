@@ -36,3 +36,8 @@ Status as of 2026-11-25. ✅ verified · ⬜ owner action · ⚠️ known limita
 
 ## Store listing / ASO
 - ⬜ Follow `docs/ASO.md` section 9.
+
+## Build 2.0.0 (21): Play Console fixes
+- **Target API 36** (Play requirement): `compileSdk`/`targetSdk` = 36. Tested on Android 16: predictive back pops pages instead of closing the app.
+- **Minimum Android 5.0 (API 21) again**, as in 1.0.0 (1). Phase 1 had raised it to API 24 for `firebase_core`, which was only initialised and never used, so Play reported "1,866 devices no longer supported". Firebase was removed. If Firebase is added in Phase 4, it needs API 24 (or an older firebase_core).
+- **versionCode 21:** code 20 was already uploaded to Play and can't be reused. Use 22, 23 … for every new upload.

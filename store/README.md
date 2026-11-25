@@ -1,4 +1,4 @@
-# Play Store assets: DailyMantra 2.0.0
+# Play Store assets: DailyMantra 2.0.0 (build 21)
 
 Upload in **Play Console → Grow → Store presence → Main store listing** (English) and add a **Nepali (ne-NP)** translation for the second set.
 
