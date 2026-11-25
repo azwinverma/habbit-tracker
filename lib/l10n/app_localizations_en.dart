@@ -971,4 +971,43 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adPrivacyChoices => 'Ad privacy choices';
+
+  @override
+  String get stepsTitle => 'Steps';
+
+  @override
+  String get stepsAutoChip => 'Auto';
+
+  @override
+  String get stepsEnable => 'Count steps automatically';
+
+  @override
+  String get stepsEnableHint => 'Uses your phone\'s built-in step sensor. Almost no battery, and your steps stay on this phone.';
+
+  @override
+  String get stepsAddWithoutPhone => 'Walked without your phone? Add steps:';
+
+  @override
+  String get stepsResetAdded => 'Reset added';
+
+  @override
+  String get stepsResetToday => 'Reset today';
+
+  @override
+  String get stepsDenied => 'Step counting needs the Physical activity permission.';
+
+  @override
+  String get stepsOpenSettings => 'Settings';
+
+  @override
+  String get stepsNoSensor => 'This phone has no step sensor. You can still add steps by hand.';
+
+  @override
+  String get stepsEnabled => 'Counting your steps from now on.';
+
+  @override
+  String get stepsTurnOff => 'Turn off automatic counting';
+
+  @override
+  String get stepsCountingNote => 'Counting automatically · steps taken while the phone is off aren\'t counted';
 }

@@ -24,6 +24,7 @@ import '../features/content/presentation/exercise_detail_screen.dart';
 import '../features/content/data/youtube_workouts.dart';
 import '../features/content/presentation/youtube_workout_screen.dart';
 import '../features/content/presentation/home_workouts_screen.dart';
+import '../features/steps/step_service.dart';
 import '../design/backdrop.dart';
 import '../app/theme.dart';
 
@@ -56,8 +57,10 @@ class _ExerciseScreenState extends State<ExerciseScreen> with SingleTickerProvid
   // Tabs
   late final TabController _tab;
 
-  // Steps (manual)
+  // Steps (phone sensor when enabled, plus manual additions)
   int _lastShownSteps = 0;
+  bool _autoSteps = false;
+  final _steps = StepService.instance;
 
   // Schedule editor (decoded from JSON)
   // Map<"Monday", List<{name, bodyPart, level}>>
@@ -104,6 +107,64 @@ class _ExerciseScreenState extends State<ExerciseScreen> with SingleTickerProvid
 
     _tab = TabController(length: 4, vsync: this);
     _loadExercises();
+    _initSteps();
+  }
+
+  Future<void> _initSteps() async {
+    _steps.today.addListener(_onSteps);
+    final on = await _steps.isEnabled();
+    if (!on) {
+      // Keep steps typed in before this update.
+      final today = _ymd(DateTime.now());
+      if (_h.stepsLastDate == today && (_h.stepsToday ?? 0) > 0) {
+        final st = await _steps.loadState();
+        if ((st.manual[today] ?? 0) == 0 && (st.days[today] ?? 0) == 0) await _steps.addManual(_h.stepsToday!);
+      }
+    }
+    if (!mounted) return;
+    setState(() => _autoSteps = on);
+    if (on) {
+      await _steps.sync();
+      await _steps.startLive();
+    }
+  }
+
+  void _onSteps() {
+    final v = _steps.today.value;
+    if (v == null || !mounted) return;
+    // Keep the in-memory habit in step, so saving the screen never writes
+    // an old count back.
+    _h.stepsToday = v;
+    _h.stepsLastDate = _ymd(DateTime.now());
+    setState(() => _lastShownSteps = v);
+  }
+
+  Future<void> _enableAutoSteps() async {
+    final l = AppLocalizations.of(context);
+    await _persistHabitOnly(); // counting is shown on this (now saved) habit
+    final r = await _steps.enable();
+    if (!mounted) return;
+    switch (r) {
+      case StepEnableResult.enabled:
+        setState(() => _autoSteps = true);
+        await _steps.startLive();
+        _snack(l.stepsEnabled);
+      case StepEnableResult.denied:
+        _snack(l.stepsDenied);
+      case StepEnableResult.permanentlyDenied:
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(l.stepsDenied),
+          behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(label: l.stepsOpenSettings, onPressed: StepService.openSettings),
+        ));
+      case StepEnableResult.noSensor:
+        _snack(l.stepsNoSensor);
+    }
+  }
+
+  Future<void> _disableAutoSteps() async {
+    await _steps.disable();
+    if (mounted) setState(() => _autoSteps = false);
   }
 
   Future<void> _loadExercises() async {
@@ -136,6 +197,8 @@ class _ExerciseScreenState extends State<ExerciseScreen> with SingleTickerProvid
 
   @override
   void dispose() {
+    _steps.today.removeListener(_onSteps);
+    _steps.stopLive();
     _timer?.cancel();
     if (_sessionAlarmId != null) {
       ReminderService.instance.cancelSessionEnd(_h.id); // left mid-workout
@@ -260,18 +323,17 @@ class _ExerciseScreenState extends State<ExerciseScreen> with SingleTickerProvid
   }
 
   // ---------- Steps ----------
-  void _incSteps(int n) async {
-    _ensureTodayResets();
-    _h.stepsToday = (_h.stepsToday ?? 0) + n;
+  // Manual steps go through StepService (kept apart from sensor counts).
+  // Saving first matters for a quick-added habit: like any other change on
+  // this screen, using the step buttons creates the habit.
+  Future<void> _incSteps(int n) async {
     await _persistHabitOnly();
-    setState(() => _lastShownSteps = _h.stepsToday ?? 0);
+    await _steps.addManual(n);
   }
 
-  void _resetStepsToday() async {
-    _ensureTodayResets();
-    _h.stepsToday = 0;
+  Future<void> _resetStepsToday() async {
     await _persistHabitOnly();
-    setState(() => _lastShownSteps = 0);
+    await _steps.resetManual();
   }
 
   // ---------- Office move breaks (D18: now actually scheduled) ----------
@@ -498,26 +560,62 @@ class _ExerciseScreenState extends State<ExerciseScreen> with SingleTickerProvid
         Card(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
-            child: Column(
-              children: [
-                Text('Steps', style: Theme.of(context).textTheme.titleLarge),
-                const SizedBox(height: 6),
-                LinearProgressIndicator(value: stepPct as double?),
-                const SizedBox(height: 6),
-                Text('$_lastShownSteps / $stepsGoal'),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: [
-                    _SmallChipButton(label: '+50', onTap: () => _incSteps(50)),
-                    _SmallChipButton(label: '+100', onTap: () => _incSteps(100)),
-                    _SmallChipButton(label: '+500', onTap: () => _incSteps(500)),
-                    _SmallChipButton(label: 'Reset today', onTap: _resetStepsToday, outline: true),
+            child: Builder(builder: (context) {
+              final l = AppLocalizations.of(context);
+              final theme = Theme.of(context);
+              return Column(
+                children: [
+                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    Text(l.stepsTitle, style: theme.textTheme.titleLarge),
+                    if (_autoSteps) ...[
+                      const SizedBox(width: 8),
+                      Chip(
+                        avatar: const Icon(Icons.directions_walk_rounded, size: 16),
+                        label: Text(l.stepsAutoChip),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                    ],
+                  ]),
+                  const SizedBox(height: 6),
+                  LinearProgressIndicator(value: stepPct as double?),
+                  const SizedBox(height: 6),
+                  Text('${_fmtInt(_lastShownSteps)} / ${_fmtInt(stepsGoal)}',
+                      style: theme.textTheme.titleMedium),
+                  const SizedBox(height: 10),
+                  if (!_autoSteps) ...[
+                    FilledButton.tonalIcon(
+                      onPressed: _enableAutoSteps,
+                      icon: const Icon(Icons.directions_walk_rounded),
+                      label: Text(l.stepsEnable),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(l.stepsEnableHint, textAlign: TextAlign.center, style: theme.textTheme.bodySmall),
+                    const SizedBox(height: 12),
+                  ] else ...[
+                    Text(l.stepsCountingNote, textAlign: TextAlign.center, style: theme.textTheme.bodySmall),
+                    const SizedBox(height: 10),
+                    Text(l.stepsAddWithoutPhone, style: theme.textTheme.bodySmall),
+                    const SizedBox(height: 8),
                   ],
-                ),
-              ],
-            ),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      _SmallChipButton(label: '+50', onTap: () => _incSteps(50)),
+                      _SmallChipButton(label: '+100', onTap: () => _incSteps(100)),
+                      _SmallChipButton(label: '+500', onTap: () => _incSteps(500)),
+                      _SmallChipButton(
+                          label: _autoSteps ? l.stepsResetAdded : l.stepsResetToday,
+                          onTap: _resetStepsToday,
+                          outline: true),
+                    ],
+                  ),
+                  if (_autoSteps)
+                    TextButton(onPressed: _disableAutoSteps, child: Text(l.stepsTurnOff)),
+                ],
+              );
+            }),
           ),
         ),
 
@@ -716,6 +814,8 @@ class _ExerciseScreenState extends State<ExerciseScreen> with SingleTickerProvid
     final s = (sec % 60).toString().padLeft(2, '0');
     return '$m:$s';
   }
+
+  static String _fmtInt(int v) => v.toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (_) => ',');
 
   String _ymd(DateTime d) => '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 

@@ -971,4 +971,43 @@ class AppLocalizationsNe extends AppLocalizations {
 
   @override
   String get adPrivacyChoices => 'विज्ञापन गोपनीयता छनोट';
+
+  @override
+  String get stepsTitle => 'पाइला';
+
+  @override
+  String get stepsAutoChip => 'स्वचालित';
+
+  @override
+  String get stepsEnable => 'पाइला आफैँ गन्नुहोस्';
+
+  @override
+  String get stepsEnableHint => 'फोनकै पाइला सेन्सर प्रयोग हुन्छ। ब्याट्री लगभग खर्च हुँदैन, र पाइलाको विवरण यही फोनमा रहन्छ।';
+
+  @override
+  String get stepsAddWithoutPhone => 'फोनबिना हिँड्नुभयो? पाइला थप्नुहोस्:';
+
+  @override
+  String get stepsResetAdded => 'थपेको हटाउनुहोस्';
+
+  @override
+  String get stepsResetToday => 'आजको रिसेट';
+
+  @override
+  String get stepsDenied => 'पाइला गन्न \"शारीरिक गतिविधि\" अनुमति चाहिन्छ।';
+
+  @override
+  String get stepsOpenSettings => 'सेटिङ';
+
+  @override
+  String get stepsNoSensor => 'यो फोनमा पाइला सेन्सर छैन। हातैले पाइला थप्न सक्नुहुन्छ।';
+
+  @override
+  String get stepsEnabled => 'अबदेखि तपाईंका पाइला गनिँदैछन्।';
+
+  @override
+  String get stepsTurnOff => 'स्वचालित गणना बन्द गर्नुहोस्';
+
+  @override
+  String get stepsCountingNote => 'स्वचालित गणना · फोन बन्द हुँदा हिँडेको गनिँदैन';
 }

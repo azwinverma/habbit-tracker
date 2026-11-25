@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../features/habits/presentation/habit_flows.dart';
 import '../services/native_alarm.dart';
+import '../features/steps/step_service.dart';
 import '../design/components.dart';
 import '../design/motion.dart';
 import '../models/habit.dart';
@@ -50,6 +51,8 @@ class _AppShellState extends ConsumerState<AppShell> with WidgetsBindingObserver
   void _syncContent() {
     // Fire-and-forget; works offline (keeps cached catalogue).
     ref.read(contentSyncServiceProvider).syncIfStale();
+    // Latest step-sensor reading into today's Movement / Exercise numbers.
+    StepService.instance.sync();
     // Doses marked "Taken" from a notification while the app was closed.
     ref.read(doseLogRepositoryProvider).importNativeActions(NativeAlarmBackend());
   }

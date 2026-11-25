@@ -3,6 +3,7 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:workmanager/workmanager.dart';
 
+import '../../steps/step_service.dart';
 import 'content_sync_service.dart';
 
 /// Android background refresh of the content catalogue (WorkManager):
@@ -16,6 +17,11 @@ abstract final class BackgroundSync {
   static const taskName = 'dm.content.refresh';
   static const uniqueName = 'dm-content-refresh';
   static const every = Duration(hours: 12);
+
+  /// Step sensor sampling (~every 15 min, WorkManager's minimum) so steps are
+  /// put on the right day even when the app isn't opened. No network needed.
+  static const stepsTask = 'dm.steps.sample';
+  static const stepsUnique = 'dm-steps-sample';
 
   static Future<void> schedule() async {
     if (kIsWeb || !Platform.isAndroid) return;
@@ -31,6 +37,12 @@ abstract final class BackgroundSync {
         backoffPolicy: BackoffPolicy.exponential,
         backoffPolicyDelay: const Duration(minutes: 30),
       );
+      await Workmanager().registerPeriodicTask(
+        stepsUnique,
+        stepsTask,
+        frequency: const Duration(minutes: 15),
+        existingWorkPolicy: ExistingWorkPolicy.keep,
+      );
     } catch (e) {
       debugPrint('[BackgroundSync] not scheduled: $e');
     }
@@ -41,6 +53,11 @@ abstract final class BackgroundSync {
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, _) async {
+    if (task == BackgroundSync.stepsTask) {
+      // Only records the sensor reading; the app writes habits on next open.
+      await StepService.instance.sync(writeHabits: false);
+      return true;
+    }
     if (task != BackgroundSync.taskName) return true;
     try {
       final results = await ContentSyncService.instance.syncIfStale();

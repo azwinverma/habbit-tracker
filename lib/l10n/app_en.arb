@@ -575,5 +575,18 @@
       }
     }
   },
-  "adPrivacyChoices": "Ad privacy choices"
+  "adPrivacyChoices": "Ad privacy choices",
+  "stepsTitle": "Steps",
+  "stepsAutoChip": "Auto",
+  "stepsEnable": "Count steps automatically",
+  "stepsEnableHint": "Uses your phone's built-in step sensor. Almost no battery, and your steps stay on this phone.",
+  "stepsAddWithoutPhone": "Walked without your phone? Add steps:",
+  "stepsResetAdded": "Reset added",
+  "stepsResetToday": "Reset today",
+  "stepsDenied": "Step counting needs the Physical activity permission.",
+  "stepsOpenSettings": "Settings",
+  "stepsNoSensor": "This phone has no step sensor. You can still add steps by hand.",
+  "stepsEnabled": "Counting your steps from now on.",
+  "stepsTurnOff": "Turn off automatic counting",
+  "stepsCountingNote": "Counting automatically · steps taken while the phone is off aren't counted"
 }

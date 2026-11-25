@@ -297,5 +297,18 @@
   "latestFrom": "{channel} बाट नयाँ",
   "demoLoop": "डेमो",
   "coachVideo": "प्रशिक्षक भिडियो",
-  "adPrivacyChoices": "विज्ञापन गोपनीयता छनोट"
+  "adPrivacyChoices": "विज्ञापन गोपनीयता छनोट",
+  "stepsTitle": "पाइला",
+  "stepsAutoChip": "स्वचालित",
+  "stepsEnable": "पाइला आफैँ गन्नुहोस्",
+  "stepsEnableHint": "फोनकै पाइला सेन्सर प्रयोग हुन्छ। ब्याट्री लगभग खर्च हुँदैन, र पाइलाको विवरण यही फोनमा रहन्छ।",
+  "stepsAddWithoutPhone": "फोनबिना हिँड्नुभयो? पाइला थप्नुहोस्:",
+  "stepsResetAdded": "थपेको हटाउनुहोस्",
+  "stepsResetToday": "आजको रिसेट",
+  "stepsDenied": "पाइला गन्न \"शारीरिक गतिविधि\" अनुमति चाहिन्छ।",
+  "stepsOpenSettings": "सेटिङ",
+  "stepsNoSensor": "यो फोनमा पाइला सेन्सर छैन। हातैले पाइला थप्न सक्नुहुन्छ।",
+  "stepsEnabled": "अबदेखि तपाईंका पाइला गनिँदैछन्।",
+  "stepsTurnOff": "स्वचालित गणना बन्द गर्नुहोस्",
+  "stepsCountingNote": "स्वचालित गणना · फोन बन्द हुँदा हिँडेको गनिँदैन"
 }

@@ -34,7 +34,7 @@ The app never sends your habits, medicine information or history to any of these
 ## Notifications and permissions
 - **Notifications:** to show the reminders you set (asked only after you create your first reminder).
 - **Alarms & reminders (Android):** to deliver reminders at the exact minute.
-- **Motion / activity (optional):** for step counting.
+- **Physical activity / motion (optional):** only if you turn on "Count steps automatically". The app reads the phone's built-in step counter to show your daily steps. Step counts are stored only on your phone and are never sent anywhere. You can turn it off on the Exercise screen or revoke the permission in your phone's settings.
 - **Internet:** to download free content and ads.
 
 ## Children

@@ -46,3 +46,8 @@ Status as of 2026-11-25. ✅ verified · ⬜ owner action · ⚠️ known limita
 - Play **automatic protection** (App integrity) requires **minSdk 24**, so build 21 (minSdk 21) was rejected. minSdk is now 24 (Android 7.0+). Play will again show that devices on Android 5–6 lose support; that's expected with automatic protection on.
 - To support Android 5–6 instead, turn automatic protection off in Play Console and set minSdk back to 21.
 - versionCode 22 (21 may already be recorded by Play). Next uploads: 23, 24 …
+
+## Automatic step counting
+- Uses the phone step sensor (`pedometer`), permission `ACTIVITY_RECOGNITION` (Android 10+) / Motion & Fitness (iPhone). Background sampling every ~15 min on Android (WorkManager).
+- **Play Data safety:** "Fitness info → Physical activity" is **not collected** (stays on device, never transmitted). Keep it that way unless steps are ever uploaded.
+- ⬜ Real-device check: turn on counting, walk ~100 steps, reopen the app; leave the phone overnight and check the next day starts at 0; reboot the phone and walk, then check steps are still added.

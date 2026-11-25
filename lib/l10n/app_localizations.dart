@@ -1882,6 +1882,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Ad privacy choices'**
   String get adPrivacyChoices;
+
+  /// No description provided for @stepsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps'**
+  String get stepsTitle;
+
+  /// No description provided for @stepsAutoChip.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get stepsAutoChip;
+
+  /// No description provided for @stepsEnable.
+  ///
+  /// In en, this message translates to:
+  /// **'Count steps automatically'**
+  String get stepsEnable;
+
+  /// No description provided for @stepsEnableHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Uses your phone\'s built-in step sensor. Almost no battery, and your steps stay on this phone.'**
+  String get stepsEnableHint;
+
+  /// No description provided for @stepsAddWithoutPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Walked without your phone? Add steps:'**
+  String get stepsAddWithoutPhone;
+
+  /// No description provided for @stepsResetAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset added'**
+  String get stepsResetAdded;
+
+  /// No description provided for @stepsResetToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset today'**
+  String get stepsResetToday;
+
+  /// No description provided for @stepsDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Step counting needs the Physical activity permission.'**
+  String get stepsDenied;
+
+  /// No description provided for @stepsOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get stepsOpenSettings;
+
+  /// No description provided for @stepsNoSensor.
+  ///
+  /// In en, this message translates to:
+  /// **'This phone has no step sensor. You can still add steps by hand.'**
+  String get stepsNoSensor;
+
+  /// No description provided for @stepsEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Counting your steps from now on.'**
+  String get stepsEnabled;
+
+  /// No description provided for @stepsTurnOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off automatic counting'**
+  String get stepsTurnOff;
+
+  /// No description provided for @stepsCountingNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Counting automatically · steps taken while the phone is off aren\'t counted'**
+  String get stepsCountingNote;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

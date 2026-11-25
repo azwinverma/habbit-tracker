@@ -24,7 +24,8 @@ HOME WORKOUTS, NO GYM NEEDED
 • Follow-along home workout videos from popular fitness trainers
 • Short coach videos showing how to do each exercise
 • 1,000 free exercises with steps, muscles and demo videos
-• Workout timer, steps and your own weekly workout plan
+• Automatic step counter using your phone's step sensor
+• Workout timer and your own weekly workout plan
 
 MEDITATE, RELAX AND READ
 • Free nature and meditation sounds
